@@ -1,0 +1,70 @@
+$bodyBG = #F7FBFB
+$black = #333333
+$gray = #999999
+$theadbg = #FAFAFA
+$blue = #027CFF
+$orange = #F55B23
+$red = #F12C20
+$green = #67c23a
+$borderColor = #E0E0E0
+$blueHover = #0261c2
+$minHeight = 800px
+
+body, div, ul, li, ol, dl, dt, dd, p, form, h1, h2, h3, h4, h5, h6, span, a, em, i, strong, b, input, textarea, select, img, label
+  margin: 0
+  padding: 0
+  list-style: none
+  font-style: normal
+  font-weight: normal
+  text-decoration: none
+  outline: none
+
+body, html
+  height: 100%
+  width: 100%
+  background: $bodyBG
+  color: $black
+  font-size: 14px
+  font-family: "Microsoft YaHei", "WenQuanYi Micro Hei", SimSun, sans-serif
+
+img
+  vertical-align: middle
+
+a
+  color: $blue
+
+a:hover
+  color: $blueHover
+  
+.el-table__empty-block
+  height: 180px
+  .el-table__empty-text
+    width: 300px
+    height: 20px
+    padding-top: 120px
+    background: url('./assets/null.png') 50% 0 no-repeat
+
+.dn-spec-dialog
+  .el-dialog__body
+    padding: 40px 50px 20px
+  .el-dialog__header
+    height: 30px
+    line-height: 30px
+    font-size: 14px
+    padding: 10px 0 10px 0
+    border-bottom: 1px solid #f0f0f0
+    .el-dialog__title
+      display: block
+      height: 30px
+      line-height: 30px
+      font-size: 14px
+      text-align: left
+      border-left: 2px solid #027CFF
+      padding-left: 10px
+    .el-dialog__headerbtn
+      top: 17px
+  .el-dialog__footer
+    padding-bottom: 50px
+    .dialog-footer
+      .el-button
+        width: 200px

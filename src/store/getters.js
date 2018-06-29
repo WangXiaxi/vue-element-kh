@@ -1,0 +1,1 @@
+export const ifAddYWY = state => state.ifAddYWY
