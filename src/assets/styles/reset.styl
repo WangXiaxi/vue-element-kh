@@ -1,0 +1,41 @@
+@import "variable.styl"
+body, div, ul, li, ol, dl, dt, dd, p, form, h1, h2, h3, h4, h5, h6, span, a, em, i, strong, b, input, textarea, select, img, label
+  margin: 0
+  padding: 0
+  list-style: none
+  font-style: normal
+  font-weight: normal
+  text-decoration: none
+  outline: none
+
+body, html
+  height: 100%
+  width: 100%
+  min-width: 1200px
+  background: $bodyBG
+  color: $black
+  font-size: 14px
+  font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+
+img
+  vertical-align: middle
+
+a
+  color: $blue
+
+a:hover
+  color: $blueHover
+
+// 重置ele-input默认禁用输入框的字体颜色
+.el-input.is-disabled .el-input__inner
+  color: #606266
+
+.el-cascader.is-disabled .el-cascader__label
+  color: #606266
+
+// 重置默认ele-table字体大小
+.el-table--mini, .el-table--small, .el-table__expand-icon
+  font-size: 14px
+  
+.content-left > ul > li:nth-of-type(n+2), .settled .settled-left >ul > li:nth-of-type(n+2)
+  margin-top: 20px !important

@@ -5,11 +5,11 @@
 </template>
 
 <script>
-export default {
-  name: 'App'
-}
+  export default {
+    name: 'App'
+  }
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
-  @import "css/main.styl"
+  @import "assets/styles/index.styl"
 </style>

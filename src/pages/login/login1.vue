@@ -1,0 +1,357 @@
+<template>
+  <div class="login-container">
+    <head-top class="header">
+      <span class="title" slot="login">登录注册</span>
+    </head-top>
+    <div class="login-content">
+      <!--左侧-->
+      <div class="login-left">
+        <!--登录 start-->
+        <div class="item">
+          <h1>货主登录 <span class="type">工厂企业/物流公司</span></h1>
+          <div class="login-box">
+            <el-form :model="loginData" ref="loginData" :rules="loginRules" status-icon>
+              <el-form-item label="" prop="LoginCode">
+                <el-input
+                  v-model.trim="loginData.LoginCode"
+                  placeholder="请输入手机号"
+                  clearable
+                ></el-input>
+              </el-form-item>
+              <el-form-item label="" prop="LoginPWD">
+                <el-input
+                  type="password"
+                  v-model.trim="loginData.LoginPWD"
+                  placeholder="输入密码"
+                  clearable
+                  @keyup.enter.native="loginSubmit('loginData')"
+                ></el-input>
+              </el-form-item>
+            </el-form>
+            <p class="mr-4">
+              <router-link class="size12 blue-txt" to="/fastLogin">快捷登录</router-link>
+              <router-link class="go-login" to="/forget">忘记密码</router-link>
+            </p>
+            <p class="btn-box">
+              <el-button type="primary" :disabled="!canSubmit" @click="loginSubmit('loginData')" round>登录</el-button>
+            </p>
+            <p class="mt-10">
+              <router-link class="size12 blue-txt" to="/register">没有账号去注册</router-link>
+            </p>
+          </div>
+        </div>
+        <!--登录 end-->
+      </div>
+      <!--右侧-->
+      <div class="login-right">
+        <img src="../../assets/images/app-bg.png" alt="" width="400px" height="600px">
+      </div>
+    </div>
+    <login-dialog></login-dialog>
+    <foot class="footer"></foot>
+  </div>
+</template>
+
+
+<script type="es6">
+import headTop from "components/header/head";
+import foot from "components/footer/foot";
+import loginDialog from "components/loginDialog/loginDialog";
+import regs from "config/regExp";
+import md5 from "js-md5";
+import cookie from "cookiejs";
+import { removeStore } from "config/myUtils";
+import { login, getIP } from "api/getData";
+import { webUrl } from "api/env";
+
+export default {
+  data() {
+    return {
+      canSubmit: true,
+      loginData: {
+        //登录数据
+        LoginCode: "",
+        LoginPassword: "",
+        LoginPWD: "",
+        IP: this.$cookie.get("IP")
+      },
+      loginRules: {
+        //Form验证规则
+        LoginCode: [
+          { required: true, message: "请输入手机号", trigger: "blur" },
+          {
+            pattern: regs.Phone,
+            message: "请输入正确的手机号码",
+            trigger: "blur"
+          }
+        ],
+        LoginPWD: [{ required: true, message: "请输入密码", trigger: "blur" }]
+      }
+    };
+  },
+  methods: {
+    //登录
+    async loginSubmit(loginData) {
+      let that = this;
+      this.$refs[loginData].validate(async valid => {
+        if (valid) {
+          this.canSubmit = false;
+          this.loginData.LoginPassword = md5(this.loginData.LoginPWD);
+          let req = {
+            intSource: '2',
+            strMobile: this.loginData.LoginCode,
+            LoginPassword: this.loginData.LoginPassword,
+            IP: this.loginData.IP
+          };
+          let resData = await login(req);
+          let res = resData.data.ResultValue;
+          if (resData.data.ResultCode === "000000") {
+            
+            if (window.location.href.indexOf("localhost") > -1) {
+              cookie('MemberCrowd', res.MemberCrowd,
+              {
+                "expires": 30,
+              });
+              cookie('MemberMerchantID', res.MemberMerchantID,
+              {
+                "expires": 30,
+              });
+              cookie('MemberID', res.MemberID,
+              {
+                "expires": 30,
+              });
+              cookie('Mobile', that.loginData.LoginCode,
+              {
+                "expires": 30,
+              });
+              cookie('MemberDutiesID', res.MemberDutiesID,
+              {
+                "expires": 30,
+              });  
+              cookie('MerchantStatus', res.MerchantStatus,
+              {
+                "expires": 30,
+              });  
+            } else {
+              cookie("MemberCrowd", res.MemberCrowd, {
+                expires: 30,
+                path: "/",
+                domain: "sdhwlw.com"
+              });
+              cookie("MemberMerchantID", res.MemberMerchantID, {
+                expires: 30,
+                path: "/",
+                domain: "sdhwlw.com"
+              });
+              cookie("MemberID", res.MemberID, {
+                expires: 30,
+                path: "/",
+                domain: "sdhwlw.com"
+              });
+              cookie("Mobile", that.loginData.LoginCode, {
+                expires: 30,
+                path: "/",
+                domain: "sdhwlw.com"
+              });
+              cookie("MemberDutiesID", res.MemberDutiesID, {
+                expires: 30,
+                path: "/",
+                domain: "sdhwlw.com"
+              });
+              cookie("MerchantStatus", res.MerchantStatus, {
+                expires: 30,
+                path: "/",
+                domain: "sdhwlw.com"
+              });
+            }
+
+            if (this.$route.query.toURl == "sdhwlw") {
+              window.location.href = webUrl;
+            } else {
+              if (res.MemberCrowd == 1) {
+                this.$router.push("/source");
+              } else {
+                this.$router.push("/add");
+              }
+            }
+          } else {
+            this.canSubmit = true;
+          }
+        } else {
+          return false;
+        }
+      });
+    }
+  },
+  beforeCreate() {
+    removeStore("enterData");
+    removeStore("carData");
+    removeStore("payList");
+    this.$cookie.delete("MemberID");
+    this.$cookie.delete("MemberCrowd");
+    this.$cookie.delete("MemberMerchantID");
+    this.$cookie.delete("Mobile");
+    this.$cookie.delete("IconUrl"); 
+    cookie("MemberCrowd", "null", {
+      expires: 0,
+      path: "/",
+      domain: "sdhwlw.com"
+    });
+    cookie("MemberMerchantID", "null", {
+      expires: 0,
+      path: "/",
+      domain: "sdhwlw.com"
+    });
+    cookie("MemberDutiesID", "null", {
+      expires: 0,
+      path: "/",
+      domain: "sdhwlw.com"
+    });
+    cookie("MemberID", "null", {
+      expires: 0,
+      path: "/",
+      domain: "sdhwlw.com"
+    });
+    cookie("Mobile", "null", {
+      expires: 0,
+      path: "/",
+      domain: "sdhwlw.com"
+    });
+    cookie("IconUrl", "null", {
+      expires: 0,
+      path: "/",
+      domain: "sdhwlw.com"
+    });
+  },
+  created() {
+    if (this.$cookie.get("IP")) {
+      return;
+    } else {
+      getIP().then(res => {
+        if (res.status == "200" && res.data) {
+          this.loginData.IP = res.data.ip;
+          this.$cookie.set("IP", res.data.ip);
+        }
+      });
+    }
+  },
+  components: {
+    headTop,
+    foot,
+    loginDialog
+  }
+};
+</script>
+
+<style lang="stylus" scoped>
+@import '../../assets/styles/variable.styl';
+
+// .header
+// position: absolute
+// top: 0
+// z-index: 1000
+.blue-btn-p {
+  display: inline-block;
+  height: 38px;
+  line-height: 38px;
+  padding: 0 15px;
+  border: 1px solid $blue;
+  border-radius: 4px;
+  text-align: center;
+
+  &:hover {
+    background-color: $blue;
+    color: #ffffff;
+  }
+}
+
+.login-content {
+  overflow: hidden;
+  clear: both;
+  // position: absolute
+  // top: 50%
+  // left: 50%
+  // z-index: 10
+  width: 900px;
+  height: 600px;
+  margin: 80px auto 120px;
+
+  // margin: -325px 0 0 -450px
+  .login-left {
+    position: relative;
+    float: left;
+    width: 500px;
+    height: 600px;
+    box-shadow: 0 0 15px #CFCFCF;
+    border-radius: 4px;
+    background-color: #fff;
+
+    .item {
+      width: 300px;
+      margin: 50px auto 0;
+
+      h1 {
+        margin-bottom: 20px;
+        font-size: 48px;
+        font-weight: normal;
+      }
+
+      .type {
+        position: absolute;
+        top: 66px;
+        right: 60px;
+        display: inline-block;
+        padding: 0 10px;
+        height: 22px;
+        line-height: 22px;
+        text-align: center;
+        font-size: 14px;
+        color: #027cff;
+        border: 1px solid #027CFF;
+        border-radius: 20px;
+      }
+    }
+
+    .login-box {
+      margin-top: 10px;
+
+      .code-input {
+        float: left;
+        width: 180px;
+      }
+
+      .code-btn {
+        float: right;
+        width: 120px;
+        text-align: right;
+      }
+
+      .btn-box {
+        margin-top: 35px;
+
+        button {
+          width: 150px;
+          heigth: 40px;
+          line-height: 40px;
+          padding: 0;
+          text-align: center;
+        }
+      }
+
+      .go-login {
+        float: right;
+        height: 26px;
+        line-height: 26px;
+        color: $blue;
+        font-size: 12px;
+      }
+    }
+  }
+
+  .login-right {
+    float: left;
+    width: 400px;
+    height: 600px;
+  }
+}
+</style>

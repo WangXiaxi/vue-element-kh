@@ -1,5 +1,7 @@
 const state = {
-  ifAddYWY: false
+  avatar: "", //头像
+  userInfo: {},
+  bulkyCargo: -1 // 重货阈值
 }
 
 export default state
