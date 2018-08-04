@@ -34,17 +34,3 @@ npm run build --report
 
 For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
 
-快捷生成vue模板
-mac或git bash下使用
-
-使用：
-在当前目录下 sh ct.sh {文件名}
-
-添加alias(linux、mac环境下)
-到项目目录sdh下
-path=`pwd`
-echo "alias ct='sh ${path}'/ct.sh" >> ~/.bash_profile && source ~/.bash_profile
-or
-echo "alias ct='sh ${path}'/ct.sh" >> ~/.zshrc && source ~/.zshrc
-
-ct {文件名,不需要带后缀}
