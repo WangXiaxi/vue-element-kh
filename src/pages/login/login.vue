@@ -61,8 +61,10 @@ import cookie from "cookiejs";
 import { removeStore } from "config/myUtils";
 import { login } from "api/getData";
 import { webUrl } from "api/env";
+import auto_login from "@/mixins/auto_login";
 
 export default {
+  mixins: [auto_login],
   data() {
     return {
       webUrl,
@@ -88,6 +90,9 @@ export default {
       }
     };
   },
+  created () {
+    this.automaticLogon(); // 存在用户，则不让进入外页
+  },
   methods: {
     //登录
     async loginSubmit(loginData) {
@@ -107,7 +112,7 @@ export default {
           let res = resData.data.ResultValue;
           if (resData.data.ResultCode === "000000") {
             // 这个地方 要配合 官网 所以domain 必须要放开 设置 domain: "sdhwlw.com"
-            let host = window.location.href.indexOf("localhost") > -1 ? 'localhost' : 'sdhwlw.com';
+            let host = window.location.href.indexOf("sdhwlw.com") > -1 ? 'sdhwlw.com' : window.location.hostname;
             cookie('Token', String(res.MembToken), {
               expires: 30
             });
@@ -160,71 +165,6 @@ export default {
         }
       });
     }
-  },
-  beforeCreate() {
-    removeStore("enterData");
-    removeStore("carData");
-    removeStore("payList");
-    this.$cookie.delete("MemberID");
-    this.$cookie.delete("MemberCrowd");
-    this.$cookie.delete("MemberMerchantID");
-    this.$cookie.delete("Mobile");
-    this.$cookie.delete("MemberDutiesID");
-    this.$cookie.delete("MerchantStatus");
-    this.$cookie.delete("IconUrl"); 
-    this.$cookie.delete("Token");
-    cookie("MemberCrowd", "null", {
-      expires: 0,
-      path: "/",
-      domain: "sdhwlw.com"
-    });
-    cookie("MemberMerchantID", "null", {
-      expires: 0,
-      path: "/",
-      domain: "sdhwlw.com"
-    });
-    cookie("MemberDutiesID", "null", {
-      expires: 0,
-      path: "/",
-      domain: "sdhwlw.com"
-    });
-    cookie("MemberID", "null", {
-      expires: 0,
-      path: "/",
-      domain: "sdhwlw.com"
-    });
-    cookie("Mobile", "null", {
-      expires: 0,
-      path: "/",
-      domain: "sdhwlw.com"
-    });
-    cookie("IconUrl", "null", {
-      expires: 0,
-      path: "/",
-      domain: "sdhwlw.com"
-    });
-    cookie("MerchantStatus", "null", {
-      expires: 0,
-      path: "/",
-      domain: "sdhwlw.com"
-    });
-    cookie("Token", "null", {
-      expires: 0,
-      path: "/",
-      domain: "sdhwlw.com"
-    });
-  },
-  created() {
-    // if (this.$cookie.get("IP")) {
-    //   return;
-    // } else {
-    //   getIP().then(res => {
-    //     if (res.status == "200" && res.data) {
-    //       this.loginData.IP = res.data.ip;
-    //       this.$cookie.set("IP", res.data.ip);
-    //     }
-    //   });
-    // }
   },
   components: {
     headTop,

@@ -2,26 +2,18 @@
   <div>
     <head-top>
       <span class="title" slot="index">{{userType == 1?'货主':'物流公司'}}-工作台</span>
-      <div class="header-center" slot="menu" v-if="userType == 1">
-        <ul>
-          <router-link tag="li" to="/source" class="active">首页</router-link>
-          <router-link tag="li" to="/finaindex">财务管理</router-link>
-          <router-link tag="li" to="/account">账户信息</router-link>
-        </ul>
+      <div class="header-center" slot="menu">
+        <head-menu-router activeLink="index"></head-menu-router>
       </div>
       <drop-down slot="info"></drop-down>
     </head-top>
     <div class="content clear">
       <div class="content-left">
-        <ul>
-          <router-link tag="li" to="/source">发布货源</router-link>
-          <router-link to="/sourceList" tag="li">货源列表</router-link>
-          <router-link to="/product" tag="li" class="active">产品库</router-link>
-        </ul>
+        <left-menu-router-home activeLink="product"></left-menu-router-home>
       </div>
       <div class="product">
         <p class="title-box"><span class="title-name">产品库</span></p>
-        <div class="container clear">
+        <div class="container clear" v-loading="loading">
 
           <!--产品库 start-->
           <div class="container-list">
@@ -47,7 +39,7 @@
                     <el-tooltip class="item" effect="dark" :content="node.label" placement="right">
                       <span class="tree-name">{{ node.label }}</span>
                     </el-tooltip>
-                    <span class="ml-10 fr treeicon" style="padding-right: 10px">
+                    <span class="fr treeicon" style="padding-right: 10px">
                       <el-tooltip class="item" effect="dark" content="编辑" placement="top-start" v-if="!getUserRole(userCharacter,'财务')">
                         <i class="el-icon-edit left-icon" @click="() => append(data)"></i>
                       </el-tooltip>
@@ -279,13 +271,16 @@ import {
   ProductGetAll,
   GetHeavyCargoStandard // 获取重货阈值接口
 } from "api/getData";
-
 import { mapGetters, mapMutations } from 'vuex';
 import { getUserRole } from 'config/myUtils';
+import leftMenuRouterHome from 'components/leftMenuRouter/leftMenuRouterHome'; // 左侧
+import headMenuRouter from 'components/headMenuRouter/headMenuRouter'; // 头部
+
 export default {
   data() {
     const data = [];
     return {
+      loading: false,
       userCharacter: this.$cookie.get("MemberDutiesID"),
       userType: this.$cookie.get("MemberCrowd"),
       data5: data,
@@ -402,7 +397,9 @@ export default {
     //获取产品分类
     async GetPropertyTree() {
       let form = { MerchantID: this.$cookie.get("MemberMerchantID") };
+      this.loading = true;
       const MerchantGetApplys = await GetPropertyTree(form);
+      this.loading = false;
       if (MerchantGetApplys.data.ResultCode == "000000") {
         let josnlist = MerchantGetApplys.data.ResultValue;
         this.treeData = [];
@@ -756,19 +753,21 @@ export default {
     },
     //产品编辑
     async editPro(row) {
-      this.isAllowChange = false;
-      this.ProductID = row.ProductID;
-      this.addData.CatenaName = row.CatenaName;
-      this.addData.Name = row.ProductName;
-      this.addData.ModelName = row.ModelName;
-      this.addData.Length = row.Length;
-      this.addData.Width = row.Width;
-      this.addData.Height = row.Height;
-      this.addData.Weight = row.Weight;
-      this.addData.Money = row.Money;
-      this.addData.ClassifyID = row.ClassifyID;
-      this.dialogtitle = "修改产品库";
       this.addDialog = true;
+      setTimeout(() => {
+        this.isAllowChange = false;
+        this.ProductID = row.ProductID;
+        this.addData.CatenaName = row.CatenaName;
+        this.addData.Name = row.ProductName;
+        this.addData.ModelName = row.ModelName;
+        this.addData.Length = row.Length;
+        this.addData.Width = row.Width;
+        this.addData.Height = row.Height;
+        this.addData.Weight = row.Weight;
+        this.addData.Money = row.Money;
+        this.addData.ClassifyID = row.ClassifyID;
+        this.dialogtitle = "修改产品库";
+      }, 20);
     },
     async GetHeavyCargoStandard () {
       const resData = await GetHeavyCargoStandard()
@@ -787,7 +786,7 @@ export default {
           this.addData.Weight *
           1000000 /
           (this.addData.Length * this.addData.Width * this.addData.Height);
-        if (weights > this.bulkyCargo) {
+        if (weights >= this.bulkyCargo) {
           return "重货";
         } else {
           return "泡货";
@@ -819,7 +818,9 @@ export default {
   components: {
     headTop,
     dropDown,
-    foot
+    foot,
+    leftMenuRouterHome, // 左侧导航
+    headMenuRouter // 左侧    
   }
 };
 </script>

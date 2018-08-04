@@ -12,4 +12,6 @@
 
 <style lang="stylus" rel="stylesheet/stylus">
   @import "assets/styles/index.styl"
+  #app
+  	position: relative
 </style>

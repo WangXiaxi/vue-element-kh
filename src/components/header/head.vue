@@ -23,24 +23,13 @@
 
 <script type="es6">
   import { webUrl } from "api/env"
+
   export default {
     data () {
       return {
         webUrl
       }
     }
-    // created() {
-    //   if (this.$cookie.get("MemberID")) {
-    //     if (this.$cookie.get("MemberCrowd") == 1) {
-    //     } else {
-    //       this.$message.error({message: '身份类型错误！'});
-    //       this.$router.push('/finaindex');
-    //     }
-    //   } else {
-    //     this.$message.info({message: '你尚未登录，请登录！'});
-    //     this.$router.push('/');
-    //   }
-    // }
   }
 </script>
 

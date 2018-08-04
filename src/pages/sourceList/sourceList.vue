@@ -1,44 +1,26 @@
 <template>
   <div>
     <head-top>
-      <span class="title" slot="index">{{usersType == 1?'货主':'物流公司'}}-工作台</span>
-      <div class="header-center" slot="menu" v-if="usersType == 1">
-        <ul>
-          <router-link tag="li" to="/source" class="active">首页</router-link>
-          <router-link tag="li" to="/finaindex">财务管理</router-link>
-          <router-link tag="li" to="/account">账户信息</router-link>
-        </ul>
+      <span class="title" slot="index">{{userType == 1?'货主':'物流公司'}}-工作台</span>
+      <div class="header-center" slot="menu">
+        <head-menu-router activeLink="index"></head-menu-router>
       </div>
       <drop-down slot="info"></drop-down>
     </head-top>
-    <div class="content clear" v-loading="loading">
+    <div class="content clear">
       <div class="content-left">
-        <ul>
-          <router-link tag="li" to="/source">发布货源</router-link>
-          <router-link to="/sourceList" tag="li" class="active">货源列表</router-link>
-          <router-link to="/product" tag="li">产品库</router-link>
-        </ul>
+        <left-menu-router-home activeLink="sourceList"></left-menu-router-home>
       </div>
       <div class="content-right">
         <div class="main fr">
           <p class="title-box"><span class="title-name">货源列表</span></p>
           <!--货源列表 start-->
-          <div class="container clear">
+          <div class="container clear" v-loading="loading">
             <!--头部条件 start-->
             <div class="top-sort">
               <ul>
                 <li>货源列表：</li>
-                <li :class="[orderStatus == 999 ? 'active' : '']" @click="orderStatus = 999">全部</li>
-                <li :class="[(orderStatus == 3) ? 'active' : '']" @click="orderStatus = 3">待确认</li>
-                <li :class="[(orderStatus == 2) ? 'active' : '']" @click="orderStatus = 2">已发布</li>
-                <li :class="[(orderStatus == 4) ? 'active' : '']" @click="orderStatus = 4">待发货</li>
-                <li :class="[(orderStatus == 5) ? 'active' : '']" @click="orderStatus = 5">运输中</li>
-                <li :class="[(orderStatus == 6) ? 'active' : '']" @click="orderStatus = 6">已到达</li>
-                <li :class="[(orderStatus == 7) ? 'active' : '']" @click="orderStatus = 7">已评价</li>
-                <li :class="[(orderStatus == -3) ? 'active' : '']" @click="orderStatus = -3">取消中</li>
-                <li :class="[(orderStatus == -4) ? 'active' : '']" @click="orderStatus = -4">拒绝取消</li>
-                <li :class="[(orderStatus == -1) ? 'active' : '']" @click="orderStatus = -1">已关闭</li>
-                <li :class="[(orderStatus == 1) ? 'active' : '']" @click="orderStatus = 1">待发布</li>
+                <li :class="[status == currentOrderStatus ? 'active' : '']" v-for="(status,name) in orderListStatus" @click="currentOrderStatus = status">{{name}}</li>
               </ul>
             </div>
             <div class="top-sort">
@@ -136,44 +118,50 @@
                       </div>
                       <div class="btn-box">
                         <!--1 待发布 2 已发布 3 待确认 4 待发货 5 运输中 6 已到达 7 已评价 -1 已关闭 -2 已取消 -3 取消中 -4 拒绝取消-->
-                        <p class="mt-6" v-if="item.Status == 1 && !getUserRole(userCharacter,'财务')"><span class="blue-txt cuspoint"
+
+                        <!-- 小星 重发 -->
+                        <p class="mt-6" v-if="item.Parttern == '1' && item.Status == orderStatus.ORDER_PUBLISHED && !getUserRole(userCharacter,'财务')"><span class="blue-txt cuspoint" @click="SendAgain(item.OrdeID, item.Code, index)">重发</span></p>
+
+                        <p class="mt-6" v-if="item.Status == orderStatus.ORDER_RELEASED && !getUserRole(userCharacter,'财务')"><span class="blue-txt cuspoint"
                                                                       @click="sourceCommit(item.OrdeID,index)">立即发布</span>
                         </p>
-                        <p class="mt-6" v-if="item.Status == 1 && !getUserRole(userCharacter,'财务')">
+                        <p class="mt-6" v-if="item.Status == orderStatus.ORDER_RELEASED && !getUserRole(userCharacter,'财务')">
                           <router-link :to="{path: '/source/'+ item.OrdeID}">编辑</router-link>
                         </p>
-                        <p class="mt-6" v-if="item.Status == 2 && !getUserRole(userCharacter,'财务')"><span class="blue-txt cuspoint"
+                        <p class="mt-6" v-if="item.Status == orderStatus.ORDER_PUBLISHED && !getUserRole(userCharacter,'财务')"><span class="blue-txt cuspoint"
                                                                       @click="canSource(item.OrdeID,item.Code,index)">撤销货源</span>
                         </p>
-                        <p class="mt-6" v-if="item.Status == 3 && !getUserRole(userCharacter,'财务')"><span class="blue-txt cuspoint"
+                        <p class="mt-6" v-if="item.Status == orderStatus.ORDER_PENDING && !getUserRole(userCharacter,'财务')"><span class="blue-txt cuspoint"
                                                                       @click="canSource(item.OrdeID,item.Code,index)">撤销货源</span>
                         </p>
-                        <p class="mt-6" v-if="item.Status == 4 && !getUserRole(userCharacter,'财务')"><span class="blue-txt cuspoint"
+                        <p class="mt-6" v-if="item.Status == orderStatus.ORDER_CONFIRMED && !getUserRole(userCharacter,'财务')"><span class="blue-txt cuspoint"
                                                                       @click="cancelOrder(item.OrdeID,item.Code,index)">取消运单</span>
                         </p>
                         <p class="mt-6"
-                           v-if="item.Status == 4 && item.Grab.CrowdType == 3 && item.PayResult != 1 && !getUserRole(userCharacter,'财务')">
+                           v-if="item.Status == orderStatus.ORDER_CONFIRMED && item.Grab.CrowdType == 3 && item.PayResult != 1 && !getUserRole(userCharacter,'财务')">
                           <router-link :to="{path: '/payment',query:{orderid: item.OrdeID}}">支付运费</router-link>
                         </p>
-                        <p class="mt-6" v-if="item.Status == 5">
+                        <p class="mt-6" v-if="item.Status == orderStatus.ORDER_SHIPPED">
                           <router-link :to="{path: '/sourceDetails/'+item.OrdeID}">查看物流</router-link>
                         </p>
-                        <p class="mt-6" v-if="item.Status == 6 && (item.Evaluated == 0) && !getUserRole(userCharacter,'财务')"><span class="blue-txt cuspoint"
+                        <p class="mt-6" v-if="item.Status == orderStatus.ORDER_ARRIVED && (item.Evaluated == 0) && !getUserRole(userCharacter,'财务')"><span class="blue-txt cuspoint"
                                                                                                @click="OrderRate(item.OrdeID,item.Grab.CrowdType,item.Grab.Name,index)">评价</span>
                         </p>
-                        <p class="mt-6" v-if="item.Status == -3 && item.Nullifier == 1 && !getUserRole(userCharacter,'财务')"><span class="blue-txt cuspoint"
+                        <p class="mt-6" v-if="item.Status == orderStatus.ORDER_APPLY_CANCEL && item.Nullifier == 1 && !getUserRole(userCharacter,'财务')"><span class="blue-txt cuspoint"
                                                                                               @click="backOrder(item.OrdeID,item.Code,index)">撤回申请</span>
                         </p>
-                        <p class="mt-6" v-if="item.Status == -3 && item.Nullifier == 2 && !getUserRole(userCharacter,'财务')"><span class="blue-txt cuspoint"
+                        <p class="mt-6" v-if="item.Status == orderStatus.ORDER_APPLY_CANCEL && item.Nullifier == 2 && !getUserRole(userCharacter,'财务')"><span class="blue-txt cuspoint"
                                                                                               @click="agreeCancelOrder(item.OrdeID,item.Code,item.Grab.MerchantID,index)">同意申请</span>
                         </p>
-                        <p class="mt-6" v-if="item.Status == -3 && item.Nullifier == 2 && !getUserRole(userCharacter,'财务')"><span class="blue-txt cuspoint"
+                        <p class="mt-6" v-if="item.Status == orderStatus.ORDER_APPLY_CANCEL && item.Nullifier == 2 && !getUserRole(userCharacter,'财务')"><span class="blue-txt cuspoint"
                                                                                               @click="disAgreeCan(item.OrdeID,item.Code,item.Grab.MerchantID,index)">拒绝申请</span>
                         </p>
-                        <p class="mt-6" v-if="(item.Status == -1 || item.Status == 7 || item.Status == -2) && !getUserRole(userCharacter,'财务')">
-                          <router-link :to="{name: 'source',params:{id: item.OrdeID,type: 1}}">重发</router-link>
+                        <p class="mt-6" v-if="(item.Status == orderStatus.ORDER_CLOSED
+                        || item.Status == orderStatus.ORDER_EVALUATION
+                        || item.Status == orderStatus.ORDER_CANCELED) && !getUserRole(userCharacter,'财务')">
+                          <router-link :to="{name: 'source',params:{id: item.OrdeID,type: 1}}">再发一单</router-link>
                         </p>
-                        <p class="mt-6" v-if="item.Status == -4"><span class="blue-txt cuspoint" @click="serviceTip">联系客服</span>
+                        <p class="mt-6" v-if="item.Status == orderStatus.ORDER_REJECT_CANCEL"><span class="blue-txt cuspoint" @click="serviceTip">联系客服</span>
                         </p>
                         <p class="mt-6">
                           <router-link :to="{path: '/sourceDetails/'+item.OrdeID}">查看详情</router-link>
@@ -182,7 +170,8 @@
                     </div>
                     <!--物流信息 end-->
                     <!--最低价信息 start-->
-                    <div class="main-top main-top1" v-if="item.Parttern == 2 && item.Status == 2">
+                    <div class="main-top main-top1" v-if="item.Parttern == 2 && item.Status == orderStatus.ORDER_PUBLISHED">
+
                       <div class="top-left">
                         <div class="info">
                           <ul>
@@ -194,15 +183,19 @@
                         </div>
                       </div>
                       <div class="btn-box">
-                        <router-link :to="{path: '/sourceDetails/'+item.OrdeID}">查看报价</router-link>
+                        <router-link :to="{path: '/carrier/'+item.OrdeID}">查看报价</router-link>
                       </div>
                     </div>
                     <!--最低价信息 end-->
 
                     <!--承运人信息 start-->
                     <div class="main-footer"
-                         v-if="!(item.Status == undefined || item.Status == '' || item.Status == 1 || item.Status == 2 || item.Status == -1)">
-                      <div class="footer-left" v-if="(item.Status!=1 || item.Status!=2) && item.Grab">
+                         v-if="!(item.Status == undefined
+                         || item.Status == ''
+                         || item.Status == orderStatus.ORDER_RELEASED
+                         || item.Status == orderStatus.ORDER_PUBLISHED
+                         || item.Status == orderStatus.ORDER_CLOSED)">
+                      <div class="footer-left" v-if="(item.Status != orderStatus.ORDER_RELEASED || item.Status != orderStatus.ORDER_PUBLISHED) && item.Grab">
                          <div class="use-box">
                           <div class="box-left">
                             <div class="">
@@ -222,7 +215,7 @@
                           <div class="box-right">
                             <p class="mb-10"><span class="gray-txt">联系电话：</span>{{item.Grab.Phone}}</p>
                             <p v-if="item.Parttern == 1"><span class="gray-txt">抢单时间：</span>{{item.GrabTime.slice(0,19)}}</p>
-                            <p v-if="item.Parttern == 2 && item.Status != 1 && item.Status != 2"><span class="gray-txt name">运费：</span> <span class="orange-text">￥{{item.Freight}} </span></p>
+                            <p v-if="item.Parttern == 2 && item.Status != orderStatus.ORDER_RELEASED && item.Status != orderStatus.ORDER_PUBLISHED"><span class="gray-txt name">运费：</span> <span class="orange-text">￥{{item.Freight}}</span><span v-if="item.Grab.CrowdType == 2" class="bubble-text" @click="showQuotedExplain"><i class="el-icon-warning"></i></span></p>
                           </div>
                         </div>
                         <!-- <div class="user mt4">
@@ -245,19 +238,18 @@
                       <div>
                         <p class="cuspoint"><span class="blue-txt" @click="showInfo(item.Grab.MerchantID)">查看资质</span>
                         </p>
-                        <p v-if="item.Status == 3 && item.Parttern == 1 && !getUserRole(userCharacter,'财务')" class="mt-6"><span class="blue-txt cuspoint"
+                        <p v-if="item.Status == orderStatus.ORDER_PENDING && item.Parttern == 1 && !getUserRole(userCharacter,'财务')" class="mt-6"><span class="blue-txt cuspoint"
                                                                                             @click="checked(item.OrdeID,item.Code,item.Grab.MerchantID,item.Way,index)">选他承运</span>
                         </p>
-                        <p v-if="item.Status == 3 && item.Parttern == 2 && !getUserRole(userCharacter,'财务')" class="mt-6"><span class="blue-txt cuspoint"
-                                                                      @click="CancelCarrier(item.OrdeID,index)">取消承运</span>
-                        </p>
+                        <router-link tag="p" :to="{path: '/carrier/'+item.OrdeID}" v-if="item.Status == orderStatus.ORDER_PENDING && item.Parttern == 2 && !getUserRole(userCharacter,'财务')" class="mt-6"><span class="blue-txt cuspoint">取消承运</span>
+                        </router-link>
                       </div>
                     </div>
                     <!--承运人信息 end-->
 
                     <!-- 状态图标 -->
-                    <span class="status-icon" v-if="item.Status == -1"><img src="../../assets/images/close.png"></span>
-                    <span class="status-icon" v-if="item.Status ==  6"><img
+                    <span class="status-icon" v-if="item.Status == orderStatus.ORDER_CLOSED"><img src="../../assets/images/close.png"></span>
+                    <span class="status-icon" v-if="item.Status == orderStatus.ORDER_ARRIVED"><img
                       src="../../assets/images/finished.png"></span>
                   </div>
                 </li>
@@ -514,6 +506,9 @@
       <img width="100%" :src="dialogImageUrl" alt="">
     </el-dialog>
     <!-- 图片放大弹框 end -->
+    <!-- 运费价格解说弹框 start -->
+    <quoted-explain-dialog :dialog="quotedExplainDialog"></quoted-explain-dialog>
+    <!-- 运费价格解说弹框 end -->
   </div>
 </template>
 
@@ -540,20 +535,27 @@
     rate1,
     rate2,
     rate4,
+    SendAgain // 重发接口
   } from 'api/getData'
   import { getUserRole } from 'config/myUtils';
+  import { orderStatus } from 'config/statusManager';
+  import leftMenuRouterHome from 'components/leftMenuRouter/leftMenuRouterHome'; // 左侧
+  import headMenuRouter from 'components/headMenuRouter/headMenuRouter'; // 头部
+  import quotedExplainDialog from 'components/quotedExplainDialog/quotedExplainDialog'; // 运费价格解说
+  import m_login from '@/mixins/m_login'
   export default {
+    mixins: [m_login],
     data() {
       return {
+        quotedExplainDialog: { visible: false }, // 判断解说弹框是否显示
         errorImg: 'this.src="' + require('../../assets/images/errorimg.png') + '"',
         upLoadImgList: [], // 评价图片上传列表
         dialogImageUrl: '', // 评价图片上传当前点击路径
         dialogVisible: false, // 评价图片放大dialog
+        orderStatus,
         imgUrl,
         imgPostUrl,
         picIndex: 0,//默认显示的图片
-        userCharacter: this.$cookie.get("MemberDutiesID"),
-        usersType: this.$cookie.get("MemberCrowd"),
         loading: false,
         rate: {//评价参数
           Name: '',
@@ -568,9 +570,7 @@
           Black: false
         },
         getOrderType: ' ',//接单模式
-        dialogImageUrl: '',
         ratePic: [],//评价图片
-        dialogVisible: false,//是否显示评价大图弹出层
         fromAddress: [],//收货地
         toAddress: [],//发货地
         timeRange: [],//发布时间
@@ -582,7 +582,7 @@
         isShowCancel1: false,//是否显示取消弹出层
         isShowCancel2: false,//是否显示取消弹出层
         address: address.area,//城市数据
-        orderStatus: 999,//订单状态
+        currentOrderStatus: 999,//订单状态
         CarType: 999,//货运类型
         listData: [],//订单列表
         companyInfo: {//资质信息
@@ -601,11 +601,38 @@
           PageSize: 10,
           TotalRecords: 0,
           index: ''
+        },
+        orderListStatus: {
+          '全部' :    999,
+          '待确认' :  orderStatus.ORDER_PENDING,
+          '已发布' :  orderStatus.ORDER_PUBLISHED,
+          '待发货' :  orderStatus.ORDER_CONFIRMED,
+          '运输中' :  orderStatus.ORDER_SHIPPED,
+          '已到达' :  orderStatus.ORDER_ARRIVED,
+          '已评价' :  orderStatus.ORDER_EVALUATION,
+          '取消中' :  orderStatus.ORDER_APPLY_CANCEL,
+          '拒绝取消' : orderStatus.ORDER_REJECT_CANCEL,
+          '已关闭' :  orderStatus.ORDER_CLOSED,
+          '待发布' :  orderStatus.ORDER_RELEASED
         }
       }
     },
     methods: {
       getUserRole: getUserRole,
+      async SendAgain (orderID, code, index) { // 重发操作
+        let params = {OrderID: orderID}
+        this.loading = true;
+        const { data: { ResultCode, ResultValue, ResultMessage, TotalRecords }} = await SendAgain(params);
+        this.loading = false;
+        if (ResultCode === '000000') {
+          this.$message.success({message: ResultMessage});
+          this.handleCurrentChange(1); // 重发后刷新列表
+        }
+      },
+      showQuotedExplain () { // 显示报价解说弹框
+        this.quotedExplainDialog.visible = true
+      },
+
       rateReset (data) { // 重置评价表单
         this.rate.Name = '';
         this.rate.Attitude = 5;
@@ -689,12 +716,12 @@
         } else {
           this.req.ToCity = ' ';
         }
-        if (this.timeRange.length > 0) {
+        if (this.timeRange !== null && this.timeRange.length > 0) {
           this.req.CreateStart = this.timeRange[0];
           this.req.CreateEnd = this.timeRange[1];
         } else {
-          this.req.CreateStart = ' ';
-          this.req.CreateEnd = ' ';
+          this.req.CreateStart = '1970-01-01';
+          this.req.CreateEnd = this.getTodayDate();
         }
         this.req.MemberID = this.$cookie.get('MemberID');
         let res = await getSourceList(this.req);
@@ -709,9 +736,13 @@
           this.TotalRecords = 0;
         }
       },
+      getTodayDate(){
+        let date = new Date();
+        return [date.getFullYear(), date.getMonth() + 1, date.getDate()].join('-');
+      },
       //搜索
       search() {
-        this.getDataList();
+        this.handleCurrentChange(1);
       },
       //分页
       handleCurrentChange(val) {
@@ -796,9 +827,7 @@
           }).then(res => {
             if (res.data.ResultCode === '000000') {
               this.$message.success({message: res.data.ResultMessage});
-              this.getDataList();
-              // this.listData[index].Status = 2;
-              // this.listData[index].StatusName = '已发布';
+              this.handleCurrentChange(1);
             }
           });
         })
@@ -822,8 +851,7 @@
           }).then(res => {
             if (res.data.ResultCode === '000000') {
               this.$message.success({message: res.data.ResultMessage});
-              this.listData[index].Status = -1;
-              this.listData[index].StatusName = '已关闭';
+              this.handleCurrentChange(1);
             }
           })
         })
@@ -846,8 +874,7 @@
           }).then(res => {
             if (res.data.ResultCode === '000000') {
               this.$message.success({message: res.data.ResultMessage});
-              this.listData[index].Status = -1;
-              this.listData[index].StatusName = '已关闭';
+              this.handleCurrentChange(1);
             }
           })
         })
@@ -877,9 +904,7 @@
           }).then(res => {
             if (res.data.ResultCode === '000000') {
               this.$message.success({message: res.data.ResultMessage});
-              this.listData[index].Status = -3;
-              this.listData[index].Nullifier = 1;
-              this.listData[index].StatusName = '取消中';
+              this.handleCurrentChange(1);
             }
           })
         })
@@ -897,8 +922,7 @@
           }).then(res => {
             if (res.data.ResultCode === '000000') {
               this.$message.success({message: res.data.ResultMessage});
-              this.listData[index].Status = 4;
-              this.listData[index].StatusName = '待发货';
+              this.handleCurrentChange(1);
             }
           })
         })
@@ -917,8 +941,7 @@
           }).then(res => {
             if (res.data.ResultCode === '000000') {
               this.$message.success({message: res.data.ResultMessage});
-              this.listData[index].Status = -2;
-              this.listData[index].StatusName = '已取消';
+              this.handleCurrentChange(1);
             }
           })
         })
@@ -937,8 +960,7 @@
           }).then(res => {
             if (res.data.ResultCode === '000000') {
               this.$message.success({message: res.data.ResultMessage});
-              this.listData[index].Status = -4;
-              this.listData[index].StatusName = '拒绝取消';
+              this.handleCurrentChange(1);
             }
           })
         })
@@ -954,8 +976,7 @@
             .then(res => {
               if (res.data.ResultCode === '000000') {
                 this.$message.success({message: res.data.ResultMessage});
-                this.listData[index].Status = 2;
-                this.listData[index].StatusName = '已发布';
+                this.handleCurrentChange(1);
               }
             });
         })
@@ -996,9 +1017,7 @@
             rate1(this.rate).then(res => {
               if (res.data.ResultCode === '000000') {
                 this.$message.success({message: res.data.ResultMessage});
-                // this.listData[this.rate.index].Status = 7;
-                // this.listData[this.rate.index].StatusName = '已评价';
-                this.getDataList(); // 重新拉取数据
+                this.handleCurrentChange(1); // 重新拉取数据采用分页获取第一页，避免分页bug
                 this.isShowRate = false;
               }
             })
@@ -1006,9 +1025,7 @@
             rate2(this.rate).then(res => {
               if (res.data.ResultCode === '000000') {
                 this.$message.success({message: res.data.ResultMessage});
-                // this.listData[this.rate.index].Status = 7;
-                // this.listData[this.rate.index].StatusName = '已评价';
-                this.getDataList(); // 重新拉取数据
+                this.handleCurrentChange(1);
                 this.isShowRate = false;
               }
             })
@@ -1016,9 +1033,7 @@
             rate4(this.rate).then(res => {
               if (res.data.ResultCode === '000000') {
                 this.$message.success({message: res.data.ResultMessage});
-                // this.listData[this.rate.index].Status = 7;
-                // this.listData[this.rate.index].StatusName = '已评价';
-                this.getDataList(); // 重新拉取数据
+                this.handleCurrentChange(1);
                 this.isShowRate = false;
               }
             })
@@ -1039,17 +1054,12 @@
       },
     },
     created() {
-      if (this.$cookie.get("MemberID")) {
-        if (this.usersType == 1) {
-          this.getDataList();
-        } else {
-          this.$message.error({message: '身份类型错误！'});
-          this.$router.push('/finaindex');
-        }
-      } else {
-        this.$message.info({message: '你尚未登录，请登录！'});
-        this.$router.push('/');
-      }
+      let isLogin = this.checkLoginStatus();
+      if(!isLogin) return;
+      let _ = this;
+      let identityPass = this.checkLoginIdentity(1, '/finaindex', function(){
+          _.getDataList();
+      });
     },
     computed: {
        // 设置默认显示图片的index
@@ -1063,7 +1073,7 @@
         this.req.Parttern = newVal;
         this.handleCurrentChange(1);
       },
-      orderStatus(newVal) {
+      currentOrderStatus(newVal) {
         this.req.Status = newVal;
         this.handleCurrentChange(1);
       },
@@ -1075,7 +1085,10 @@
     components: {
       headTop,
       dropDown,
-      foot
+      foot,
+      leftMenuRouterHome, // 左侧导航
+      headMenuRouter, // 左侧
+      quotedExplainDialog // 解说弹框
       // AMap
     }
   }
@@ -1341,8 +1354,19 @@
     .box-left
       float: left
       width: 400px
+      .fl
+        span
+          display: block
+          padding-top: 1px
     .box-right
       float: left
+      .mb-10:first-child
+        padding-top: 1px
+      .bubble-text
+        cursor: pointer
+        color: $blue
+        padding-top: 1px
+        margin-left: 5px
     img
       vertical-align: middle
       margin: -4px 5px 0 0

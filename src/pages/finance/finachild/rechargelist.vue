@@ -91,9 +91,40 @@ export default {
     } else {
       this.recharge.ToDate = this.gettimes();
       this.RechargeGetPage();
+      this.showRechargeDialog(); // 弹出操作
     }
   },
   methods: {
+    // 判断是否显示弹窗
+    showRechargeDialog () {
+      let query = this.$route.query
+      console.log(query)
+      switch (query.payType) {
+        case undefined:
+        break
+        case '1':
+        this.$message({
+          message: '充值成功',
+          type: 'success'
+        })
+        break
+        case '2':
+        this.$message({
+          message: '充值成功',
+          type: 'success'
+        })
+        break
+        case '3':
+        let type = query.Cpcn == 2 ? 'success' : 'error';
+        this.$message({
+          message: query.Describe,
+          type: type
+        })
+        break
+        default:
+        break
+      }
+    },
     //分页
     handleCurrentChange(val) {
       this.recharge.PageIndex = val;

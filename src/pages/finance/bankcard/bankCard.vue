@@ -3,13 +3,13 @@
     <head-top class="header">
       <span class="title" slot="index">{{userType == 1?'货主':'物流公司'}}-工作台</span>
       <div class="header-center" slot="menu">
-        <headMenuRouter :userType="userType" activeLink="finaindex"></headMenuRouter>
+        <head-menu-router activeLink="finaindex"></head-menu-router>
       </div>
       <drop-down slot="info"></drop-down>
     </head-top>
     <div class="content clear">
       <div class="content-left">
-        <leftMenuRouter :userType="userType" activeLink="bankcard"></leftMenuRouter>
+        <left-menu-router-fina activeLink="bankcard"></left-menu-router-fina>
       </div>
       <div class="content-right">
         <div class="title-box"><span class="title-name">银行卡管理</span></div>
@@ -26,8 +26,8 @@
   import headTop from "components/header/head";
   import dropDown from "components/header/children/dropdown";
   import foot from "components/footer/foot";
-  import headMenuRouter from '../headmenurouter.vue';
-  import leftMenuRouter from '../leftmenurouter.vue';
+  import headMenuRouter from 'components/headMenuRouter/headMenuRouter'; // 头部
+  import leftMenuRouterFina from 'components/leftMenuRouter/leftMenuRouterFina'; // 左侧
   export default {
     data() {
       return {
@@ -56,7 +56,7 @@
       foot,
       dropDown,
       headMenuRouter,
-      leftMenuRouter
+      leftMenuRouterFina
     }
   };
 </script>

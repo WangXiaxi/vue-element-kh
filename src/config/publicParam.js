@@ -1,4 +1,4 @@
-export const Version = '1.0.6';
+export const Version = '1.0.62';
 export const carManage = [
   //车长列表
   {

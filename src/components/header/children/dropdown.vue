@@ -42,6 +42,9 @@
         </el-dropdown-item>
       </el-dropdown-menu>
     </el-dropdown>
+    <!-- 蒙层 1.0.62 物流公司并且用户审核通过 start -->
+    <special-line-m-c v-if="checkStatue == 2 && userType == 2"></special-line-m-c>
+    <!-- 蒙层 1.0.62 end -->
   </div>
 </template>
 
@@ -52,6 +55,9 @@ import { imgUrl } from "api/env";
 import cookie from "cookiejs";
 import { removeStore } from "config/myUtils";
 import { mapGetters, mapMutations } from 'vuex';
+import specialLineMC from "components/mongolianLayer/specialLineMC";
+import { dropOut } from "config/dropOut";
+
 
 export default {
   data() {
@@ -75,6 +81,7 @@ export default {
   methods: {
     //退出
     exit() { // 登录页有清空数据操作
+      dropOut(); // 清除各种数据
       this.$router.push("/");
     },
     ...mapMutations({
@@ -90,81 +97,40 @@ export default {
             this.userInfo = res.data.ResultValue;
             this.SET_avatar(res.data.ResultValue.IconUrl);
             this.SET_userInfo(res.data.ResultValue);
-            if (window.location.href.indexOf("localhost") > -1) {
-              cookie("MemberCrowd", String(res.data.ResultValue.Crowd), {
-                expires: 30
-              });
-              cookie(
-                "MemberMerchantID",
-                String(res.data.ResultValue.MerchantID),
-                {
-                  expires: 30
-                }
-              );
-              cookie("MemberID", String(res.data.ResultValue.MemberID), {
-                expires: 30
-              });
-              cookie("Mobile", String(res.data.ResultValue.Mobile), {
-                expires: 30
-              });
-              cookie(
-                "MemberDutiesID",
-                String(res.data.ResultValue.Duties),
-                {
-                  expires: 30
-                }
-              );
-              cookie(
-                "MerchantStatus",
-                String(res.data.ResultValue.AuditValue),
-                {
-                  expires: 30
-                }
-              );
-            } else {
-              cookie("MemberCrowd", String(res.data.ResultValue.Crowd), {
+            let host = window.location.href.indexOf("sdhwlw.com") > -1 ? 'sdhwlw.com' : window.location.hostname;
+            cookie("MemberCrowd", String(res.data.ResultValue.Crowd), {
+              expires: 30,
+              path: "/",
+              domain: host
+            });
+            cookie("MemberMerchantID", String(res.data.ResultValue.MerchantID), {
                 expires: 30,
                 path: "/",
-                domain: "sdhwlw.com"
-              });
-              cookie(
-                "MemberMerchantID",
-                String(res.data.ResultValue.MerchantID),
-                {
-                  expires: 30,
-                  path: "/",
-                  domain: "sdhwlw.com"
-                }
-              );
-              cookie("MemberID", String(res.data.ResultValue.MemberID), {
+                domain: host
+              }
+            );
+            cookie("MemberID", String(res.data.ResultValue.MemberID), {
+              expires: 30,
+              path: "/",
+              domain: host
+            });
+            cookie("Mobile", String(res.data.ResultValue.Mobile), {
+              expires: 30,
+              path: "/",
+              domain: host
+            });
+            cookie("MemberDutiesID", String(res.data.ResultValue.Duties), {
                 expires: 30,
                 path: "/",
-                domain: "sdhwlw.com"
-              });
-              cookie("Mobile", String(res.data.ResultValue.Mobile), {
+                domain: host
+              }
+            );
+            cookie("MerchantStatus", String(res.data.ResultValue.AuditValue), {
                 expires: 30,
                 path: "/",
-                domain: "sdhwlw.com"
-              });
-              cookie(
-                "MemberDutiesID",
-                String(res.data.ResultValue.Duties),
-                {
-                  expires: 30,
-                  path: "/",
-                  domain: "sdhwlw.com"
-                }
-              );
-              cookie(
-                "MerchantStatus",
-                String(res.data.ResultValue.AuditValue),
-                {
-                  expires: 30,
-                  path: "/",
-                  domain: "sdhwlw.com"
-                }
-              );
-            }
+                domain: host
+              }
+            );
           }
         })
         .catch(err => {
@@ -179,6 +145,9 @@ export default {
       this.$message.info({ message: "你尚未登录，请登录！" });
       this.$router.push("/");
     }
+  },
+  components: {
+    specialLineMC
   }
 };
 </script>

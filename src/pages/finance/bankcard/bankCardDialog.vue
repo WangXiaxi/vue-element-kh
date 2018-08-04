@@ -52,7 +52,6 @@
           } else if(_.dialog.type === 'edit'){
             result = await updateBankcard(this.bankInfo);
           }
-
           if (result.data.ResultCode !== '000000') {
             this.$message({
               type: 'error',

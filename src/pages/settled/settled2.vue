@@ -2,25 +2,14 @@
   <div class="settled-container">
     <head-top>
       <span class="title" slot="settled">{{userType === '1'?'货主':'物流公司'}}-工作台</span>
-      <!--<router-link to="/" class="blue-btn-p" @click="edit" slot="exit">退出</router-link>-->
       <div class="header-center" slot="menu">
-        <ul>
-          <router-link tag="li" to="/source" v-if="userType == 1">首页</router-link>
-          <router-link tag="li" to="/add" v-else>首页</router-link>
-          <router-link tag="li" to="/finaindex">财务管理</router-link>
-          <router-link tag="li" to="/account" class="active">账户信息</router-link>
-        </ul>
+        <head-menu-router activeLink="account"></head-menu-router>
       </div>
       <drop-down slot="info"></drop-down>
     </head-top>
     <div class="settled">
-      <div class="settled-left">
-        <ul>
-          <router-link to="/account" tag="li">账户安全</router-link>
-          <router-link to="/subAccount" tag="li" v-if="getUserRole(userCharacter,'管理')">会员用户管理</router-link>
-          <router-link :to="userType == 1 ? '/blacklistFactory' : '/blacklistLogistics'" tag="li">黑名单管理</router-link>
-          <router-link to="/settled2" tag="li" class="active">入驻信息</router-link>
-        </ul>
+      <div class="content-left">
+        <left-menu-router-account activeLink="settle"></left-menu-router-account>
       </div>
       <div class="settled-right">
         <p class="title"><span class="name">入驻信息</span> <i
@@ -155,12 +144,17 @@ import {
 } from "api/getData";
 import { imgPostUrl, imgUrl } from "api/env";
 import { getUserRole } from 'config/myUtils';
+import headMenuRouter from 'components/headMenuRouter/headMenuRouter'; // 头部
+import leftMenuRouterAccount from 'components/leftMenuRouter/leftMenuRouterAccount'; // 左侧
+import { mapGetters, mapMutations } from 'vuex';
+
 export default {
   data() {
     return {
       userCharacter: this.$cookie.get("MemberDutiesID"),
       picUrl: "", //显示图片
       userType: this.$cookie.get("MemberCrowd"), //身份类型 1.货主 2.物流公司
+      MemberID: this.$cookie.get("MemberID"),
       checkedStatus: 0, //入驻状态
       address: address.area, //省市区数据
       url: imgPostUrl, //图片上传地址
@@ -222,14 +216,14 @@ export default {
         this.enterData.CityID,
         this.enterData.CountyID
       ] = value;
-      setStore("enterData", JSON.stringify(this.enterData));
+      this.SET_settledEnterData(JSON.stringify(this.enterData));
     },
     // 本地保存填写数据
     validate(prop) {
       if (this.$cookie.get("MemberMerchantID")) {
         return;
       } else {
-        setStore("enterData", JSON.stringify(this.enterData));
+        this.SET_settledEnterData(JSON.stringify(this.enterData));
       }
     },
     //营业执照上传
@@ -239,7 +233,7 @@ export default {
           if (res.data.ResultCode === "000000" && res.data.ResultValue) {
             this.picUrl = imgUrl + res.data.ResultValue;
             this.enterData.LicensePicture = res.data.ResultValue;
-            setStore("enterData", JSON.stringify(this.enterData));
+            this.SET_settledEnterData(JSON.stringify(this.enterData));
           }
         })
         .catch(err => {
@@ -259,7 +253,7 @@ export default {
             let resData;
             if (this.userType === "2") {
               //物流公司提交
-              setStore("enterData", JSON.stringify(this.enterData));
+              this.SET_settledEnterData(JSON.stringify(this.enterData));
               this.$router.push("/addCar2");
             } else if (this.userType === "1") {
               //货主提交
@@ -278,7 +272,7 @@ export default {
               this.userType == 1
             ) {
               this.$message.success({ message: resData.data.ResultMessage });
-              removeStore("enterData");
+              this.SET_settledEnterData('');
               cookie("MemberMerchantID", resData.data.ResultValue, {
                 expires: 30,
                 path: "/",
@@ -300,20 +294,23 @@ export default {
         }
       }
     },
-    //退出
-    exit() {
-      this.$cookie.delete("MemberID");
-      this.$cookie.delete("MemberCrowd");
-      this.$cookie.delete("MemberMerchantID");
-      this.$router.push("/");
-    }
+    ...mapMutations({
+      SET_settledEnterData: 'SET_settledEnterData',
+      SET_settledCardData: 'SET_settledCardData'
+    })
   },
   components: {
     headTop,
     foot,
-    dropDown
+    dropDown,
+    headMenuRouter,
+    leftMenuRouterAccount
   },
   created() {
+    if (this.settledEnterData.indexOf(this.MemberID)  === -1) { // 判断是否时同一用户不是的话清空
+      this.SET_settledCardData('');
+      this.SET_settledEnterData('');
+    }
     if (this.$cookie.get("MemberID")) {
       this.userType = this.$cookie.get("MemberCrowd");
       //获取入驻信息
@@ -354,8 +351,8 @@ export default {
             console.log(err);
           });
       } else {
-        if (getStore("enterData")) {
-          this.enterData = JSON.parse(getStore("enterData"));
+        if (this.settledEnterData) {
+          this.enterData = JSON.parse(this.settledEnterData);
           if (this.enterData.LicensePicture) {
             this.picUrl = imgUrl + this.enterData.LicensePicture;
           }
@@ -398,7 +395,10 @@ export default {
       } else {
         return true;
       }
-    }
+    },
+    ...mapGetters([
+      'settledEnterData'
+    ])
   }
 };
 </script>

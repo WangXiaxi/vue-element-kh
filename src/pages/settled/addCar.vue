@@ -175,6 +175,7 @@ import {
   getCarLongList
 } from "api/getData";
 import { imgPostUrl, imgUrl } from "api/env";
+import { mapGetters, mapMutations } from 'vuex';
 
 export default {
   data() {
@@ -186,6 +187,7 @@ export default {
           }
         },
       userType: this.$cookie.get("MemberCrowd"),
+      MemberID: this.$cookie.get("MemberID"),
       CarLongList: carManage,
       ModelList: [], //车型数据
       restaurants: [], //列表数据
@@ -250,7 +252,7 @@ export default {
       if (this.$cookie.get("MerchantStatus") != 0) {
         return;
       } else {
-        setStore("carData", JSON.stringify(this.carData));
+        this.SET_settledCardData(JSON.stringify(this.carData));
       }
     },
     //行驶证上传
@@ -260,7 +262,7 @@ export default {
           if (res.data.ResultCode === "000000" && res.data.ResultValue) {
             this.RunPic = imgUrl + res.data.ResultValue;
             this.carData.RunPicture = res.data.ResultValue;
-            setStore("carData",JSON.stringify(this.carData));
+            this.SET_settledCardData(JSON.stringify(this.carData));
           }
         })
         .catch(err => {
@@ -275,7 +277,7 @@ export default {
           if (res.data.ResultCode === "000000" && res.data.ResultValue) {
             this.DriverPic = imgUrl + res.data.ResultValue;
             this.carData.DrivePicture = res.data.ResultValue;
-            setStore("carData",JSON.stringify(this.carData));
+            this.SET_settledCardData(JSON.stringify(this.carData));
           }
         })
         .catch(err => {
@@ -290,7 +292,7 @@ export default {
           if (res.data.ResultCode === "000000" && res.data.ResultValue) {
             this.HeaderPic = imgUrl + res.data.ResultValue;
             this.carData.TruckPicture = res.data.ResultValue;
-            setStore("carData",JSON.stringify(this.carData));
+            this.SET_settledCardData(JSON.stringify(this.carData));
           }
         })
         .catch(err => {
@@ -305,7 +307,7 @@ export default {
           if (res.data.ResultCode === "000000" && res.data.ResultValue) {
             this.InsurancePic = imgUrl + res.data.ResultValue;
             this.carData.Insurance = res.data.ResultValue;
-            setStore("carData",JSON.stringify(this.carData));
+            this.SET_settledCardData(JSON.stringify(this.carData));
           }
         })
         .catch(err => {
@@ -323,17 +325,17 @@ export default {
         if (valid) {
           this.hasCommit = true;
           this.checkedStatus = 1;
-          this.carData.MemberID = this.$cookie.get("MemberID");
+          this.carData.MemberID = this.MemberID;
           this.carData.Merchant = this.$cookie.get("MemberMerchantID");
           let resData;
           if (this.isFirst) {
-            let enterModel = JSON.parse(getStore("enterData"));
+            let enterModel = JSON.parse(this.settledEnterData);
             for(let item in enterModel){
               this.carData[item] = enterModel[item];
             }
             resData = await logisticsEnter(this.carData);
           } else {
-            let enterModel = JSON.parse(getStore("enterData"));
+            let enterModel = JSON.parse(this.settledEnterData);
             for(let item in enterModel){
               this.carData[item] = enterModel[item];
             }
@@ -342,7 +344,7 @@ export default {
           if (resData.data.ResultCode === "000000") {
             this.$message.success({ message: resData.data.ResultMessage });
             this.checkedStatus = 1;
-            removeStore("carData");
+            this.SET_settledCardData('');
             cookie("MemberMerchantID", resData.data.ResultValue, {
               expires: 30,
               path: "/",
@@ -359,35 +361,10 @@ export default {
         this.hasCommit = false;
       });
     },
-    //退出
-    // edit() {
-    //   cookie("MemberCrowd", "null", {
-    //     expires: 0,
-    //     path: "/",
-    //     domain: "sdhwlw.com"
-    //   });
-    //   cookie("MemberMerchantID", "null", {
-    //     expires: 0,
-    //     path: "/",
-    //     domain: "sdhwlw.com"
-    //   });
-    //   cookie("MemberID", "null", {
-    //     expires: 0,
-    //     path: "/",
-    //     domain: "sdhwlw.com"
-    //   });
-    //   cookie("Mobile", "null", {
-    //     expires: 0,
-    //     path: "/",
-    //     domain: "sdhwlw.com"
-    //   });
-    //   cookie("IconUrl", "null", {
-    //     expires: 0,
-    //     path: "/",
-    //     domain: "sdhwlw.com"
-    //   });
-    //   this.$router.push("/");
-    // }
+    ...mapMutations({
+      SET_settledCardData: 'SET_settledCardData',
+      SET_settledEnterData: 'SET_settledEnterData'
+    })
   },
   computed: {
     canSubmit() {
@@ -396,63 +373,71 @@ export default {
       } else {
         return true;
       }
-    }
+    },
+    ...mapGetters([
+      'settledEnterData',
+      'settledCardData'
+    ])
   },
   created() {
-    if (this.$cookie.get("MemberID")) {
-      this.carData.MemberID = this.$cookie.get("MemberID");
+    if (this.settledEnterData.indexOf(this.MemberID)  === -1) { // 判断是否时同一用户不是的话清空
+      this.SET_settledCardData('');
+      this.SET_settledEnterData('');
+    }
+    if (this.MemberID) {
+      this.carData.MemberID = this.MemberID;
       if (this.$cookie.get("MerchantStatus") != 0) {
           if(this.$cookie.get("MerchantStatus") == 2){
             this.$router.push("/settled2");
           } else {
             if (this.$cookie.get("MemberCrowd") != 2) {
-            this.$message.error({ message: "身份类型错误！" });
-            this.$router.push("/settled");
-        } else if (this.$cookie.get("MemberCrowd") == 2) {
-          //获取车辆信息
-          getCarInfo({ MemberID: this.$cookie.get("MemberID") })
-            .then(res => {
-              if (res.data.ResultCode === "000000" && res.data.ResultValue) {
-                let Data = res.data.ResultValue;
-                this.isFirst = false;
-                this.checked = true;
-                this.checkedStatus = Data.TrucStatus;
-                if(Data.TrucRunPicture){
-                  this.RunPic = imgUrl + Data.TrucRunPicture;
-                  this.carData.RunPicture = Data.TrucRunPicture;
-                }
-                if(Data.TrucDrivePicture){
-                  this.DriverPic = imgUrl + Data.TrucDrivePicture;
-                  this.carData.DrivePicture = Data.TrucDrivePicture;
-                }
-                if(Data.TrucPicture){
-                  this.HeaderPic = imgUrl + Data.TrucPicture;
-                  this.carData.TruckPicture = Data.TrucPicture;
-                }
-                if(Data.TrucInsurance){
-                  this.InsurancePic = imgUrl + Data.TrucInsurance;
-                  this.carData.Insurance = Data.TrucInsurance;
-                }
-                this.carData.Merchant = Data.TrucMerchant;
-                this.carData.TruckCode = Data.TrucCode;
-                this.carData.Expire = Data.TrucExpire;
-                this.carData.TruckLong = String(Data.TrucLong);
-                this.carData.TruckModel = Data.TrucModel;
-                this.carData.TruckLoad = Data.TrucLoad;
-                if( Data.TrucStatus == 2){
-                  this.$router.push("/settled2");
-                }
+              this.$message.error({ message: "身份类型错误！" });
+              this.$router.push("/settled");
+            } else if (this.$cookie.get("MemberCrowd") == 2) {
+              //获取车辆信息
+              getCarInfo({ MemberID: this.$cookie.get("MemberID") })
+                .then(res => {
+                  if (res.data.ResultCode === "000000" && res.data.ResultValue) {
+                    let Data = res.data.ResultValue;
+                    this.isFirst = false;
+                    this.checked = true;
+                    this.checkedStatus = Data.TrucStatus;
+                    if(Data.TrucRunPicture){
+                      this.RunPic = imgUrl + Data.TrucRunPicture;
+                      this.carData.RunPicture = Data.TrucRunPicture;
+                    }
+                    if(Data.TrucDrivePicture){
+                      this.DriverPic = imgUrl + Data.TrucDrivePicture;
+                      this.carData.DrivePicture = Data.TrucDrivePicture;
+                    }
+                    if(Data.TrucPicture){
+                      this.HeaderPic = imgUrl + Data.TrucPicture;
+                      this.carData.TruckPicture = Data.TrucPicture;
+                    }
+                    if(Data.TrucInsurance){
+                      this.InsurancePic = imgUrl + Data.TrucInsurance;
+                      this.carData.Insurance = Data.TrucInsurance;
+                    }
+                    this.carData.Merchant = Data.TrucMerchant;
+                    this.carData.TruckCode = Data.TrucCode;
+                    this.carData.Expire = Data.TrucExpire;
+                    this.carData.TruckLong = String(Data.TrucLong);
+                    this.carData.TruckModel = Data.TrucModel;
+                    this.carData.TruckLoad = Data.TrucLoad;
+                    if( Data.TrucStatus == 2){
+                      this.$router.push("/settled2");
+                    }
+                  }
+                })
+                .catch(err => {
+                  console.log(err);
+                });
               }
-            })
-            .catch(err => {
-              console.log(err);
-            });
-          }
         }
       } else {
-        if (getStore("enterData")) {
-          if(getStore("carData")){
-            let carModel = JSON.parse(getStore("carData"));
+        if (this.settledEnterData) {
+          if (this.settledCardData) {
+            let carModel = JSON.parse(this.settledCardData);
             this.carData = carModel;
             if(carModel.RunPicture){
               this.RunPic = imgUrl + carModel.RunPicture;
@@ -468,9 +453,6 @@ export default {
             }
           }
         } else {
-          this.$message.error({
-            message: "您尚未添加公司信息！请先填写公司信息。"
-          });
           this.$router.push("/settled");
         }
       }

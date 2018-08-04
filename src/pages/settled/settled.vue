@@ -2,19 +2,6 @@
   <div class="settled-container">
     <head-top>
       <span class="title" slot="settled">{{userType === '1'?'货主入驻信息':'物流公司入驻信息'}}</span>
-      <!--<router-link to="/" class="blue-btn-p" @click="edit" slot="exit">退出</router-link>-->
-      <!-- <div class="header-center" slot="menu" v-if="userType == 1">
-        <ul>
-          <router-link tag="li" to="/source">首页</router-link>
-          <router-link tag="li" to="/finaindex">财务管理</router-link>
-          <router-link tag="li" to="/account" class="active">账户信息</router-link>
-        </ul>
-      </div>
-       <div class="header-center" slot="menu" v-if="userType == 2">
-        <ul>
-          <router-link tag="li" to="/finaindex" class="active">返回首页</router-link>
-        </ul>
-      </div> -->
       <drop-down slot="info"></drop-down>
     </head-top>
     <div class="settled">
@@ -134,15 +121,18 @@ import {
   getSelltedInfo,
   logisticsEnterOne,
   editSelltedInfo,
-  editlogistics
+  editlogistics,
+  getUserInfo
 } from "api/getData";
 import { imgPostUrl, imgUrl } from "api/env";
+import { mapGetters, mapMutations } from 'vuex';
 
 export default {
   data() {
     return {
       picUrl: "", //显示图片
       userType: this.$cookie.get("MemberCrowd"), //身份类型 1.货主 2.物流公司
+      MemberID: this.$cookie.get("MemberID"),
       checkedStatus: 0, //入驻状态
       address: address.area, //省市区数据
       url: imgPostUrl, //图片上传地址
@@ -204,14 +194,14 @@ export default {
         this.enterData.CityID,
         this.enterData.CountyID
       ] = value;
-      setStore("enterData", JSON.stringify(this.enterData));
+      this.SET_settledEnterData(JSON.stringify(this.enterData));
     },
     // 本地保存填写数据
     validate(prop) {
       if (this.$cookie.get("MerchantStatus") != 0) {
         return;
       } else {
-        setStore("enterData", JSON.stringify(this.enterData));
+        this.SET_settledEnterData(JSON.stringify(this.enterData));
       }
     },
     //营业执照上传
@@ -221,7 +211,7 @@ export default {
           if (res.data.ResultCode === "000000" && res.data.ResultValue) {
             this.picUrl = imgUrl + res.data.ResultValue;
             this.enterData.LicensePicture = res.data.ResultValue;
-            setStore("enterData", JSON.stringify(this.enterData));
+            this.SET_settledEnterData(JSON.stringify(this.enterData));
           }
         })
         .catch(err => {
@@ -241,7 +231,7 @@ export default {
             let resData;
             if (this.userType === "2") {
               //物流公司提交
-              setStore("enterData",JSON.stringify(this.enterData));
+              this.SET_settledEnterData(JSON.stringify(this.enterData));
               this.$router.push("/addCar");
             } else if (this.userType === "1") {
               //货主提交
@@ -256,7 +246,7 @@ export default {
             this.checkedStatus = 1;
             if (resData && resData.data.ResultCode === "000000" && this.userType == 1) {
               this.$message.success({ message: resData.data.ResultMessage });
-              removeStore("enterData");
+              this.SET_settledEnterData('');
               cookie("MemberMerchantID", resData.data.ResultValue, {
                 expires: 30,
                 path: "/",
@@ -278,13 +268,55 @@ export default {
         }
       }
     },
-    //退出
-    exit() {
-      this.$cookie.delete("MemberID");
-      this.$cookie.delete("MemberCrowd");
-      this.$cookie.delete("MemberMerchantID");
-      this.$router.push("/");
-    }
+    // 执行获取信息
+    getInfo (MerchantStatus) {
+      if(MerchantStatus == 2) {
+        this.$router.push("/settled2");
+      } else {
+        this.enterData.MemberID = this.$cookie.get("MemberID");
+        getSelltedInfo({ MemberID: this.enterData.MemberID })
+          .then(res => {
+            if (res.data.ResultCode == "000000" && res.data.ResultValue) {
+              let Data = res.data.ResultValue;
+              this.checked = true;
+              if (Data.MercCompany) {
+                this.userType = "2";
+              } else if (Data.MercFactory) {
+                this.userType = "1";
+              }
+              this.enterData.MerchantID = Data.MercID;
+              this.checkedStatus = Data.MercStatus;
+              if(Data.MercLicensePicture){
+                this.picUrl = imgUrl + Data.MercLicensePicture;
+                this.enterData.LicensePicture = Data.MercLicensePicture;
+              }
+              this.enterData.LicenseCode = Data.MercLicenseCode;
+              this.enterData.Address = Data.MercAddress;
+              this.enterData.Name = Data.MercName;
+              this.enterData.Director = Data.MercLinkman;
+              this.enterData.Phone = Data.MercPhone;
+              if(Data.MercRemark){
+                this.Reason = Data.MercRemark;
+              }
+              this.selectedCategory = [
+                Number(Data.MercProvince),
+                Number(Data.MercCity),
+                Number(Data.MercCounty)
+              ];
+              if( Data.MercStatus == 2){
+                this.$router.push("/settled2");
+              }
+            }
+          })
+        .catch(err => {
+          console.log(err);
+        });
+      }
+    },
+    ...mapMutations({
+      SET_settledEnterData: 'SET_settledEnterData',
+      SET_settledCardData: 'SET_settledCardData'
+    })
   },
   components: {
     headTop,
@@ -292,64 +324,35 @@ export default {
     dropDown
   },
   created() {
+    if (this.settledEnterData.indexOf(this.MemberID)  === -1) { // 判断是否时同一用户不是的话清空
+      this.SET_settledCardData('');
+      this.SET_settledEnterData('');
+    }
     if (this.$cookie.get("MemberID")) {
       this.userType = this.$cookie.get("MemberCrowd");
       //获取入驻信息
       if (this.$cookie.get("MerchantStatus") != 0) {
-        if(this.$cookie.get("MerchantStatus") == 2){
-          this.$router.push("/settled2");
-        } else {
-          this.enterData.MemberID = this.$cookie.get("MemberID");
-          getSelltedInfo({ MemberID: this.enterData.MemberID })
-            .then(res => {
-              if (res.data.ResultCode == "000000" && res.data.ResultValue) {
-                let Data = res.data.ResultValue;
-                this.checked = true;
-                if (Data.MercCompany) {
-                  this.userType = "2";
-                } else if (Data.MercFactory) {
-                  this.userType = "1";
-                }
-                this.enterData.MerchantID = Data.MercID;
-                this.checkedStatus = Data.MercStatus;
-                if(Data.MercLicensePicture){
-                  this.picUrl = imgUrl + Data.MercLicensePicture;
-                  this.enterData.LicensePicture = Data.MercLicensePicture;
-                }
-                this.enterData.LicenseCode = Data.MercLicenseCode;
-                this.enterData.Address = Data.MercAddress;
-                this.enterData.Name = Data.MercName;
-                this.enterData.Director = Data.MercLinkman;
-                this.enterData.Phone = Data.MercPhone;
-                if(Data.MercRemark){
-                  this.Reason = Data.MercRemark;
-                }
-                this.selectedCategory = [
-                  Number(Data.MercProvince),
-                  Number(Data.MercCity),
-                  Number(Data.MercCounty)
-                ];
-                if( Data.MercStatus == 2){
-                  this.$router.push("/settled2");
-                }
-              }
-            })
-          .catch(err => {
-            console.log(err);
-          });
-        }
+        this.getInfo(this.$cookie.get("MerchantStatus"))
       } else {
-        if (getStore("enterData")) {
-          this.enterData = JSON.parse(getStore("enterData"));
-          if (this.enterData.LicensePicture) {
-            this.picUrl = imgUrl + this.enterData.LicensePicture;
+        getUserInfo().then(res => {
+          if (res.data.ResultCode === "000000" && res.data.ResultValue.AuditValue != 0) {
+            this.getInfo(res.data.ResultValue.AuditValue)
+          } else {
+            if (this.settledEnterData) {
+              this.enterData = JSON.parse(this.settledEnterData);
+              if (this.enterData.LicensePicture) {
+                this.picUrl = imgUrl + this.enterData.LicensePicture;
+              }
+              this.selectedCategory = [
+                this.enterData.ProvinceID,
+                this.enterData.CityID,
+                this.enterData.CountyID
+              ];
+            }
           }
-          this.selectedCategory = [
-            this.enterData.ProvinceID,
-            this.enterData.CityID,
-            this.enterData.CountyID
-          ];
-        }
+        })
+
+        
       }
     } else {
       this.$message.info({ message: "你尚未登录，请登录！" });
@@ -383,7 +386,10 @@ export default {
       } else {
         return true;
       }
-    }
+    },
+    ...mapGetters([
+      'settledEnterData'
+    ])
   }
 };
 </script>

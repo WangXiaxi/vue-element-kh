@@ -2,22 +2,14 @@
   <div>
     <head-top>
       <span class="title" slot="index">{{userType == 1?'货主':'物流公司'}}-工作台</span>
-      <div class="header-center" slot="menu" v-if="userType == 1">
-        <ul>
-          <router-link tag="li" to="/source" class="active">首页</router-link>
-          <router-link tag="li" to="/finaindex">财务管理</router-link>
-          <router-link tag="li" to="/account">账户信息</router-link>
-        </ul>
+      <div class="header-center" slot="menu">
+        <head-menu-router activeLink="index"></head-menu-router>
       </div>
       <drop-down slot="info"></drop-down>
     </head-top>
     <div class="content clear" v-loading="loading">
       <div class="content-left">
-        <ul>
-          <router-link tag="li" to="/source">发布货源</router-link>
-          <router-link to="/sourceList" tag="li" class="active">货源列表</router-link>
-          <router-link to="/product" tag="li">产品库</router-link>
-        </ul>
+        <left-menu-router-home activeLink="sourceList"></left-menu-router-home>
       </div>
       <div class="content-right">
         <div class="main fr">
@@ -26,10 +18,12 @@
           <div class="container">
             <!--进度条 start -->
             <div class="step">
-              <el-steps :active="stepType" align-center v-if="!(baseInfo.Status == -3 || baseInfo.Status == -4 || baseInfo.Status == -2)">
+              <el-steps :active="stepType" align-center v-if="!(baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL
+              || baseInfo.Status == orderStatus.ORDER_REJECT_CANCEL
+              || baseInfo.Status == orderStatus.ORDER_CLOSED)">
                 <el-step title="已发布" description=""></el-step>
                 <el-step title="待确认" description=""></el-step>
-                <el-step title="已发货" description=""></el-step>
+                <el-step title="待发货" description=""></el-step>
                 <el-step title="运输中" description=""></el-step>
                 <el-step title="已完成" description=""></el-step>
               </el-steps>
@@ -37,7 +31,9 @@
             <!--进度条 end -->
             <!--进度条 start -->
             <div class="step">
-              <el-steps :active="baseInfo.Status==-3?1:2" v-if="baseInfo.Status == -3 || baseInfo.Status == -4 || baseInfo.Status == -2"
+              <el-steps :active="baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL?1:2" v-if="baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL
+              || baseInfo.Status == orderStatus.ORDER_REJECT_CANCEL
+              || baseInfo.Status == orderStatus.ORDER_CLOSED"
                         align-center>
                 <el-step title="取消申请中" description=""></el-step>
                 <el-step title="处理结果" description=""></el-step>
@@ -60,28 +56,22 @@
                   <li><span class="item-name">运输类型：</span>{{ baseInfo.Way==1?'物流公司':'个体司机'}}</li>
                   <li><span class="item-name">体积重量：</span><span class="orange-text">{{baseInfo.Volume}}m³/{{baseInfo.Weight}}吨</span>
                   </li>
-                  <li v-if="baseInfo.Parttern == 1 || (baseInfo.Parttern == 2 && baseInfo.Status != 1 && baseInfo.Status != 2 )">
+                  <li v-if="baseInfo.Parttern == 1 || (baseInfo.Parttern == 2 && baseInfo.Status != orderStatus.ORDER_RELEASED && baseInfo.Status != orderStatus.ORDER_PUBLISHED )">
                     <span class="item-name">运费：</span><span class="orange-text">￥{{baseInfo.Freight}}</span>
                   </li>
                   <li><span class="item-name">装货时间：</span><span class="orange-text">{{baseInfo.LoadTime}}</span></li>
                   <li><span class="item-name">接单模式：</span><span>{{baseInfo.Parttern==1?'抢单':'最低价'}}</span></li>
-                  <!-- <li v-if="baseInfo.DeliveryMode"><span class="item-name">提货方式：</span><span>{{baseInfo.DeliveryMode==0?'不限':(item.DeliveryMode == 1?'送货上门':'上门提货')}}</span></li> -->
-                  <!-- <li v-if="baseInfo.DeliveryMode == '2'">
-                    <span class="item-name">提货地点：</span>
-                    <p class="remark" :title="baseInfo.Remark">{{baseInfo.ToCity + baseInfo.FromCity +baseInfo.FromAddress}}</p>
-                  </li> -->
                   <!-- 物流公司有结算方式 -->
                   <li v-if="baseInfo.Way == 1">
                     <span class="item-name fl">结算方式：</span>
                     <div :title="baseInfo.OrderSettlementName">{{baseInfo.OrdeSettlementName}}</div>
                   </li>
-
-                  <li v-if="baseInfo.Way == 1 && baseInfo.OrdeSettlement == 2">
+                  <!-- 如果手机号和收获人不为空显示 之前只根据到付显示 -->
+                  <li v-if="baseInfo.OrdeReceiver">
                     <span class="item-name fl" style="width:88px;">收获方名称：</span>
                     <div class="remark" style="width:165px;" :title="baseInfo.OrderSettlementName">{{baseInfo.OrdeReceiver}}</div>
                   </li>
-
-                  <li v-if="baseInfo.Way == 1 && baseInfo.OrdeSettlement == 2">
+                  <li v-if="baseInfo.OrdeReceivePhone">
                     <span class="item-name" style="width:88px;">收货方电话：</span><span :title="baseInfo.OrderSettlementName">{{baseInfo.OrdeReceivePhone}}</span>
                   </li>
                   <!-- 物流公司有结算方式 end -->
@@ -102,69 +92,82 @@
                   </p>
                   <p v-if="baseInfo.Status < 0" class="reason">{{baseInfo.Reason}}</p>
                   <div class="mt-40">
-                    <el-button v-if="baseInfo.Status == 1 && !getUserRole(userCharacter,'财务')" type="primary" height="30px" class="normal mr-10" size="mini"
+
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_PUBLISHED && baseInfo.Parttern == 2 && !getUserRole(userCharacter,'财务')" type="primary" size="mini" class="mr-10"
+                               @click="gourl('/carrier/' + baseInfo.OrdeID)">选择承运人
+                    </el-button>
+                    
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_PUBLISHED && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
+                               @click="SendAgain(baseInfo.OrdeID, baseInfo.Code)">重发
+                    </el-button>
+
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_PUBLISHED && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
+                               @click="canSource(baseInfo.OrdeID,baseInfo.Code)">撤销货源
+                    </el-button>
+
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_RELEASED && !getUserRole(userCharacter,'财务')" type="primary" height="30px" class="normal mr-10" size="mini"
                                @click="sourceCommit(baseInfo.OrdeID)">立即发布
                     </el-button>
-                    <router-link :to="{path: '/source/'+ baseInfo.OrdeID}" class="mr-10">
-                      <el-button v-if="baseInfo.Status == 1 && !getUserRole(userCharacter,'财务')" type="primary" height="30px"
-                                 class="normal" plain size="mini">编辑
-                      </el-button>
-                    </router-link>
-                    <el-button v-if="baseInfo.Status == 2 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
+      
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_RELEASED && !getUserRole(userCharacter,'财务')" type="primary" height="30px"
+                               class="normal mr-10" @click="gourl({path: '/source/'+ baseInfo.OrdeID})" plain size="mini">编辑
+                    </el-button>
+
+                    <el-button v-if="(baseInfo.Status == orderStatus.ORDER_CLOSED || baseInfo.status == orderStatus.ORDER_ARRIVED || baseInfo.status == orderStatus.ORDER_CLOSED) && !getUserRole(userCharacter,'财务')" @click="gourl({name: 'source',params:{id: baseInfo.OrdeID,type: 1}})" size="mini" class="normal">再发一单
+                    </el-button>
+
+                    <el-button  v-if="baseInfo.Status == orderStatus.ORDER_CONFIRMED && baseInfo.PayResult != 1 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10" @click="gourl({path: '/payment',query:{orderid: baseInfo.OrdeID}})">支付运费
+                    </el-button>
+
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_PENDING && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
                                @click="canSource(baseInfo.OrdeID,baseInfo.Code)">撤销货源
                     </el-button>
-                    <router-link :to="{name: 'source',params:{id: baseInfo.OrdeID,type: 1}}" class="mr-10">
-                      <el-button v-if="(baseInfo.Status == -1 || baseInfo.status == 6 || baseInfo.status == -2) && !getUserRole(userCharacter,'财务')" size="mini" class="normal">重发
-                      </el-button>
-                    </router-link>
-                    <router-link :to="{path: '/payment',query:{orderid: baseInfo.OrdeID}}" class="mr-10">
-                      <el-button v-if="baseInfo.Status == 4 && baseInfo.PayResult != 1 && baseInfo.Grab.CrowdType == 3 && !getUserRole(userCharacter,'财务')"
-                                 size="mini" class="normal">支付运费
-                      </el-button>
-                    </router-link>
-                    <el-button v-if="baseInfo.Status == 3 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
-                               @click="canSource(baseInfo.OrdeID,baseInfo.Code)">撤销货源
-                    </el-button>
-                    <el-button v-if="baseInfo.Status == 4 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_CONFIRMED && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
                                @click="cancelOrder(baseInfo.OrdeID,baseInfo.Code)">取消运单
                     </el-button>
-                    <el-button v-if="baseInfo.Status == -3 && baseInfo.Nullifier == 1 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL && baseInfo.Nullifier == 1 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
                                @click="backOrder(baseInfo.OrdeID,baseInfo.Code)">撤回申请
                     </el-button>
-                    <el-button v-if="baseInfo.Status == -3 && baseInfo.Nullifier == 2 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL && baseInfo.Nullifier == 2 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
                                @click="agreeCancelOrder(baseInfo.OrdeID,baseInfo.Code,baseInfo.Grab.MerchantID)">同意申请
                     </el-button>
-                    <el-button v-if="baseInfo.Status == -3 && baseInfo.Nullifier == 2 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL && baseInfo.Nullifier == 2 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
                                @click="disAgreeCan(baseInfo.OrdeID,baseInfo.Code,baseInfo.Grab.MerchantID)">拒绝申请
                     </el-button>
-                    <el-button v-if="baseInfo.Status == 6 && baseInfo.Evaluated == 0 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_ARRIVED && baseInfo.Evaluated == 0 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
                                @click="OrderRate(baseInfo.OrdeID,baseInfo.Grab.CrowdType,baseInfo.Grab.Name)">评价
                     </el-button>
-                    <el-button v-if="baseInfo.Status == -4" size="mini" class="normal" @click="serviceTip">联系客服
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_REJECT_CANCE" size="mini" class="normal" @click="serviceTip">联系客服
                     </el-button>
+
+                      <el-button v-if="[orderStatus.ORDER_PUBLISHED,orderStatus.ORDER_CONFIRMED,orderStatus.ORDER_LOADING].indexOf(baseInfo.Status) >= 0 && !getUserRole(userCharacter,'财务')"
+                                 type="primary" height="30px"
+                                 @click="gourl({path: '/printer/'+ baseInfo.OrdeID})"
+                                 class="normal mr-10" plain size="mini">{{baseInfo.IsPrint ? '重打标签':'打印标签'}}</el-button>
+
                     <span class="key"
-                          v-if="(baseInfo.Status == 4 || baseInfo.Status == 5 || baseInfo.Status == 6 ) && baseInfo.PayResult == 1 &&  baseInfo.Grab.CrowdType == 3">
+                          v-if="(baseInfo.Status == orderStatus.ORDER_CONFIRMED || baseInfo.Status == orderStatus.ORDER_SHIPPED || baseInfo.Status == orderStatus.ORDER_ARRIVED ) && baseInfo.PayResult == 1 &&  baseInfo.Grab.CrowdType == 3">
                       <i class="left">支付秘钥</i>
                       <i class="right">{{baseInfo.SecretKey}}</i>
                     </span>
                   </div>
                   <p
-                    v-if="(baseInfo.Status == 4 || baseInfo.Status == 5 || baseInfo.Status == 6 ) && baseInfo.PayResult == 1 && baseInfo.CrowdType == 3"
+                    v-if="(baseInfo.Status == orderStatus.ORDER_CONFIRMED || baseInfo.Status == orderStatus.ORDER_SHIPPED || baseInfo.Status == orderStatus.ORDER_ARRIVED ) && baseInfo.PayResult == 1 && baseInfo.CrowdType == 3"
                     class="size12 gray-txt mt-20">秘钥支付：货主支付运费生成秘钥 <i class="el-icon-arrow-right"></i>货主确认卸货告知司机秘钥<i
                     class="el-icon-arrow-right"></i>司机输入秘钥收款</p>
                   <div class="info-list">
-                    <p class="gray-txt size12 mb-4" v-if="baseInfo.Nullifier == 2 && baseInfo.Status == -3">
+                    <p class="gray-txt size12 mb-4" v-if="baseInfo.Nullifier == 2 && baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL">
                       司机发起取消申请，货主和司机沟通达成一致后，货主同意取消，运单关闭。 </p>
-                    <p class="gray-txt size12" v-if="baseInfo.Nullifier == 2 && baseInfo.Status == -3">
+                    <p class="gray-txt size12" v-if="baseInfo.Nullifier == 2 && baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL">
                       货主选择拒绝取消，运单转为拒绝取消，记司机违约一次，罚款200元。 </p>
-                    <p class="gray-txt size12 mb-4" v-if="baseInfo.Nullifier == 1 && baseInfo.Status == -3">
+                    <p class="gray-txt size12 mb-4" v-if="baseInfo.Nullifier == 1 && baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL">
                       货主发起取消申请，货主和司机沟通达成一致后，司机同意取消，运单关闭。</p>
-                    <p class="gray-txt size12" v-if="baseInfo.Nullifier == 1 && baseInfo.Status == -3">
+                    <p class="gray-txt size12" v-if="baseInfo.Nullifier == 1 && baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL">
                       司机选择拒绝取消，运单转为拒绝取消，记货主违约一次，罚款200元。</p>
                   </div>
                 </div>
 
-                <div class="bottom" v-if="baseInfo.Grab && baseInfo.Status != 1 && baseInfo.Status != 2 && baseInfo.Status != -1">
+                <div class="bottom" v-if="baseInfo.Grab && baseInfo.Status != orderStatus.ORDER_RELEASED && baseInfo.Status != orderStatus.ORDER_PUBLISHED && baseInfo.Status != orderStatus.ORDER_CLOSED">
                   <p class="user-info">
                     <span v-if="baseInfo.Parttern == 1">抢单司机：</span>
                     <span v-else>承运司机：</span>
@@ -175,11 +178,11 @@
                   </p>
                   <div class="list">
                     <ul>
-                      <li v-if="(baseInfo.Status != 1 && baseInfo.Status != 2 && baseInfo.Status != 3)"><span
+                      <li v-if="(baseInfo.Status != orderStatus.ORDER_RELEASED && baseInfo.Status != orderStatus.ORDER_PUBLISHED && baseInfo.Status != 3)"><span
                         class="gray-txt">{{baseInfo.Parttern == 1?'抢单时间':'承运时间'}}：</span>{{baseInfo.GrabTime}}
                       </li>
                       <li><span class="gray-txt">联系电话：</span>{{baseInfo.Grab.Phone}}</li>
-                      <li v-if="baseInfo.Parttern == 2 && baseInfo.Status != 1 && baseInfo.Status != 2 ">
+                      <li v-if="baseInfo.Parttern == 2 && baseInfo.Status != orderStatus.ORDER_RELEASED && baseInfo.Status != orderStatus.ORDER_PUBLISHED ">
                         <span class="gray-txt">运费：</span><span class="orange-text">￥{{baseInfo.Freight}}</span>
                       </li>
                       <li v-if="baseInfo.Grab.MercCollect && baseInfo.Grab.CrowdType == 2">
@@ -187,15 +190,12 @@
                       </li>
                     </ul>
                     <p class="mt-20">
-                      <el-button v-if="baseInfo.Status == 3 && baseInfo.Parttern == 1 && !getUserRole(userCharacter,'财务')" type="primary" size="mini"
+                      <el-button v-if="baseInfo.Status == orderStatus.ORDER_PENDING && baseInfo.Parttern == 1 && !getUserRole(userCharacter,'财务')" type="primary" size="mini"
                                  @click="checked(baseInfo.OrdeID,baseInfo.Code,baseInfo.Grab.MerchantID)">选他承运
                       </el-button>
-                      <el-button v-if="baseInfo.Status == 3 && baseInfo.Parttern == 2 && !getUserRole(userCharacter,'财务')" type="primary" size="mini"
-                                 @click="CancelCarrier(baseInfo.OrdeID)">取消承运
+                      <el-button v-if="baseInfo.Status == orderStatus.ORDER_PENDING && baseInfo.Parttern == 2 && !getUserRole(userCharacter,'财务')" type="primary" size="mini"
+                                 @click="gourl('/carrier/' + baseInfo.OrdeID)">更换司机
                       </el-button>
-                      <!--<p v-if="item.Status == 3 && item.Parttern == 2" class="mt-6"><span class="blue-txt cuspoint"-->
-                      <!--@click="CancelCarrier(item.OrdeID,index)">取消承运</span>-->
-                      <!--</p>-->
                       <el-button type="primary" plain size="mini" @click="showInfo(baseInfo.Grab.MerchantID)">查看资质
                       </el-button>
                     </p>
@@ -208,48 +208,6 @@
               </div>
             </div>
             <!--中间 end-->
-            <!--司机列表 start-->
-            <div class="car-list mtb20" v-if="isShowCarList && baseInfo.Status == 2 && baseInfo.Parttern == 2">
-              <div class="list-menu">
-                <ul>
-                  <li class="first">司机信息</li>
-                  <li class="width100">泡货（元/m³）</li>
-                  <li class="width100">重货（元/吨）</li>
-                  <li class="width140">免费上门提货</li>
-                  <li class="width140">运费报价（元）</li>
-                  <li class="last">操作</li>
-                </ul>
-              </div>
-              <div class="list-content">
-                <ul v-if="baseInfo.Grab.MatchingMerchant.length>0">
-                  <li v-for="(item,index) in baseInfo.Grab.MatchingMerchant" :key="index">
-                    <div class="left">
-                      <span class="number">{{index+1}}</span>
-                      <span class="car-name" @click="showInfo(item.MerchantID)">{{item.Name}}</span>
-                      <span class="pass">已认证</span>
-                      <span class="bao">保</span>
-                    </div>
-                    <div class="center">
-                      <span class="item-content">{{item.LightPrice}}</span>
-                      <span class="item-content">{{item.HeavyPrice}}</span>
-                      <span class="center-item" v-if="baseInfo.Way==1">{{item.MercCollect?item.MercCollect.CollectVolume:0}}m³/{{item.MercCollect?item.MercCollect.CollectWeight:0}}吨以上</span>
-                      <span class="center-item" v-else>—</span>
-                      <span class="center-item orange-text">{{item.Freight}}</span>
-                    </div>
-                    <div class="right">
-                      <p v-if="!getUserRole(userCharacter,'财务')"
-                        @click="checked(baseInfo.OrdeID,baseInfo.Code,item.MerchantID,item.Freight,item.RouteID)">
-                        选他承运</p>
-                    </div>
-                  </li>
-                </ul>
-                <div v-else class="text-center mb-20">
-                  <p><img src="../../assets/images/null.png" alt="加载失败"></p>
-                  <p class="gray-txt">暂无匹配数据</p>
-                </div>
-              </div>
-            </div>
-            <!--司机列表 end-->
 
             <!--底部信息产品 start-->
             <div class="mt-10">
@@ -258,7 +216,8 @@
                   <div>
                     <p class="mt-10">发货人： <span class="mr-20">{{sendUser.Name}}</span> <span class="mr-20">{{sendUser.Phone}}</span>
                       {{baseInfo.FromCity}}{{baseInfo.FromAddress}}</p>
-                    <p class="mt-20" v-if="baseInfo.Way == 1 && baseInfo.OrdeSettlement == 2">收货人： <span class="mr-20">{{baseInfo.OrdeReceiver}}</span><span class="mr-20">{{baseInfo.OrdeReceivePhone}}</span>{{baseInfo.ToCity}}{{baseInfo.ToAddress}}</p>
+                    <!-- 如果手机号和收获人不为空显示 之前只根据到付显示 -->
+                    <p class="mt-20" v-if="baseInfo.OrdeReceiver && baseInfo.OrdeReceivePhone">收货人： <span class="mr-20">{{baseInfo.OrdeReceiver}}</span><span class="mr-20">{{baseInfo.OrdeReceivePhone}}</span>{{baseInfo.ToCity}}{{baseInfo.ToAddress}}</p>
                     <p class="mt-20" v-else>收货地： {{baseInfo.ToCity}}{{baseInfo.ToAddress}}</p>
                     <div>
                       <el-table
@@ -321,7 +280,7 @@
                 </el-tab-pane>
                 <el-tab-pane label="物流信息">
                   <div class="tabItem">
-                    <p class="mb-20" v-if="baseInfo.Status >= 5 && baseInfo.LogisticsInfo">
+                    <p class="mb-20" v-if="baseInfo.Status >= orderStatus.ORDER_SHIPPED && baseInfo.LogisticsInfo">
                       <span class="mr-10" v-if="baseInfo.LogisticsInfo.UnloadRemark!='' && baseInfo.LogisticsInfo.UnloadPhotos!=''">卸货凭证： {{baseInfo.LogisticsInfo.UnloadRemark}}</span>
                       <span class="mr-10" v-if="baseInfo.LogisticsInfo.UnloadPhotos!=''">
                         <img v-for="item in baseInfo.LogisticsInfo.UnloadPhotos.split(',')" class="image cuspoint"
@@ -331,7 +290,7 @@
                              :src="imgUrl + item" width="30" height="30">
                       </span>
                     </p>
-                    <p class="mb-20" v-if="baseInfo.Status >= 5 && baseInfo.LogisticsInfo">
+                    <p class="mb-20" v-if="baseInfo.Status >= orderStatus.ORDER_SHIPPED && baseInfo.LogisticsInfo">
                       <span class="mr-10">
                         承运车辆： 车牌号码{{baseInfo.LogisticsInfo.Code}}
                       </span>
@@ -350,11 +309,11 @@
                              height="30">
                       </span>
                     </p>
-                    <div v-if="baseInfo.Status >= 5">
-                      <div class="map-content" v-if="carPosition">
+                    <div v-if="baseInfo.Status >= orderStatus.ORDER_SHIPPED">
+                      <div class="map-content" v-show="carPosition">
                         <div id="mymap" class="mymap"></div>
                       </div>
-                      <div class="map-list" v-if="carPosition">
+                      <div class="map-list" v-show="carPosition">
                         <p class="title">物流信息</p>
                         <el-steps align-center direction="vertical" space="20%" :active="1">
                           <el-step title="当前位置"
@@ -362,47 +321,44 @@
                         </el-steps>
                       </div>
                     </div>
-                    <div v-else class="text-center">
+                    <div v-if="!carPosition" class="text-center">
                       <p><img src="../../assets/images/null.png" alt=""></p>
                       <p class="gray-txt">暂无物流信息</p>
                     </div>
                   </div>
                 </el-tab-pane>
-                <el-tab-pane v-if="baseInfo.Parttern == 2 && baseInfo.Status != 1 && baseInfo.Status != 2 " :label="baseInfo.Parttern == 2?'报价信息':''">
-                  <div class="car-list tabItem" style="margin-left:-16px;margin-right:-16px;border-bottom:0;">
+                <el-tab-pane v-if="baseInfo.Parttern == 2 && baseInfo.Status != orderStatus.ORDER_RELEASED && baseInfo.Status != orderStatus.ORDER_PUBLISHED " :label="baseInfo.Parttern == 2?'报价信息':''">
+                  <div class="car-list tabItem" :class="{wlgs: baseInfo.Way == 1}">
                     <div class="list-menu">
                       <ul>
-                        <li style="width: 25%; padding-left: 5%;">司机信息</li>
-                        <li style="width: 15%">泡货（元/m³）</li>
-                        <li style="width: 15%">重货（元/吨）</li>
-                        <li style="width: 15%">免费上门提货</li>
-                        <li style="width: 15%">运费报价（元）</li>
-                        <li style="width: 10%">状态</li>
+                        <li class="wlgs-1">司机信息</li>
+                        <li class="wlgs-2">泡货（元/m³）</li>
+                        <li class="wlgs-3" v-if="baseInfo.Way == 1">优惠</li>
+                        <li class="wlgs-4">重货（元/吨）</li>
+                        <li class="wlgs-5" v-if="baseInfo.Way == 1">优惠</li>
+                        <li class="wlgs-6">免费上门提货</li>
+                        <li class="wlgs-7">运费报价（元）<span v-if="baseInfo.Way == 1" class="bubble-text" @click="showQuotedExplain"><i class="el-icon-warning"></i></span></li>
+                        <li class="wlgs-8">状态</li>
                       </ul>
                     </div>
                     <div class="list-content" v-loading="quotationLoading">
                       <ul v-if="quotation.length>0">
                         <li v-for="(item, index) in quotation" :key="index">
-                          <div class="left"  style="width: 28.2%; padding-left: 1.8%;">
+                          <div class="wlgs-1">
                             <span class="number">{{index+1}}</span>
                             <span class="car-name" @click="showInfo(item.MerchantID)">{{item.MerchantName ? item.MerchantName : item.MembName}}</span>
                             <span class="pass">已认证</span>
                             <span class="bao" v-if="item.IsExpire">保</span>
                           </div>
-                          <div class="fl" style="width:15%; line-height:22px; height:22px;">
-                            <span class="item-content">{{item.BubblePrice}}</span>
-                          </div>
-                          <div class="fl" style="width:15%; line-height:22px; height:22px;">
-                            <span class="item-content">{{item.HeavyPrice}}</span>
-                          </div>
-                          <div class="fl" style="width:15%; line-height:22px; height:22px;">
-                            <span class="item-content">{{item.CollectVolume}}m³/{{item.CollectWeight}}吨以上</span>
-                          </div>
-                          <div class="fl" style="width:15%; line-height:22px; height:22px;">
-                            <span class="item-content">{{item.Freight}}</span>
-                          </div>
-                          <div class="fl">
-                            <p class="blue-txt" v-if="item.IsChecked">已选他承运</p>
+                          <span class="wlgs-2">{{item.BubblePrice}}</span>
+                          <span class="wlgs-3" v-if="baseInfo.Way == 1">{{Number(item.SnapLightDecline)}}%</span>
+                          <span class="wlgs-4">{{item.HeavyPrice}}</span>
+                          <span class="wlgs-5" v-if="baseInfo.Way == 1">{{Number(item.SnapHeavyDecline)}}%</span>
+                          <span class="wlgs-6" v-if="baseInfo.Way == 1">{{item.CollectVolume}}m³/{{item.CollectWeight}}吨以上</span>
+                          <span class="wlgs-6" v-else>—</span>
+                          <span class="wlgs-7 orange-text">{{item.Freight}}</span>
+                          <div class="wlgs-8">
+                            <span class="blue-txt" v-if="item.IsChecked">已选他承运</span>
                           </div>
                         </li>
                       </ul>
@@ -456,6 +412,66 @@
                       <p class="clear mt-20">特别说明: 本交易以《<a href="http://app.sdhwlw.com/Agreement/transport.html" target="_black">货物运输协议</a>》合约为准执行</p>
                     </div>
                 </el-tab-pane>
+
+                <el-tab-pane label="标签打印记录">
+                  <div class="car-list tabItem">
+                    <div class="list-menu">
+                      <ul>
+                        <li class="bqdy-1">打印人信息</li>
+                        <li class="bqdy-2">打印张数</li>
+                        <li class="bqdy-3">打印时间</li>
+                        <li class="bqdy-4">状态</li>
+                      </ul>
+                    </div>
+                    <div class="list-content" v-loading="printListLoading">
+                      <ul v-if="printerList.length>0">
+                        <li v-for="(item, index) in printerList" :key="index">
+                          <span class="bqdy-1">
+                            <span class="number">{{index+1}}</span>
+                            <span class="name">{{item.PrintName}}</span>
+                            <div class="bot" v-if="item.Remark">
+                              <div class="code-des">
+                                补打原因：{{item.Remark}}
+                              </div>
+                            </div>
+                          </span>
+                          <div class="bqdy-2">
+                            <div class="top" @click="printerChangeIsOpen(item)">
+                              <span class="num">{{item.Key}}</span>
+                              <i class="el-icon-arrow-down" :class="{tran: item.isOpen}"></i>
+                            </div>
+                            <div class="bot" :class="{show: item.isOpen}">
+                              <div class="code-des">打印标签：</div>
+                              <div class="code-list">
+                                <span v-for="(items, index) in item.PrintCodeList" class="tip-num">货物{{items}}；</span>
+                              </div>
+                            </div>
+                          </div>
+                          <span class="bqdy-3">{{item.PrintCreate}}</span>
+                          <span class="bqdy-4">第{{item.Key}}次打印</span>
+                        </li>
+                      </ul>
+
+                      <div v-else class="text-center mb-20 mt-60">
+                        <p><img src="../../assets/images/null.png" alt="加载失败"></p>
+                        <p class="gray-txt mt-20">暂无匹配数据</p>
+                      </div>
+
+                      <div class="text-center mt-20" v-if="printerList.length>0"> <!-- 分页 -->
+                        <el-pagination
+                          background
+                          @current-change="handlePrinterPageChange"
+                          :page-size="printerListRequest.PageSize"
+                          :current-page.sync="printerListRequest.PageIndex"
+                          layout="total, prev, pager, next"
+                          :total="printerListRequest.TotalRecords">
+                        </el-pagination>
+                      </div>
+
+                    </div>
+                  </div>
+                </el-tab-pane>
+
               </el-tabs>
             </div>
             <!--底部信息产品 end-->
@@ -634,6 +650,9 @@
       <img width="100%" :src="dialogImageUrl" :onerror="errorImg" alt="">
     </el-dialog>
     <!-- 图片放大弹框 end -->
+    <!-- 运费价格解说弹框 start -->
+    <quoted-explain-dialog :dialog="quotedExplainDialog"></quoted-explain-dialog>
+    <!-- 运费价格解说弹框 end -->
   </div>
 </template>
 
@@ -645,6 +664,7 @@
   import regs from 'config/regExp'
   import AMap from 'AMap'
   import {imgUrl, imgPostUrl} from "api/env"
+  import {orderStatus} from 'config/statusManager'
   import {
     PicUpload, // 图片接口
     getSourceInfo,
@@ -662,18 +682,26 @@
     rate1,
     rate2,
     rate4,
-    SnapshotGetPage // 获取快照一页
+    SnapshotGetPage, // 获取快照一页
+    GetQrCodeRecordList, // 打印获取一页
+    SendAgain // 重发
   } from 'api/getData'
   import { getUserRole } from 'config/myUtils';
+  import leftMenuRouterHome from 'components/leftMenuRouter/leftMenuRouterHome' // 左侧
+  import headMenuRouter from 'components/headMenuRouter/headMenuRouter' // 头部
+  import quotedExplainDialog from 'components/quotedExplainDialog/quotedExplainDialog' // 运费价格解说
+
   export default {
     data() {
       return {
+        quotedExplainDialog: { visible: false }, // 判断解说弹框是否显示
         errorImg: 'this.src="' + require('../../assets/images/errorimg.png') + '"',
         upLoadImgList: [], // 评价图片上传列表
         dialogImageUrl: '', // 评价图片上传当前点击路径
         dialogVisible: false, // 评价图片放大dialog
         userCharacter: this.$cookie.get("MemberDutiesID"),
         OrdeID: '',
+        orderStatus,
         AMap,//高德地图对象
         imgPostUrl,//图片请求地址
         imgUrl,//图片显示地址
@@ -707,17 +735,65 @@
         sendUser: {},
         quotation: [], // 报价信息 快照 小星
         quotationRequest: { // 报价信息 查询条件 小星
-          MemberID: this.$cookie.get('MemberID'),
           OrderID: '',
           PageIndex: 1,
           PageSize: 20,
           TotalRecords: 0
         },
-        quotationLoading: false // 底部表格加载中 loading 小星
+        quotationLoading: false, // 快照pane loading 小星
+        printerList: [], // 打印列表
+        printerListRequest: { // 打印次数 查询列表
+          MerchantID: this.$cookie.get('MemberMerchantID'),
+          OrderID: '',
+          PageIndex: 1,
+          PageSize: 20,
+          TotalRecords: 0
+        },
+        printListLoading: false // 打印pane 加载蒙层
       };
     },
     methods: {
       getUserRole: getUserRole,
+      gourl (val) {
+        this.$router.push(val);
+      },
+      async SendAgain (orderID, code) { // 重发操作
+        let params = {OrderID: orderID}
+        this.loading = true;
+        const { data: { ResultCode, ResultValue, ResultMessage, TotalRecords }} = await SendAgain(params);
+        this.loading = false;
+        if (ResultCode === '000000') {
+          this.$message.success({message: ResultMessage});
+          this.getSource();
+        }
+      },
+      printerChangeIsOpen (item) {
+        item.isOpen = !item.isOpen;
+        this.$set(this.printerList, 0, this.printerList[0]); // 刷新下
+      },
+      // 打印列表翻页
+      handlePrinterPageChange () {
+        this.printerListRequest.PageIndex = val;
+        this.getQuotation();
+      },
+
+      // 根据条件请求获取打印列表信息
+      async GetQrCodeRecordList (val) {
+        this.printListLoading = true;
+        this.printerListRequest.OrderID = this.OrdeID;
+        const resData = await GetQrCodeRecordList(this.printerListRequest);
+        this.printListLoading = false;
+        if (resData.data.ResultCode === '000000') {
+          this.printerList = resData.data.ResultValue;
+          this.printerList.forEach((c) => {
+            c.isOpen = false
+          })
+          this.printerListRequest.TotalRecords = resData.data.TotalRecords;
+        }
+      },
+      showQuotedExplain () { // 显示报价解说弹框
+        this.quotedExplainDialog.visible = true
+      },
        // 翻页
       handleQuotationPageChange () {
         this.quotationRequest.PageIndex = val;
@@ -725,7 +801,7 @@
       },
       // 根据条件请求 获取报价信息 快照 小星
       async getQuotation (base) {
-        if (base.Parttern === 2 && base.Status >= 3) {
+        if (base.Parttern === 2 && base.Status >= orderStatus.ORDER_PENDING) {
           // 赋值 尽量 不跟老代码扯一起
           this.quotationLoading = true;
           this.quotationRequest.OrderID = this.OrdeID;
@@ -779,7 +855,6 @@
         this.dialogVisible = true;
       },
       beforeUpload (file) { // 上传前验证图片方法
-        console.log(file)
         const isJPG = file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/gif';
         if (!isJPG) {
           this.$message.error('请选择正确的图片格式!');
@@ -803,7 +878,6 @@
       },
       //设置图片显示
       setPicIndex(index) {
-        console.log(this.companyInfo.CrowdType,index)
         if(this.companyInfo.CrowdType == 3 && index > 1){
           this.picIndex = index-1;
         } else {
@@ -818,8 +892,8 @@
           resizeEnable: true,
           zoom: 15
         });
-        getCarAddress({OrderCode: this.baseInfo.OrdeID}).then(res => {
-          if (res.data.ResultCode == "000000") {
+        getCarAddress({OrderCode: this.baseInfo.Code}).then(res => {
+          if (res.data.ResultCode == "000000" && res.data.ResultValue) {
             let marker = new AMap.Marker({
               position: [res.data.ResultValue.lat, res.data.ResultValue.lon],
               draggable: false,
@@ -840,15 +914,18 @@
       },
       // 获取货源基本信息
       async getSource() {
+        this.loading = true;
         getSourceInfo({OrdeID: this.$route.params.id, MemberID: this.$cookie.get('MemberID')}).then(res => {
+          console.log(res)
           if (res.data && res.data.ResultCode == '000000' && res.data.ResultValue) {
             this.baseInfo = res.data.ResultValue;
-            if (res.data.ResultValue.Status >= 5) {
+            if (res.data.ResultValue.Status >= this.orderStatus.ORDER_SHIPPED) {
               this.isSetMap = true;
             }
             this.OrdeID = res.data.ResultValue.OrdeID;
             this.sendUser = res.data.ResultValue.Merchant;
             this.getQuotation(this.baseInfo); // 做判断是否请求快照信息 小星
+            this.GetQrCodeRecordList(this.baseInfo); // 请求打印列表信息 小星
             this.loading = false;
           }
         }).catch(err => {
@@ -943,13 +1020,6 @@
                 this.isShowCarList = false;
                 this.$message.success({message: res.data.ResultMessage});
                 this.getSource();
-                // if(that.baseInfo.Parttern == 2){
-                //   this.baseInfo.Status = 3;
-                //   this.baseInfo.StatusName = '货源已选择承运方，等待对方确认订单；';
-                // } else {
-                //   this.baseInfo.Status = 4;
-                //   this.baseInfo.StatusName = '货源已选择承运公司，等待货主支付运费到平台；';
-                // }
               }
             }
           });
@@ -970,8 +1040,6 @@
               this.$message.success({message: res.data.ResultMessage});
               this.getSource();
               this.isShowCarList = true;
-              // this.listData[index].Status = 2;
-              // this.listData[index].StatusName = '已发布';
             }
           });
         })
@@ -994,8 +1062,6 @@
           }).then(res => {
             if (res.data.ResultCode === '000000') {
               this.$message.success({message: res.data.ResultMessage});
-              // this.baseInfo.Status = -1;
-              // this.baseInfo.StatusName = '货源已关闭！';
               this.getSource();
             }
           })
@@ -1019,9 +1085,6 @@
           }).then(res => {
             if (res.data.ResultCode === '000000') {
               this.$message.success({message: res.data.ResultMessage});
-              // this.baseInfo.Status = -1;
-              // this.baseInfo.StatusName = '货源已关闭';
-              // this.baseInfo.Reason = value;
               this.getSource();
             }
           })
@@ -1052,10 +1115,6 @@
           }).then(res => {
             if (res.data.ResultCode === '000000') {
               this.$message.success({message: res.data.ResultMessage});
-              // this.baseInfo.Status = -3;
-              // this.baseInfo.StatusName = '取消中，货主申请取消订单，待司机处理；';
-              // this.baseInfo.Reason = value;
-              // this.baseInfo.Nullifier = 1;
               this.getSource();
             }
           })
@@ -1077,8 +1136,6 @@
           }).then(res => {
             if (res.data.ResultCode === '000000') {
               this.$message.success({message: res.data.ResultMessage});
-              // this.baseInfo.Status = 4;
-              // this.baseInfo.StatusName = '货源已选择承运公司，等待货主支付运费到平台；';
               this.getSource();
             }
           })
@@ -1098,8 +1155,6 @@
           }).then(res => {
             if (res.data.ResultCode === '000000') {
               this.$message.success({message: res.data.ResultMessage});
-              // this.baseInfo.Status = -2;
-              // this.baseInfo.StatusName = '货源已关闭，司机取消订单；'
               this.getSource();
             }
           })
@@ -1119,8 +1174,6 @@
           }).then(res => {
             if (res.data.ResultCode === '000000') {
               this.$message.success({message: res.data.ResultMessage});
-              // this.baseInfo.Status = -4;
-              // this.baseInfo.StatusName = '拒绝取消，司机申请取消订单，货主已拒绝申请；';
               this.getSource();
             }
           })
@@ -1161,8 +1214,6 @@
             rate1(this.rate).then(res => {
               if (res.data.ResultCode === '000000') {
                 this.$message.success({message: res.data.ResultMessage});
-                // this.baseInfo.Status = 7;
-                // this.baseInfo.StatusName = '已评价';
                 this.isShowRate = false;
                 this.getSource();
               }
@@ -1170,9 +1221,6 @@
           } else if (this.rate.Type == 2) {
             rate2(this.rate).then(res => {
               if (res.data.ResultCode === '000000') {
-                // this.$message.success({message: res.data.ResultMessage});
-                // this.baseInfo.Status = 7;
-                // this.baseInfo.StatusName = '已评价';
                 this.isShowRate = false;
                 this.getSource();
               }
@@ -1181,8 +1229,6 @@
             rate4(this.rate).then(res => {
               if (res.data.ResultCode === '000000') {
                 this.$message.success({message: res.data.ResultMessage});
-                // this.baseInfo.Status = 7;
-                // this.baseInfo.StatusName = '已评价';
                 this.isShowRate = false;
                 this.getSource();
               }
@@ -1201,7 +1247,6 @@
             .then(res => {
               if (res.data.ResultCode === '000000') {
                 this.$message.success({message: res.data.ResultMessage});
-                // this.baseInfo.Status = 2;
                 this.getSource();
               }
             });
@@ -1223,16 +1268,21 @@
     computed: {
       //设置进度条的状态
       stepType() {
-        if (this.baseInfo.Status == 1 || this.baseInfo.Status == -1 || this.baseInfo.Status == -4 || this.baseInfo.Status == -2) {
-        } else if (this.baseInfo.Status == 2) {
+        if (this.baseInfo.Status == orderStatus.ORDER_RELEASED
+          || this.baseInfo.Status == orderStatus.ORDER_CLOSED
+          || this.baseInfo.Status == orderStatus.ORDER_REJECT_CANCEL
+          || this.baseInfo.Status == orderStatus.ORDER_CANCELED) {
+        } else if (this.baseInfo.Status == orderStatus.ORDER_PUBLISHED) {
           return 1;
-        } else if (this.baseInfo.Status == 3) {
+        } else if (this.baseInfo.Status == orderStatus.ORDER_PENDING) {
           return 2;
-        } else if (this.baseInfo.Status == 4) {
-          return 2;
-        } else if (this.baseInfo.Status == 5) {
+        } else if (this.baseInfo.Status == orderStatus.ORDER_CONFIRMED) {
+          return 3;
+        } else if (this.baseInfo.Status == orderStatus.ORDER_LOADING) {
+          return 3;
+        } else if (this.baseInfo.Status == orderStatus.ORDER_SHIPPED) {
           return 4;
-        } else if (this.baseInfo.Status == 7 || this.baseInfo.Status == 6) {
+        } else if (this.baseInfo.Status == orderStatus.ORDER_EVALUATION || this.baseInfo.Status == orderStatus.ORDER_ARRIVED) {
           return 5;
         } else {
           return 0;
@@ -1243,13 +1293,15 @@
         return this.picIndex
       }
     },
-    // watch: {
-    //   isSetMap(newVal,oldVal){
-    //     if(newVal){
-    //       this.initMap();
-    //     }
-    //   }
-    // },
+    watch: {
+      isSetMap(newVal,oldVal){
+        if(newVal){
+          setTimeout(() => {
+            this.initMap();
+          }, 20)
+        }
+      }
+    },
     created() {
       this.loading = true;
       if (this.$cookie.get("MemberID")) {
@@ -1265,15 +1317,14 @@
       }
     },
     mounted() {
-      let that = this;
-      if(that.baseInfo.OrdeID){
-        this.initMap();
-      }
     },
     components: {
       headTop,
       dropDown,
-      foot
+      foot,
+      leftMenuRouterHome, // 左侧导航
+      headMenuRouter, // 左侧
+      quotedExplainDialog
     }
   }
 </script>
@@ -1336,7 +1387,12 @@
   .step
     width: 100%
     margin: 10px 0 20px
-
+    &:first-child
+      .el-step
+        width: 20%
+    &:last-child
+      .el-step
+        width: 50%
   .center
     overflow: hidden
     border: 1px solid $borderColor
@@ -1392,6 +1448,7 @@
         color: #027CFF
         border: 1px solid #8BCAF9
         border-radius: 4px
+        vertical-align: middle
         .left
           float: left
           width: 70px
@@ -1452,12 +1509,15 @@
   .mtb20
     margin: 20px 0;
   .el-tab-pane .car-list
-    border-left: none;
-    border-right: none;
-    margin: 0 -15px;
-
+    border-left: none
+    border-right: none
+    margin: 0 -16px
+    border-bottom: 0
   .car-list
     border: 1px solid $borderColor
+    .bubble-text
+      color: $blue
+      cursor: pointer
     .list-menu
       border-bottom: 1px solid $borderColor
       background-color: $theadbg
@@ -1467,25 +1527,39 @@
           height: 38px
           line-height: 38px
           float: left
-        .first
+        .wlgs-1
           width: 270px
           padding-left: 50px
-        .width100
+        .wlgs-2, .wlgs-4
           width: 110px
-        .width140
+        .wlgs-6, .wlgs-7
           width: 140px
+        .bqdy-1
+          width: 250px
+          padding-left: 50px
+        .bqdy-2
+          width: 250px
+        .bqdy-3
+          width: 200px
     .list-content
       ul
         li
           padding: 20px 0
-          border-top: 1px dashed $borderColor
+          border-bottom: 1px dashed $borderColor
           overflow: hidden
-          &:first-child
-            border: none
-          .left
-            float: left
+          line-height: 20px
+          display: table
+          width: 100%
+          .wlgs-1, .wlgs-2, .wlgs-3, .wlgs-4, .wlgs-5, .wlgs-6, .wlgs-7, .wlgs-8, .bqdy-1, .bqdy-2, .bqdy-3, .bqdy-4
+            display: table-cell
+            vertical-align: middle
+          .wlgs-1
             width: 300px
             padding-left: 20px
+            .number
+              display: inline-block
+              width: 16px
+              text-align: center
             .car-name
               cursor: pointer
               margin: 0 4px 0 10px
@@ -1507,21 +1581,108 @@
               border: 1px solid $orange
               color: $orange
               border-radius: 2px
-          .center
-            float: left
-            border: none
-            overflow: hidden
-            .item-content
-              float left
-              width: 110px
-            .center-item
-              float left
-              width: 140px
-          .right
-            float: left
+          .wlgs-2, .wlgs-4
+            width: 110px
+          .wlgs-6, .wlgs-7
+            width: 140px
+          .wlgs-8
             color: $blue
             cursor: pointer
-
+          .bqdy-1
+            width: 280px
+            padding-left: 20px
+            .name
+              margin: 0 4px 0 10px
+            .number
+              display: inline-block
+              width: 16px
+              text-align: center
+            .bot
+              padding: 5px 10px 0 30px
+              font-size: 12px
+              color: $gray
+          .bqdy-2
+            width: 250px
+            .top
+              font-size: 0
+              .num
+                display: inline-block
+                vertical-align: middle
+                width: 16px
+                font-size: 14px
+              i
+                font-size: 12px
+                margin-left: 7px
+                cursor: pointer
+                vertical-align: middle
+                transition: all 0.3s
+                &:hover
+                  color: $blue
+                &.tran
+                  transform: rotate(180deg)
+            .bot
+              overflow: hidden
+              margin-top: 5px
+              display: none
+              .code-des
+                font-size: 12px
+                color: #999
+                width: 60px
+                float: left
+                overflow: hidden
+              .code-list
+                width: 190px
+                overflow: hidden
+                float: left
+                font-size: 0
+                > span
+                  float: left
+                  font-size: 12px
+                  display: inline-block
+                  width: 57px
+              &.show
+                display: block
+          .bqdy-3
+            width: 200px
+    &.wlgs
+      .list-menu
+        ul
+          .wlgs-1
+            width: 230px
+          .wlgs-2
+            width: 102px
+          .wlgs-3
+            width: 50px
+          .wlgs-4
+            width: 102px
+          .wlgs-5
+            width: 50px
+          .wlgs-6
+            width: 110px
+          .wlgs-7
+            width: 130px
+          .wlgs-8
+            width: auto
+      .list-content
+        ul
+          li
+            .wlgs-1
+              width: 260px
+            .wlgs-2
+              width: 102px
+            .wlgs-3
+              width: 50px
+            .wlgs-4
+              width: 102px
+            .wlgs-5
+              width: 50px
+            .wlgs-6
+              width: 110px
+            .wlgs-7
+              width: 110px
+              padding-left: 20px
+            .wlgs-8
+              width: auto
   .rate-title
     float: left
     height: 20px
@@ -1592,8 +1753,8 @@
   .product-name
     width: 200px;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    text-overflow: ellipsis
+    white-space: nowrap
 
   .model-name
     float: left

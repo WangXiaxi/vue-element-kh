@@ -30,6 +30,7 @@ const sourceList = r => require.ensure([], () => r(require('../pages/sourceList/
 const orderList = r => require.ensure([], () => r(require('../pages/sourceList/orderList')), 'orderList') //货源列表（物流公司）
 const sourceDetails = r => require.ensure([], () => r(require('../pages/sourceDetails/sourceDetails')), 'sourceDetails') //订单详情页（工厂）
 const orderDetails = r => require.ensure([], () => r(require('../pages/sourceDetails/orderDetails')), 'orderDetails') //订单详情页（物流公司）
+const sourceEdit = r => require.ensure([], () => r(require('../pages/sourceEdit/sourceEdit')), 'sourceEdit') //货源编辑
 const subAccount = r => require.ensure([], () => r(require('../pages/subAccount/subAccount')), 'subAccount') // 会员用户管理
 const account = r => require.ensure([], () => r(require('../pages/account/account')), 'account') //账户信息
 
@@ -50,6 +51,29 @@ const bankcardlist = r => require.ensure([], () => r(require('../pages/finance/b
 //物流运费账单->收货方到付
 const carriageforward = r => require.ensure([], () => r(require('../pages/finance/billchild/carriageforward')), 'carriageforward') //付款记录
 
+//运单
+const waybill = r => require.ensure([], () => r(require('../pages/waybill/waybill.vue')), 'waybill') //运单
+const waybillDetail = r => require.ensure([], () => r(require('../pages/waybill/waybillDetail.vue')), 'waybillDetail') //运单详情
+
+//货物统计
+const goodsManage = r => require.ensure([], () => r(require('../pages/goodsManage/goodsManage')), 'goodsManage') // 货物统计列表
+const goodsDelivery = r => require.ensure([], () => r(require('../pages/goodsManage/goodsDelivery')), 'goodsDelivery') // 货物统计发货
+const slipPublish = r => require.ensure([], () => r(require('../pages/goodsManage/slipPublish')), 'slipPublish') // 货物统计转单发布
+
+//物流专线
+const specialLine = r => require.ensure([], () => r(require('../pages/specialLine/specialLine')), 'specialLine') // 物流专线页面
+
+const printer = r => require.ensure([], () => r(require('../pages/printer/printer')), 'printer') // 标签打印
+
+const carrier = r => require.ensure([], () => r(require('../pages/carrier/carrier')), 'carrier') // 选择承运人
+
+const publishTipsPage = r => require.ensure([], () => r(require('../pages/tipsPage/publishTipsPage')), 'publishTipsPage') // 发布成功后提示页
+
+const slipPublishTipsPage = r => require.ensure([], () => r(require('../pages/tipsPage/slipPublishTipsPage')), 'slipPublishTipsPage') // 转单发布成功后提示页
+
+
+const updating = r => require.ensure([], () => r(require('../pages/update/update')), 'update') // 服务器升级页面
+
 Vue.use(Router)
 
 export default new Router({
@@ -58,7 +82,7 @@ export default new Router({
         { // 物流去付款
             path: '/wlpayment',
             component: newpayment,
-            name: 'newpayment',
+            // name: 'newpayment',
             children: [{
                 path: '/',
                 component: paying,
@@ -74,7 +98,7 @@ export default new Router({
         {
             path: '/recharge',
             component: newrecharge,
-            name: 'newrecharge',
+            // name: 'newrecharge',
             children: [{
                 path: '/',
                 component: recharge,
@@ -87,28 +111,44 @@ export default new Router({
                 title: '充值新'
             }
         },
-      {
+        {
             path: '/bankcard',
             component: bankcard,
-            name: 'bankcard',
+            // name: 'bankcard',
             children: [
-              {
-                path: '/',
-                component: bankcardlist,
-                name: 'bankcardlist',
-                meta: {
-                    title: '银行卡管理'
+                {
+                    path: '/',
+                    component: bankcardlist,
+                    name: 'bankcardlist',
+                    meta: {
+                        title: '银行卡管理'
+                    }
                 }
-              }
             ],
             meta: {
                 title: '银行卡管理'
             }
         },
         {
+            path: '/waybill',
+            component: waybill,
+            name: 'waybill',
+            meta: {
+                title: '运单管理'
+            }
+        },
+        {
+            path: '/waybillDetail/:id',
+            component: waybillDetail,
+            name: 'waybillDetails',
+            meta: {
+              title: '运单详情'
+            }
+        },
+        {
             path: '/withdraw',
             component: newwithdraw,
-            name: 'newwithdraw',
+            // name: 'newwithdraw',
             children: [
                 {
                     path: '/',
@@ -347,6 +387,14 @@ export default new Router({
             }
         },
         {
+          path: '/sourceEdit/:id',
+          component: sourceEdit,
+          name: 'sourceEdit',
+          meta: {
+            title: '货源列表编辑'
+          }
+        },
+        {
             path: '/orderList',
             component: orderList,
             name: 'orderList',
@@ -432,6 +480,78 @@ export default new Router({
             name: 'blacklistLogisticsAdd',
             meta: {
                 title: '添加黑名单'
+            }
+        },
+        {
+            path: '/goodsManage',
+            component: goodsManage,
+            name: 'goodsManage',
+            meta: {
+                title: '货物统计'
+            }
+        },
+        {
+            path: '/goodsDelivery',
+            component: goodsDelivery,
+            name: 'goodsDelivery',
+            meta: {
+                title: '货物统计发货'
+            }
+        },
+        {
+            path: '/slipPublish',
+            component: slipPublish,
+            name: 'slipPublish',
+            meta: {
+                title: '货物统计转单发布'
+            }
+        },
+        {
+          path: '/specialLine',
+          component: specialLine,
+          name: 'specialLine',
+          meta: {
+            title: '物流专线'
+          }
+        },
+        {
+          path: '/printer/:id',
+          component: printer,
+          name: 'printer',
+          meta: {
+            title: '打印标签'
+          }
+        },
+        {
+          path: '/carrier/:id',
+          component: carrier,
+          name: 'carrier',
+          meta: {
+            title: '选择承运人'
+          }
+        },
+        {
+            path: '/publishTipsPage',
+            component: publishTipsPage,
+            name: 'publishTipsPage',
+            meta: {
+                title: '发布货源提示'
+            }
+        },
+        {
+            path: '/slipPublishTipsPage',
+            component: slipPublishTipsPage,
+            name: 'slipPublishTipsPage',
+            meta: {
+                title: '转单发布货源提示'
+            }
+        },
+        {
+            path: '/update',
+            component: updating,
+            name: 'update',
+            meta: {
+                title: '服务器升级中'
             }
         }
     ]

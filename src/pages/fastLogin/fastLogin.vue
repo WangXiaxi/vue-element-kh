@@ -68,8 +68,10 @@ import foot from "components/footer/foot";
 import regs from "config/regExp";
 import cookie from "cookiejs";
 import { fastLogin, getCode } from "api/getData";
+import auto_login from "@/mixins/auto_login";
 
 export default {
+  mixins: [auto_login],
   data() {
     return {
       canSubmit: true,
@@ -141,7 +143,7 @@ export default {
           if (resData.data.ResultCode === "000000") {
             this.$message.success({ message: resData.data.ResultMessage });
             // 这个地方 要配合 官网 所以domain 必须要放开 设置 domain: "sdhwlw.com"
-            let host = window.location.href.indexOf("localhost") > -1 ? 'localhost' : 'sdhwlw.com';
+            let host = window.location.href.indexOf("sdhwlw.com") > -1 ? 'sdhwlw.com' : window.location.hostname;
             cookie('Token', String(resData.data.ResultValue.MembToken), {
               "expires": 30
             });
@@ -205,16 +207,7 @@ export default {
     }
   },
   created() {
-    // if (this.$cookie.get("IP")) {
-    //   return;
-    // } else {
-    //   getIP().then(res => {
-    //     if (res.status == "200" && res.data) {
-    //       this.fastLoginData.IP = res.data.ip;
-    //       this.$cookie.set("IP", res.data.ip);
-    //     }
-    //   });
-    // }
+    this.automaticLogon(); // 存在用户，则不让进入外页
   },
   components: {
     headTop,

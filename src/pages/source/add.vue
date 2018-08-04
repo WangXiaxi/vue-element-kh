@@ -1,25 +1,15 @@
 <template>
-  <div>
+  <div class="add">
     <head-top>
       <span class="title" slot="index">{{userType == 1?'货主':'物流公司'}}-工作台</span>
       <div class="header-center" slot="menu">
-        <ul>
-          <router-link tag="li" to="/source" class="active" v-if="userType == 1">首页</router-link>
-          <router-link tag="li" to="/add" class="active" v-else>首页</router-link>
-          <router-link tag="li" to="/finaindex">财务管理</router-link>
-          <router-link tag="li" to="/account">账户信息</router-link>
-        </ul>
+        <head-menu-router activeLink="index"></head-menu-router>
       </div>
       <drop-down slot="info"></drop-down>
     </head-top>
     <div class="content clear">
       <div class="content-left">
-        <ul>
-          <router-link class="active" tag="li" to="/add" v-if="userType == 2">发布货源</router-link>
-          <router-link class="active" tag="li" to="/source" v-else>发布货源</router-link>
-          <router-link to="/sourceList" tag="li" v-if="userType == 1">货源列表</router-link>
-          <router-link to="/orderList" tag="li" v-if="userType == 2">货源列表</router-link>
-        </ul>
+        <left-menu-router-home activeLink="add"></left-menu-router-home>
       </div>
       <div class="content-right">
         <div class="product fr" v-loading="loading">
@@ -94,6 +84,86 @@
                     </div>
                   </div>
                 </el-form-item>
+
+                <div class="item-box">
+                  <el-form-item label="出发地" prop="fromID">
+                    <el-cascader
+                      placeholder="请选择出发地"
+                      class="address"
+                      :show-all-levels="true"
+                      :options="address"
+                      v-model="sourceData.fromID"
+                      @change="handChange"
+                    ></el-cascader>
+                  </el-form-item>
+                  <el-form-item prop="FromAddress">
+                    <el-input
+                      class="adress-details"
+                      v-model="sourceData.FromAddress"
+                      @blur="getArea(sourceData.fromID,sourceData.FromAddress,1)"
+                      placeholder="请填写具体街道门牌号 大厦 房间号码"
+                    >
+                    <template slot="suffix">
+                      <el-tooltip class="item cuspoint" effect="dark" content="点击地图选址" placement="top">
+                        <span class="mapIcon" @click="setValue('1')">
+                          <i class="el-icon-location-outline"></i>
+                        </span>
+                      </el-tooltip>
+                    </template>
+                    </el-input>
+                  </el-form-item>
+                </div>
+
+                <div class="item-box">
+                  <el-form-item label="目的地" prop="toID">
+                    <el-cascader
+                      class="address"
+                      placeholder="请选择目的地"
+                      :show-all-levels="true"
+                      v-model="sourceData.toID"
+                      :options="address"
+                      @change="handChange1"
+                      change-on-select
+                    ></el-cascader>
+                  </el-form-item>
+                  <el-form-item prop="ToAddress" ref="ToAddress">
+                    <el-input
+                      class="adress-details"
+                      v-model="sourceData.ToAddress"
+                      @blur="getArea(sourceData.toID,sourceData.ToAddress,0)"
+                      placeholder="请填写具体街道门牌号 大厦 房间号码"
+                    >
+                    <template slot="suffix">
+                      <el-tooltip class="item cuspoint" effect="dark" content="点击地图选址" placement="top">
+                        <span class="mapIcon" @click="setValue('2')">
+                          <i class="el-icon-location-outline"></i>
+                        </span>
+                      </el-tooltip>
+                    </template>
+                    </el-input>
+                  </el-form-item>
+                </div>
+
+                <!-- 收货人信息 start -->
+                <div class="item-box">
+                  <el-form-item label="收货人信息" prop="Receiver" ref="Receiver">
+                    <div class="normal">
+                      <el-input v-model="sourceData.Receiver"
+                        placeholder="请输入收货人名称"
+                      ></el-input>
+                    </div>
+                  </el-form-item>
+
+                  <el-form-item prop="ReceivePhone" ref="ReceivePhone">
+                    <div class="normal">
+                      <el-input v-model="sourceData.ReceivePhone"
+                        placeholder="请输入收货人联系电话"
+                      ></el-input>
+                    </div>
+                  </el-form-item>
+                </div>
+                <!-- 收货人信息 end -->
+
                 <el-form-item label="装货时间" prop="LoadTime">
                   <el-col>
                     <el-date-picker
@@ -107,97 +177,36 @@
                     </el-date-picker>
                   </el-col>
                 </el-form-item>
-                <el-form-item label="车长/车型" prop="Length">
-                  <div class="fl mr-10">
-                    <el-form-item prop="Long">
-                      <el-autocomplete
-                        class="normal"
-                        v-model="sourceData.Length"
-                        :fetch-suggestions='getLongList'
-                        placeholder="车长"
-                      ></el-autocomplete>
-                    </el-form-item>
-                  </div>
-                  <div class="fl">
-                    <el-form-item prop="ModelID">
-                      <el-select placeholder="车型" v-model="sourceData.ModelID">
-                        <el-option
-                          v-for="(item,index) in ModelList"
-                          :key="item.index"
-                          :label="item.DictName"
-                          :value="item.DictID"
-                        >
-                        </el-option>
-                      </el-select>
-                    </el-form-item>
-                  </div>
-                </el-form-item>
+
+                <div class="item-box">
+                  <el-form-item label="车长/车型" prop="LengthCopy">
+                    <el-autocomplete
+                      class="normal"
+                      v-model="sourceData.LengthCopy"
+                      :fetch-suggestions='getLongList'
+                      placeholder="车长"
+                    ></el-autocomplete>
+                  </el-form-item>
+                  <el-form-item prop="ModelID">
+                    <el-select placeholder="车型" v-model="sourceData.ModelID">
+                      <el-option
+                        v-for="(item,index) in ModelList"
+                        :key="item.index"
+                        :label="item.DictName"
+                        :value="item.DictID"
+                      >
+                      </el-option>
+                    </el-select>
+                  </el-form-item>
+                </div>
+
                 <!-- <el-form-item label="提货方式" prop="DeliveryMode">
                   <el-radio v-model="sourceData.DeliveryMode" label="0">不限</el-radio>
                   <el-radio v-model="sourceData.DeliveryMode" label="1">送货上门</el-radio>
                   <el-radio v-model="sourceData.DeliveryMode" label="2">上门提货</el-radio>
                   <span class="gray-txt">（建议-出发地填写到详细地址）</span>
                 </el-form-item> -->
-                <el-form-item label="出发地" class="clear" prop="fromID">
-                  <div class="fl">
-                    <el-cascader
-                      placeholder="请选择出发地"
-                      class="address"
-                      :show-all-levels="true"
-                      :options="address"
-                      v-model="sourceData.fromID"
 
-                      @change="handChange"
-                    ></el-cascader>
-                  </div>
-                  <div class="address">
-                    <el-form-item prop="FromAddress">
-                      <el-input
-                        v-model="sourceData.FromAddress"
-                        @blur="getArea(sourceData.fromID,sourceData.FromAddress,1)"
-                        placeholder="请填写具体街道门牌号 大厦 房间号码"
-                      >
-                      <template slot="suffix">
-                        <el-tooltip class="item cuspoint" effect="dark" content="点击地图选址" placement="top">
-                          <span class="mapIcon" @click="setValue('1')">
-                            <i class="el-icon-location-outline"></i>
-                          </span>
-                        </el-tooltip>
-                      </template>
-                      </el-input>
-                    </el-form-item>
-                  </div>
-                </el-form-item>
-                <el-form-item label="目的地" prop="toID">
-                  <div class="fl">
-                    <el-cascader
-                      class="address"
-                      placeholder="请选择目的地"
-                      :show-all-levels="true"
-                      v-model="sourceData.toID"
-                      :options="address"
-                      @change="handChange1"
-                      change-on-select
-                    ></el-cascader>
-                  </div>
-                  <div class="address">
-                    <el-form-item prop="ToAddress">
-                      <el-input
-                        v-model="sourceData.ToAddress"
-                        @blur="getArea(sourceData.toID,sourceData.ToAddress,0)"
-                        placeholder="请填写具体街道门牌号 大厦 房间号码"
-                      >
-                      <template slot="suffix">
-                        <el-tooltip class="item cuspoint" effect="dark" content="点击地图选址" placement="top">
-                          <span class="mapIcon" @click="setValue('2')">
-                            <i class="el-icon-location-outline"></i>
-                          </span>
-                        </el-tooltip>
-                      </template>
-                      </el-input>
-                    </el-form-item>
-                  </div>
-                </el-form-item>
                 <el-form-item label="接单模式" prop="Parttern">
                   <el-radio v-model="sourceData.Parttern" label="1">抢单</el-radio>
                   <el-radio v-model="sourceData.Parttern" label="2">最低价</el-radio>
@@ -211,12 +220,9 @@
                   <el-input v-model="sourceData.Remark" type="textarea" placeholder="备注信息例如，三不超 ，马上装货，需要雨布"></el-input>
                 </el-form-item>
                 <el-form-item class="mt-60" v-if="!getUserRole(userCharacter,'财务') && this.$cookie.get('MemberMerchantID')">
-                  <el-button type="primary" class="add-now" :disabled="hasCommit" @click="addSource('sourceData')"
+                  <el-button type="primary" class="add-now" @click="addSource('sourceData')"
                              round>立即发布
                   </el-button>
-                  <!-- <el-button plain round class="add-now" :disabled="hasCommit" @click="addSource('sourceData','2')">
-                    保存货源，稍后发布
-                  </el-button> -->
                 </el-form-item>
               </el-form>
             </div>
@@ -224,34 +230,15 @@
         </div>
       </div>
     </div>
-    <el-dialog title="选择发货地址" :visible.sync="IsShowMap" :close-on-click-modal="false" width="1000px"
+    <el-dialog title="选择地址" :visible.sync="IsShowMap" :close-on-click-modal="false" width="1000px"
                :close-on-press-escape="false">
       <div class="tip-box">
         <vue-map v-if="IsShowMap" :inputName="index" :location="mapData.address" :lng-lat="mapData.lnglat" @setFilter="locationFilter"></vue-map>
       </div>
     </el-dialog>
     <foot></foot>
-    <!-- 小星引入未审核弹窗与发布成功后弹窗 -->
-    <issue-dialog
-      v-if="ifShowIssueDialog"
-      :ifShowIssueDialog="ifShowIssueDialog"
-      @closeDialog="closeIssueDialog"
-      :issueDialogInfo="issueDialogInfo"
-      @goDetails="goDetails"
-    ></issue-dialog>
-
-    <login-dialog v-if="ifShowLoginDialog"
-      :ifShowLoginDialog="ifShowLoginDialog"
-      @closeDialog="ifShowLoginDialog=false"
-      :merchantStatus="merchantStatus">
-    </login-dialog>
-    <!-- 结束 -->
     <!-- 引入重复发布弹窗 -->
-    <repeat-dialog v-if="ifShowRepeatDialog"
-      :ifShowRepeatDialog="ifShowRepeatDialog"
-      @goPublish="publishAct()"
-      @closeDialog="closeRepeatDialog()">
-    </repeat-dialog>
+    <hint-dialog :dialogObject="hintDialogObject" @sureDialog="publishActSure()"></hint-dialog>
     <!-- 结束 -->
   </div>
 </template>
@@ -268,11 +255,11 @@
 
   /** 小星引入未审核弹窗与发布成功后弹窗 **/
   import { CarLongList } from "config/publicParam"; // 提取了下CarLongList
-  import issueDialog from 'components/issueDialog/issueDialog';
-  import loginDialog from 'components/loginDialog/loginDialog';
-  import repeatDialog from 'components/repeatDialog/repeatDialog';
+  import hintDialog from 'components/hintDialog/hintDialog';
   /** 结束 **/
   import { mapGetters, mapMutations } from 'vuex';
+  import leftMenuRouterHome from 'components/leftMenuRouter/leftMenuRouterHome'; // 左侧
+  import headMenuRouter from 'components/headMenuRouter/headMenuRouter'; // 头部
 
   import {
     getCarModelList,
@@ -288,15 +275,9 @@
   export default {
     data() {
       return {
+        isSurepublish: {}, // 记录检查接口返回显示弹窗，结合
+        hintDialogObject: {}, // 重复发货提醒
         merchantStatus: this.$cookie.get("MerchantStatus"), // 新参数 用户审核状态
-        ifShowIssueDialog: false, // 是否显示未审核弹窗
-        ifShowLoginDialog: false, // 是否显示发布成功后弹窗
-        ifShowRepeatDialog: false, // 重复发货提醒
-        issueDialogInfo: { // 发布成功弹窗数据
-          ResultMessage: '',
-          ResultOrderID: '',
-          ResultPiPei: ''
-        },
         loading: false,
         pickerOptions: {
           disabledDate(time) {
@@ -305,7 +286,6 @@
         },// 限制时间输入
         userCharacter: this.$cookie.get("MemberDutiesID"),
         userType: this.$cookie.get("MemberCrowd"),
-        hasCommit: false,//是否已经提交
         ModelList: [],//车型数据
         CarLongList: CarLongList,//车长数据
         IsShowMap: false, //是否显示地图
@@ -328,7 +308,8 @@
           ToCountyID: '',
           CargoName: '',
           Classify: '',
-          Length: '不限',
+          Length: '99',
+          LengthCopy: '不限', // 添加lengthCopy 减少重复代码
           ModelID: '',
           Weight: '',
           Volume: '',
@@ -344,7 +325,9 @@
           ToLongitude: '',
           ToLatitude: '',
           fromID: [],
-          toID: []
+          toID: [],
+          Receiver: '', // 收货人信息
+          ReceivePhone: '' // 收货人手机号
         },
         sourceDataRules: {//验证规则
           CargoName: [
@@ -376,6 +359,20 @@
           LoadTime: [
             { required: true, message: "请选择装货时间", trigger: "blur" }
           ],
+          LengthCopy: [
+            {
+              validator: (rule, value, callback) => {
+                if (value >= 1 && value <= 35) {
+                  callback();
+                } else if (value == "不限") {
+                  callback();
+                } else {
+                  callback(new Error("车长最大为35米！"));
+                }
+              },
+              trigger: "change"
+            }
+          ],
           fromID: [
             { required: true, message: "请选择出发地", trigger: "change" },
             {
@@ -395,6 +392,10 @@
             { required: true, message: "请选择目的地", trigger: "blur" },
             {
               validator: (rule, value, callback) => {
+                let _ = this.sourceData.fromID;
+                if (_[0] == value[0] && _[1] == value[1] && _[2] == value[2]) {
+                  callback(new Error("发货地目的地省市区不能完全相同"));
+                }
                 if(value.length < 2){
                   callback(new Error("目的地请选择到省市"));
                 } else {
@@ -409,54 +410,93 @@
           ],
           Freight: [
             { required: true, message: "请输入运费金额", trigger: "blur" },
-            { pattern: regs.NF2, message: "请输入数字，最多两位小数", trigger: "blur" }
+            { pattern: regs.NF2, message: "请输入数字，最多两位小数", trigger: "blur" },
+            {
+              validator: (rule, value, callback) => {
+                if (Number(value) <= 0) {
+                  callback('金额必须大于0');
+                } else {
+                  callback();
+                }
+              },
+              trigger: "blur"
+            }
+          ],
+          ReceivePhone: [
+            {
+              validator: (rule, value, callback) => { // 当选中送货上门货主到付 必须填收货人等
+                if (value && !regs.Phone.test(value)) {
+                  callback('您输入的手机号码格式不正确')
+                } else {
+                  callback()
+                }
+              },
+              trigger: "blur"
+            }
           ]
         }
       }
     },
     methods: {
       getUserRole: getUserRole,
-      closeRepeatDialog () { // 弹框取消操作
-        this.ifShowRepeatDialog = false;
+      resetPathFields () { // 重置部分表单验证 收货人信息是否必填等
+        this.$refs['sourceData'].validateField('Receiver')
+        this.$refs['sourceData'].validateField('ToAddress')
+        this.$refs['sourceData'].validateField('ReceivePhone')
+      },
+      delePathFields () { // 重置部分表单验证 收货人信息是否必填等
+        this.$refs['Receiver'].clearValidate()
+        this.$refs['ToAddress'].clearValidate()
+        this.$refs['ReceivePhone'].clearValidate()
+      },
+      publishActSure () { // 由于可能同事显示两种弹窗 得发布前确认
+        let _ = this;
+        if (_.isSurepublish.IsNoCarrier) {
+          _.isSurepublish.IsNoCarrier = false;
+          if (_.isSurepublish.IsRepeat) {
+            _.loading = true;
+            setTimeout(() => {
+              _.loading = false;
+              this.hintDialogObject = {
+                visible: true, // 是否显示
+                btnL: '取消发布', // 取消按钮名称
+                btnR: '确定发布', // 确定按钮名称
+                tip: '同样信息货源，您今天已发布一单！', // 提示
+                des: '是否再次发布货源？', // 描述
+                color: 'red', // 描述字颜色
+                i: 'warning', // 图标
+                iColor: '#fecb12' // 图标颜色
+              }
+            }, 600);
+          } else {
+            _.publishAct();
+          }
+        } else { // 说明是第二个弹窗
+          _.publishAct();
+        }
       },
       async publishAct () { // 发布操作
-        this.ifShowRepeatDialog = false;
-        if (this.hasCommit) {
-          return;
-        }
-        this.hasCommit = true;
         this.loading = true;
         let res = await sourceAdd(this.sourceData);
-        this.hasCommit = false;
         this.loading = false;
-        if(this.sourceData.Length == '不限'){
-          this.sourceData.Length = '99';
-        }
         if (res.data.ResultCode === '000000') {
           // 成功发布操作
-          this.issueDialogInfo.ResultMessage = res.data.ResultMessage
-          this.issueDialogInfo.ResultOrderID = res.data.ResultOrderID
-          this.issueDialogInfo.ResultPiPei = res.data.ResultPiPei
-          this.ifShowIssueDialog = true
-          if(this.sourceData.Length == "99"){
-            this.sourceData.Length = "不限";
+         if(this.sourceData.Parttern == 2 && !res.data.ResultValue.PiPei){ // PiPei = 1 则无车辆 直接跳转至成功页 = 0 说明有车辆需要选择承运
+            this.$router.push('/carrier/'+ res.data.ResultValue.OrderId);
+            return;
           }
-          this.$refs.sourceData.resetFields();
-        } else {
-          if(this.sourceData.Length == "99"){
-            this.sourceData.Length = "不限";
-          }
+          // 否则跳至成功页
+          this.$router.push({
+            path: '/publishTipsPage',
+            query: {
+              i: 'success',
+              tip: '恭喜您，货源发布成功！',
+              des: res.data.ResultMessage,
+              color: !res.data.ResultValue.PiPei ? '#999' : 'red',
+              orderID: res.data.ResultValue.OrderId
+            }
+          });
         }
-      },
-      closeIssueDialog () {
-        if(this.sourceData.Long == '99'){
-          this.sourceData.Long = "不限";
-        }
-        this.ifShowIssueDialog = false;
-        this.$router.push('/add')
-      },
-      goDetails () { // 查看货源详情
-        this.$router.push(`/orderDetails/${this.issueDialogInfo.ResultOrderID}`);
       },
       //数组去重
       arrQc(arr) {
@@ -516,11 +556,6 @@
             this.mapData.lnglat =  [this.sourceData.ToLongitude,this.sourceData.ToLatitude];
           }
         }
-        // mapData: {
-        //   //地图数据
-        //   address: "",
-        //   lnglat: [116.397428, 39.90923]
-        // },
       },
       // 设置地图传回的参数到输入框
       locationFilter (address, ID, lnglat, index) {
@@ -543,21 +578,15 @@
       },
       //发布提交
       async addSource(sourceData) {
-        // 提前验证是否审核过
-        if (this.merchantStatus == 0 || this.merchantStatus == 1 || this.merchantStatus == -1 ) {
-          this.ifShowLoginDialog = true
-          return
-        }
         // 结束
         this.$refs[sourceData].validate(async (valid) => {
           if (valid) {
-            this.hasCommit = true;
             this.loading = true;
             this.sourceData.MerchantID = this.$cookie.get("MemberMerchantID");
             this.sourceData.MemberID = this.$cookie.get("MemberID");
-            if(this.sourceData.Length == "不限"){
-              this.sourceData.Length = "99";
-            }
+
+            this.sourceData.Length = this.sourceData.LengthCopy === '不限' ? '99' : this.sourceData.LengthCopy; // 赋值length
+
             if(this.sourceData.fromID[0]){
               this.sourceData.FromProvinceID = this.sourceData.fromID[0];
             }
@@ -576,59 +605,86 @@
             if(this.sourceData.toID[2]){
               this.sourceData.ToCountyID = this.sourceData.toID[2];
             }
-
             //在发布前检测 检测是否已经发布
-            let resCheck = await JudgeOrderRepeat(Object.assign({Owner: 2}, this.sourceData));
-            this.hasCommit = false;
+            const {data: {ResultCode, ResultMessage, ResultValue}} = await JudgeOrderRepeat(Object.assign({Owner: 2}, this.sourceData));
             this.loading = false;
-            if (this.sourceData.Length == 99) {
-              this.sourceData.Length = '不限';
+            if (ResultCode !== '000000') return; // 请求失败直接结束
+            this.isSurepublish = ResultValue; // 记录弹窗，集合
+            if (ResultValue && ResultValue.IsNoCarrier) {
+              this.hintDialogObject = {
+                visible: true, // 是否显示
+                btnL: '取消发布', // 取消按钮名称
+                btnR: '确定发布', // 确定按钮名称
+                tip: '十分抱歉 T_T～！', // 提示
+                des: '尊敬的用户，该路线暂无物流公司开通，可能长时间无承运人抢单！', // 描述
+                color: 'red', // 描述字颜色
+                i: 'warning', // 图标
+                iColor: '#fecb12' // 图标颜色
+              }
+              return;
             }
-            if (resCheck.data.ResultCode === '000000' && resCheck.data.ResultValue) {
-              this.ifShowRepeatDialog = true;
-            } else if (resCheck.data.ResultCode === '000000') {
-              this.publishAct(); // 执行发布操作
+
+            if (ResultValue && ResultValue.IsRepeat) {
+              this.hintDialogObject = {
+                visible: true, // 是否显示
+                btnL: '取消发布', // 取消按钮名称
+                btnR: '确定发布', // 确定按钮名称
+                tip: '同样信息货源，您今天已发布一单！', // 提示
+                des: '是否再次发布货源？', // 描述
+                color: 'red', // 描述字颜色
+                i: 'warning', // 图标
+                iColor: '#fecb12' // 图标颜色
+              }
+              return;
             }
+
+            this.publishAct(); // 执行发布操作
           }
         });
       },
       // 获取订单数据
-      async getSource(id){
-        getSourceData({MemberID: this.$cookie.get('MemberID'),OrderID: id}).then(res=>{
-          if (res.data.ResultCode === '000000' && res.data.ResultValue) {
-            let Data = res.data.ResultValue;
-            this.sourceData.LoadTime = Data.LoadDate;
-            this.sourceData.CargoName = Data.CargoName;
-            this.sourceData.Volume = Data.Volume;
-            this.sourceData.Weight = Data.Weight;
-            this.sourceData.ModelID  = Data.ModelID;
-            this.sourceData.ToAddress = Data.ToAddress;
-            this.sourceData.FromProvinceID = Data.FromProvinceID;
-            this.sourceData.FromCountyID = Data.FromCountyID;
-            this.sourceData.ToProvinceID = Data.ToProvinceID;
-            this.sourceData.ToCityID = Data.ToCityID;
-            this.sourceData.ToCountyID = Data.ToCountyID;
-            this.sourceData.Remark = Data.Remark;
-            this.sourceData.Parttern = Data.Parttern;
-            this.sourceData.FromAddress = Data.FromAddress;
-            this.sourceData.ToAddress = Data.ToAddress;
-            this.sourceData.FromLongitude = Data.FromLongitude;
-            this.sourceData.FromLatitude = Data.FromLatitude;
-            this.sourceData.ToLongitude = Data.ToLongitude;
-            this.sourceData.ToLatitude = Data.ToLatitude;
-            this.sourceData.Freight = Data.Freight;
-            this.sourceData.Classify = Data.ClassifyID;
-            if(Data.Long == 99){
-              this.sourceData.Length = "不限";
-            } else {
-              this.sourceData.Length = Data.Long;
+      async getSource (id) {
+        return new Promise((resolve, reject) => {
+          getSourceData({MemberID: this.$cookie.get('MemberID'),OrderID: id}).then(res => {
+            if (res.data.ResultCode === '000000' && res.data.ResultValue) {
+              let Data = res.data.ResultValue;
+              this.sourceData.LoadTime = Data.LoadDate;
+              this.sourceData.CargoName = Data.CargoName;
+              this.sourceData.Volume = Data.Volume;
+              this.sourceData.Weight = Data.Weight;
+              this.sourceData.ModelID  = Data.ModelID;
+              this.sourceData.ToAddress = Data.ToAddress;
+              this.sourceData.FromProvinceID = Data.FromProvinceID;
+              this.sourceData.FromCountyID = Data.FromCountyID;
+              this.sourceData.ToProvinceID = Data.ToProvinceID;
+              this.sourceData.ToCityID = Data.ToCityID;
+              this.sourceData.ToCountyID = Data.ToCountyID;
+              this.sourceData.Remark = Data.Remark;
+              this.sourceData.Parttern = Data.Parttern;
+              this.sourceData.FromAddress = Data.FromAddress;
+              this.sourceData.ToAddress = Data.ToAddress;
+              this.sourceData.FromLongitude = Data.FromLongitude;
+              this.sourceData.FromLatitude = Data.FromLatitude;
+              this.sourceData.ToLongitude = Data.ToLongitude;
+              this.sourceData.ToLatitude = Data.ToLatitude;
+              this.sourceData.Freight = Data.Freight;
+              this.sourceData.Classify = Data.ClassifyID;
+              this.sourceData.Receiver = Data.Receiver; // 收货人信息 1.0.7
+              this.sourceData.ReceivePhone = Data.ReceivePhone;
+              if (Data.Long == 99) {
+                this.sourceData.LengthCopy = "不限";
+              } else {
+                this.sourceData.LengthCopy = Data.Long;
+              }
+              this.sourceData.fromID = [Number(Data.FromProvince),Number(Data.FromCity),Number(Data.FromCounty)];
+              this.sourceData.toID = [Number(Data.ToProvince),Number(Data.ToCity),Number(Data.ToCounty)];
+              this.sourceData.Parttern = String(Data.Parttern);
+              // this.sourceData.DeliveryMode = String(Data.DeliveryMode);
             }
-            this.sourceData.fromID = [Number(Data.FromProvince),Number(Data.FromCity),Number(Data.FromCounty)];
-            this.sourceData.toID = [Number(Data.ToProvince),Number(Data.ToCity),Number(Data.ToCounty)];
-            this.sourceData.Parttern = String(Data.Parttern);
-            // this.sourceData.DeliveryMode = String(Data.DeliveryMode);
-            this.loading = false;
-          }
+            resolve('success'); // 定义个promise
+          }).catch(() => {
+            resolve('error');
+          })
         })
       },
       //获取城市联动的label
@@ -668,79 +724,79 @@
       })
     },
     created() {
-      if (this.$cookie.get("MemberID")) {
-        if(this.$cookie.get("MemberMerchantID")){
-          if (this.userType == 2) {
-            this.loading = true;
-          //获取车型列表
-            getCarModelList().then(res => {
-              if (res.data.ResultCode === '000000' && res.data.ResultValue) {
-                res.data.ResultValue.push({DictID: '', DictName: '不限'});
-                this.ModelList = res.data.ResultValue;
-              }
-            })
-            // 获取货物类型
-            getProTypeList().then(res=>{
-              if (res.data.ResultCode === '000000' && res.data.ResultValue) {
-                this.productList = res.data.ResultValue;
-              }
-            })
-            //获取入驻的公司地址
-            if (!this.$route.params.id) {
-              getEnterAddress({ MemberID: this.$cookie.get("MemberID") }).then(
-                res => {
-                  if (res.data.ResultCode === "000000" && res.data.ResultValue) {
-                    let arr = res.data.ResultValue.FromCityID.split(",");
-                    for (let i in arr) {
-                      this.sourceData.fromID.push(Number(arr[i]));
-                    }
-                    this.sourceData.FromAddress = res.data.ResultValue.FromAddress;
-                    this.mapData.address = res.data.ResultValue.FromAddress;
-                    this.getArea(this.sourceData.fromID, this.sourceData.FromAddress, 1);
-                  }
-                  this.loading = false;
-                }
-              ).catch(err=>{
-                this.loading = false;
-              });
-            }
-            if(this.$route.params.id){
-              this.getSource(this.$route.params.id);
-            }
-          } else {
-            this.$message.info({message: '身份类型错误！'});
-            this.$router.push('/source');
-          }
-        } else {
-          this.$confirm("是否去入驻?", "你尚未入驻！", {
-          confirmButtonText: "去入驻",
-          cancelButtonText: "取消",
-          type: "warning"
-          }).then(() => {
-            this.$router.push("/settled");
-          });
-        }
-      } else {
-        this.$message.info({message: '你尚未登录，请登录！'});
-        this.$router.push('/');
+      if (this.userType != 2) {
+        this.$router.push("/source");
+        return;
       }
-      // 判断阈值是否存在
+
+      this.loading = true; // 加载 开启loading
+
+      let promise1 = new Promise((resolve, reject) => {  //获取车型列表 用promise实现下同步
+        getCarModelList().then(res => {
+          if (res.data.ResultCode === "000000" && res.data.ResultValue) {
+            res.data.ResultValue.push({ DictID: "", DictName: "不限" });
+            this.ModelList = res.data.ResultValue;
+          }
+          resolve(res);
+        }).catch(() => {
+          resolve('error');
+        })
+      })
+
+      let promise2 = new Promise((resolve, reject) => { // 获取货物类型 用promise实现下同步
+        getProTypeList().then(res => {
+          if (res.data.ResultCode === '000000' && res.data.ResultValue) {
+            this.productList = res.data.ResultValue;
+          }
+          resolve(res);
+        }).catch(() => {
+          resolve('error');
+        })
+      })
+
+      let promise3 = new Promise((resolve, reject) => { // 获取入驻的公司地址 用promise实现下同步
+        if (!this.$route.params.id) {
+          getEnterAddress({ MemberID: this.$cookie.get("MemberID") }).then(res => {
+            if (res.data.ResultCode === "000000" && res.data.ResultValue) {
+              let arr = res.data.ResultValue.FromCityID.split(",");
+              for (let i in arr) {
+                this.sourceData.fromID.push(Number(arr[i]));
+              }
+              this.sourceData.FromAddress = res.data.ResultValue.FromAddress;
+              this.mapData.address = res.data.ResultValue.FromAddress;
+              this.getArea(this.sourceData.fromID, this.sourceData.FromAddress, 1);
+            }
+            resolve(res);
+          }).catch(() => {
+            resolve('error');
+          })
+        } else {
+          resolve('end');
+        }
+      })
+
+      let promise4 = new Promise((resolve, reject) => { // 获取相对应数据 有ID情况
+        if (this.$route.params.id) {
+          this.getSource(this.$route.params.id).then((res) => {
+            resolve(res);
+          }).catch(() => {
+            resolve('error');
+          })
+        } else {
+          resolve('end');
+        }
+      })
+
+      Promise.all([promise1, promise2, promise3, promise4]).then(() => { // 加载完毕关闭loading
+        this.loading = false;
+      })
+
+      // 判断阈值是否存在 异步
       if (this.bulkyCargo < 0) {
-        this.GetHeavyCargoStandard()
+        this.GetHeavyCargoStandard();
       }
     },
     mounted () {
-      if (this.merchantStatus == 0 || this.merchantStatus == 1 || this.merchantStatus == -1) {
-        let param = 'ifShowIssueDialogNum' + this.$cookie.get("MemberID");
-        let ifshowdNum = sessionStorage.getItem(param)
-        if (!ifshowdNum) {
-          sessionStorage.setItem(param, '0')
-        }
-        if (ifshowdNum == 0 || !ifshowdNum) {
-          sessionStorage.setItem(param, '1')
-          this.ifShowLoginDialog = true
-        }
-      }
     },
     computed: {
       changeBubble() {
@@ -762,9 +818,16 @@
       dropDown,
       foot,
       vueMap,
-      issueDialog, // 注册组件
-      loginDialog,
-      repeatDialog
+      hintDialog,
+      leftMenuRouterHome, // 左侧导航
+      headMenuRouter // 左侧
+    },
+    watch: {
+      'sourceData.Parttern' (n) { // 接单模式修改清除不掉提示问题 优化
+        if (n) {
+          this.$refs['sourceData'].validateField('Parttern')
+        }
+      },
     }
   }
 </script>
@@ -820,14 +883,14 @@
   .fill
     padding: 0 20px
     .address
-      float: left
       width: 300px
-      margin-right: 10px
-      .mapIcon
-        display: inline-block
-        width: 30px
-        height: 30px
-        line-height: 30px
+    .adress-details
+      width: 400px
+    .mapIcon
+      display: inline-block
+      width: 30px
+      height: 30px
+      line-height: 30px
   .goodsInfo
       ul
         li
@@ -837,7 +900,6 @@
           p
             height: 40px
             line-height: 40px
-            // border-bottom: 1px solid $borderColor
           .header
             position: relative
             border: 1px solid $borderColor
@@ -861,4 +923,21 @@
   .add-now
     width: 200px
     font-size: 16px
+</style>
+<style lang="stylus">
+.add // 添加外层样式防止 样式外泄
+  .item-box // 重置一行多个el-input
+    margin-bottom: 22px
+    font-size: 0
+    .el-form-item
+      margin-bottom: 0
+      display: inline-block
+      &:not(:first-child)
+        .el-form-item__content
+          margin-left: 10px !important
+  .goodsInfo
+    p
+      .el-form-item
+        input
+          border-radius: 0
 </style>

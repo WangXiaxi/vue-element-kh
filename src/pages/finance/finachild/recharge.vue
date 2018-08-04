@@ -12,6 +12,7 @@
     <el-form-item label="充值方式">
       <el-radio class="radio" v-model="Recharge.foodSpecs" label="alipay"><em class="finaicon"></em>支付宝</el-radio>
       <el-radio class="radio" v-model="Recharge.foodSpecs" label="wechat"><em class="finaicon"></em>微信支付</el-radio>
+      <el-radio class="radio" v-model="Recharge.foodSpecs" label="zhongjin"><em class="finaicon"></em>中金</el-radio>
       <!--<el-radio class="radio" v-model="Recharge.foodSpecs" label="bank"><em class="finaicon"></em>网银支付</el-radio>-->
     </el-form-item>
     <el-form-item label="网银类型" v-if="Recharge.foodSpecs == 'bank'">
@@ -54,12 +55,20 @@
     </div>
   </el-dialog>
   <div class="qrcodebox" v-show="wechartpicVisible">
-      <strong>微信支付<em @click="timeoutClose">×</em></strong>
-      <div class="wechartpicbox">
-        <div id='code'></div>
-        <canvas id="canvas" width="200"></canvas>
-      </div>
+    <strong>微信支付<em @click="timeoutClose">×</em></strong>
+    <div class="wechartpicbox">
+      <div id='code'></div>
+      <canvas id="canvas" width="200"></canvas>
+    </div>
   </div>
+  <!-- 中金必须要表单提交 start -->
+  <div class="zhongjin-box" v-show="false">
+    <form name="zhongjinForm" id="zhongjinForm" method="post">
+      <input type="text" id="message" name="message">
+      <input type="text" id="signature" name="signature">
+    </form>
+  </div>
+  <!-- 中金必须要表单提交 end -->
 </div>
 </template>
 
@@ -69,10 +78,12 @@ import { baseUrl } from "@/api/env";
 import {
   RechargeRequest,
   WebWxPayRecharge,
-  WxPayRechargeSync
+  WxPayRechargeSync,
+  CpcnRecharge
 } from "@/api/getData";
 import QRCode from "qrcode";
 import Vue from "vue";
+import axios from 'axios';
 
 //Vue.use(QRCode)
 export default {
@@ -98,7 +109,10 @@ export default {
       selectIndex: [],
       selectbank: [],
       tableFrozen: [],
-      changebank: {}
+      changebank: {},
+      zhongjinAction: '',
+      zhongjinMessage: '',
+      zhongjinSignature: ''
     };
   },
   created() {
@@ -118,79 +132,62 @@ export default {
     RechargeRequest(enterData) {
       this.$refs[enterData].validate(async valid => {
         if (valid) {
-          if (this.Recharge.foodSpecs == "alipay") {
-            this.alipay();
-          } else if (this.Recharge.foodSpecs == "wechat") {
-            this.wetchartpay();
-          } else {
+          switch (this.Recharge.foodSpecs) {
+            case 'alipay':
+            this.alipay()
+            break
+            case 'wechat':
+            this.wetchartpay()
+            break
+            case 'zhongjin':
+            this.zhongjinPay()
+            break 
           }
         }
       });
     },
+    async zhongjinPay () { // 中金支付
+      let datlist = {
+        Amount: this.Recharge.money,
+        MerchantID: this.MerchantID
+      }
+      const res = await CpcnRecharge(datlist)
+      if (res.data.ResultCode === '000000') {
+        let json = res.data.ResultValue
+        let zhongjinForm = document.getElementById('zhongjinForm')
+        document.getElementById('message').value = json.Message
+        document.getElementById('signature').value = json.Signature
+        zhongjinForm.setAttribute('action', json.Action)
+        zhongjinForm.submit() // 表单提交
+      }
+    },
     //支付宝充值（编辑操作用到）
     async alipay() {
-      if (this.$cookie.get("MemberMerchantID")) {
-        let datlist = {
-          MerchantID: this.MerchantID,
-          MemberID: this.MemberID,
-          TotalAmout: this.Recharge.money
-        };
-        const StaffModels = await RechargeRequest(datlist);
-        if (StaffModels.data.ResultCode == "000000") {
-          window.location.href = StaffModels.data.ResultValue;
-        } else {
-          console.log("ok");
-          this.$message({
-            type: "error",
-            message: StaffModels.data.ResultMessage
-          });
-        }
-      } else {
-        this.$message.info("你尚未入驻！");
-        this.$confirm("是否去入驻?", "你尚未入驻！", {
-          confirmButtonText: "去入驻",
-          cancelButtonText: "取消",
-          type: "warning"
-        }).then(() => {
-          this.$router.push("/settled");
-        });
+      let datlist = {
+        MerchantID: this.MerchantID,
+        MemberID: this.MemberID,
+        TotalAmout: this.Recharge.money
+      };
+      const StaffModels = await RechargeRequest(datlist);
+      if (StaffModels.data.ResultCode == "000000") {
+        window.location.href = StaffModels.data.ResultValue;
       }
     },
     async wetchartpay() {
-      if (this.$cookie.get("MemberMerchantID")) {
-        let datlist = {
-          MerchantID: this.MerchantID,
-          MemberID: this.MemberID,
-          Amount: this.Recharge.money
-        };
-        const StaffModels = await WebWxPayRecharge(datlist);
-        if (StaffModels.data.ResultCode == "000000") {
-          this.wechartpicVisible = true;
-          // this.$message({
-          //   type: 'success',
-          //   message: StaffModels.data.ResultMessage
-          // });
-          this.wechartpic = decodeURIComponent(
-            StaffModels.data.ResultValue.CodeUrl
-          );
-          this.useqrcode(this.wechartpic);
-          this.RechID = StaffModels.data.ResultValue.RechID;
-          this.WxPaySync();
-        } else {
-          this.$message({
-            type: "error",
-            message: StaffModels.data.ResultMessage
-          });
-        }
-      } else {
-        this.$message.info("你尚未入驻！");
-        this.$confirm("是否去入驻?", "你尚未入驻！", {
-          confirmButtonText: "去入驻",
-          cancelButtonText: "取消",
-          type: "warning"
-        }).then(() => {
-          this.$router.push("/settled");
-        });
+      let datlist = {
+        MerchantID: this.MerchantID,
+        MemberID: this.MemberID,
+        Amount: this.Recharge.money
+      };
+      const StaffModels = await WebWxPayRecharge(datlist);
+      if (StaffModels.data.ResultCode == "000000") {
+        this.wechartpicVisible = true;
+        this.wechartpic = decodeURIComponent(
+          StaffModels.data.ResultValue.CodeUrl
+        );
+        this.useqrcode(this.wechartpic);
+        this.RechID = StaffModels.data.ResultValue.RechID;
+        this.WxPaySync();
       }
     },
     useqrcode(data) {
@@ -224,15 +221,10 @@ export default {
             message: "充值成功"
           });
           this.wechartpicVisible = false;
-          this.$router.push("/rechargelist");
+          this.$router.push("/rechargelist?payType=2");
         } else {
           this.time = setTimeout(this.WxPaySync, 5000);
         }
-      } else {
-        this.$message({
-          type: "error",
-          message: StaffModels.data.ResultMessage
-        });
       }
     },
     timeoutClose() {

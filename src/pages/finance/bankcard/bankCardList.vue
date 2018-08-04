@@ -45,7 +45,7 @@
       getUserRole: getUserRole,
       //获取账号下银行卡信息
       async getBankInfo(){
-        let params = {MemberID: this.$cookie.get("MemberID"), PageIndex: 1, PageSize: 10, TotalRecords: 0};
+        let params = {MemberID: this.$cookie.get("MemberID"), PageIndex: 1, PageSize: 1000, TotalRecords: 0};
         const list = await getBankcardList(params);
         if(list.data.ResultCode !== '000000'){
             this.$message({

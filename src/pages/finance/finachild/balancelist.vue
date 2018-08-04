@@ -51,9 +51,10 @@
         <el-table-column
           label="变动金额(元)">
           <template slot-scope="props">
-            <div class="orange-text" v-if="props.row.Type == '001' || (userType == 2 && props.row.Type == '003') || props.row.Type == '100'"> +{{props.row.Money}}</div>
-            <div class="orange-text" v-if="props.row.Type == '002' || (userType == 1 && props.row.Type == '003') || props.row.Type == '004'"> -{{props.row.Money}}</div>
-            <div class="orange-text" v-if="props.row.Type == '1' || props.row.Type == '2'">{{props.row.Money > 0 ? `+${props.row.Money}` : `-${props.row.Money}`}}</div>
+            <div class="orange-text" v-if="Number(props.row.Money)<0">{{props.row.Money}}</div>
+            <div class="orange-text" v-if="Number(props.row.Money)>0 && (props.row.Type == '001' || (userType == 2 && props.row.Type == '003') || props.row.Type == '100')"> +{{props.row.Money}}</div>
+            <div class="orange-text" v-if="Number(props.row.Money)>0 && (props.row.Type == '002' || (userType == 1 && props.row.Type == '003') || props.row.Type == '004')"> -{{props.row.Money}}</div>
+            <div class="orange-text" v-if="Number(props.row.Money)>0 && (props.row.Type == '1' || props.row.Type == '2')">{{props.row.Money > 0 ? `+${props.row.Money}` : `-${props.row.Money}`}}</div>
           </template>
         </el-table-column>
       </el-table>

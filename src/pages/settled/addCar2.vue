@@ -3,23 +3,13 @@
     <head-top>
       <span class="title" slot="settled">物流公司入驻</span>
       <div class="header-center" slot="menu">
-        <ul>
-          <router-link tag="li" to="/source"  v-if="userType == 1">首页</router-link>
-          <router-link tag="li" to="/add"  v-else>首页</router-link>
-          <router-link tag="li" to="/finaindex" >财务管理</router-link>
-          <router-link tag="li" to="/account" class="active">账户信息</router-link>
-        </ul>
+        <head-menu-router activeLink="account"></head-menu-router>
       </div>
       <drop-down slot="info"></drop-down>
     </head-top>
     <div class="settled">
-      <div class="settled-left">
-        <ul>
-          <router-link to="/account" tag="li" >账户安全</router-link>
-          <router-link to="/subAccount" tag="li" v-if="getUserRole(userCharacter,'管理')">会员用户管理</router-link>
-          <router-link :to="userType == 1 ? '/blacklistFactory' : '/blacklistLogistics'" tag="li">黑名单管理</router-link>
-          <router-link to="/settled2" tag="li" class="active">入驻信息</router-link>
-        </ul>
+      <div class="content-left">
+        <left-menu-router-account activeLink="settle"></left-menu-router-account>
       </div>
       <div class="settled-right">
       <p class="title"><span class="name">入驻信息</span> <i
@@ -191,6 +181,10 @@ import {
 } from "api/getData";
 import { imgPostUrl, imgUrl } from "api/env";
 import { getUserRole } from 'config/myUtils';
+import headMenuRouter from 'components/headMenuRouter/headMenuRouter'; // 头部
+import leftMenuRouterAccount from 'components/leftMenuRouter/leftMenuRouterAccount'; // 左侧
+import { mapGetters, mapMutations } from 'vuex';
+
 export default {
   data() {
     return {
@@ -267,7 +261,7 @@ export default {
       if (this.$cookie.get("MemberMerchantID")) {
         return;
       } else {
-        setStore("carData", JSON.stringify(this.carData));
+        this.SET_settledCardData(JSON.stringify(this.carData));
       }
     },
     //行驶证上传
@@ -277,7 +271,7 @@ export default {
           if (res.data.ResultCode === "000000" && res.data.ResultValue) {
             this.RunPic = imgUrl + res.data.ResultValue;
             this.carData.RunPicture = res.data.ResultValue;
-            setStore("carData",JSON.stringify(this.carData));
+            this.SET_settledCardData(JSON.stringify(this.carData));
           }
         })
         .catch(err => {
@@ -292,8 +286,7 @@ export default {
           if (res.data.ResultCode === "000000" && res.data.ResultValue) {
             this.DriverPic = imgUrl + res.data.ResultValue;
             this.carData.DrivePicture = res.data.ResultValue;
-            setStore("carData",JSON.stringify(this.carData));
-            console.log(this.carData);
+            this.SET_settledCardData(JSON.stringify(this.carData));
           }
         })
         .catch(err => {
@@ -308,7 +301,7 @@ export default {
           if (res.data.ResultCode === "000000" && res.data.ResultValue) {
             this.HeaderPic = imgUrl + res.data.ResultValue;
             this.carData.TruckPicture = res.data.ResultValue;
-            setStore("carData",JSON.stringify(this.carData));
+            this.SET_settledCardData(JSON.stringify(this.carData));
           }
         })
         .catch(err => {
@@ -323,7 +316,7 @@ export default {
           if (res.data.ResultCode === "000000" && res.data.ResultValue) {
             this.InsurancePic = imgUrl + res.data.ResultValue;
             this.carData.Insurance = res.data.ResultValue;
-            setStore("carData",JSON.stringify(this.carData));
+            this.SET_settledCardData(JSON.stringify(this.carData));
           }
         })
         .catch(err => {
@@ -360,7 +353,7 @@ export default {
           if (resData.data.ResultCode === "000000") {
             this.$message.success({ message: resData.data.ResultMessage });
             this.checkedStatus = 1;
-            removeStore("carData");
+            this.SET_settledCardData('');
             cookie("MemberMerchantID", resData.data.ResultValue, {
               expires: 30,
               path: "/",
@@ -377,35 +370,10 @@ export default {
         this.hasCommit = false;
       });
     },
-    //退出
-    // edit() {
-    //   cookie("MemberCrowd", "null", {
-    //     expires: 0,
-    //     path: "/",
-    //     domain: "sdhwlw.com"
-    //   });
-    //   cookie("MemberMerchantID", "null", {
-    //     expires: 0,
-    //     path: "/",
-    //     domain: "sdhwlw.com"
-    //   });
-    //   cookie("MemberID", "null", {
-    //     expires: 0,
-    //     path: "/",
-    //     domain: "sdhwlw.com"
-    //   });
-    //   cookie("Mobile", "null", {
-    //     expires: 0,
-    //     path: "/",
-    //     domain: "sdhwlw.com"
-    //   });
-    //   cookie("IconUrl", "null", {
-    //     expires: 0,
-    //     path: "/",
-    //     domain: "sdhwlw.com"
-    //   });
-    //   this.$router.push("/");
-    // }
+    ...mapMutations({
+      SET_settledCardData: 'SET_settledCardData',
+      SET_settledEnterData: 'SET_settledEnterData'
+    })
   },
   computed: {
     canSubmit() {
@@ -414,7 +382,11 @@ export default {
       } else {
         return true;
       }
-    }
+    },
+    ...mapGetters([
+      'settledEnterData',
+      'settledCardData'
+    ])
   },
   created() {
     if (this.$cookie.get("MemberID")) {
@@ -461,9 +433,9 @@ export default {
             });
         }
       } else {
-        if (getStore("enterData")) {
-          if(getStore("carData")){
-            let carModel = JSON.parse(getStore("carData"));
+        if (this.settledEnterData) {
+          if (this.settledCardData) {
+            let carModel = JSON.parse(this.settledCardData);
             this.carData = carModel;
             if(carModel.RunPicture){
               this.RunPic = imgUrl + carModel.RunPicture;
@@ -479,9 +451,6 @@ export default {
             }
           }
         } else {
-          this.$message.error({
-            message: "您尚未添加公司信息！请先填写公司信息。"
-          });
           this.$router.push("/settled");
         }
       }
@@ -511,7 +480,9 @@ export default {
   components: {
     headTop,
     foot,
-    dropDown
+    dropDown,
+    headMenuRouter,
+    leftMenuRouterAccount
   }
 };
 </script>

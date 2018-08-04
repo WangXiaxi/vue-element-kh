@@ -2,14 +2,14 @@
   <div>
     <head-top class="header">
       <span class="title" slot="index">{{userType == 1?'货主':'物流公司'}}-工作台</span>
-      <div class="header-center" slot="menu" v-if="userType == 1">
-        <headMenuRouter :userType="userType" activeLink="finaindex"></headMenuRouter>
+      <div class="header-center" slot="menu">
+        <head-menu-router activeLink="finaindex"></head-menu-router>
       </div>
       <drop-down slot="info"></drop-down>
     </head-top>
     <div class="content clear">
       <div class="content-left">
-        <leftMenuRouter :userType="userType" activeLink="pay"></leftMenuRouter>
+        <left-menu-router-fina activeLink="pay"></left-menu-router-fina>
       </div>
       <div class="content-right">
         <div class="title-box"><span class="title-name">支付运费</span></div>
@@ -21,7 +21,7 @@
                 <dt>{{tableFrozen.PayeeName}}</dt>
                 <dd class="clear mt-10">
                   <span class="gray-txt fl">付款详情：</span>
-                  <p class="fl">支付“{{tableFrozen.CreateEnd}} — {{tableFrozen.CreateStart}}”已完成的货源运单，共计{{tableFrozen.OrdeCount?tableFrozen.OrdeCount:1}}单，应付{{tableFrozen.Should}}元，实付{{tableFrozen.Actual}}元；</p>
+                  <p class="fl">支付“{{tableFrozen.CreateStart}} — {{tableFrozen.CreateEnd}}”已完成的货源运单，共计{{tableFrozen.OrdeCount?tableFrozen.OrdeCount:1}}单，应付{{tableFrozen.Should}}元，实付{{tableFrozen.Actual}}元；</p>
                 </dd>
                 <dd class="clear mt-10">
                   <span class="gray-txt fl">付款备注：</span>
@@ -122,344 +122,235 @@
 
 
 <script>
-import headTop from "../../components/header/head";
-import foot from "../../components/footer/foot";
-import dropDown from "components/header/children/dropdown";
-import md5 from "js-md5";
-import { setStore, getStore, removeStore } from "config/myUtils";
-import headMenuRouter from './headmenurouter.vue';
-import leftMenuRouter from './leftmenurouter.vue';
-import QRCode from "qrcode";
+  import headTop from "../../components/header/head";
+  import foot from "../../components/footer/foot";
+  import dropDown from "components/header/children/dropdown";
+  import md5 from "js-md5";
+  import { setStore, getStore, removeStore } from "config/myUtils";
+  import headMenuRouter from 'components/headMenuRouter/headMenuRouter'; // 头部
+  import leftMenuRouterFina from 'components/leftMenuRouter/leftMenuRouterFina'; // 左侧
+  import QRCode from "qrcode";
 // var QRCode = require('qrcode')
-import {
-  GetPayInfo,
-  DeadheadPayRequest,
-  AliPayRequest,
-  GetMonthlyPayInfo,
-  Monthlyalipay,
-  MonthlyPayRequest,
-  WebWxPayPayment,
-  WxPayPaymentSync,
-  WxPayMonthSync,
-  WebWxPayMonthPayment,
-  AccountSummary
-} from "@/api/getData";
-// Vue.use(QRCode)
-export default {
-  data() {
-    return {
-      userType: this.$cookie.get("MemberCrowd"),
+  import {
+    GetPayInfo,
+    DeadheadPayRequest,
+    AliPayRequest,
+    GetMonthlyPayInfo,
+    Monthlyalipay,
+    MonthlyPayRequest,
+    WebWxPayPayment,
+    WxPayPaymentSync,
+    WxPayMonthSync,
+    WebWxPayMonthPayment,
+    AccountSummary
+  } from "@/api/getData";
+  // Vue.use(QRCode)
+  export default {
+    data() {
+      return {
+        userType: this.$cookie.get("MemberCrowd"),
+        headTop,
+        foot,
+        paytype: 1,
+        password: "",
+        Passmds: "",
+        tableFrozen: {},
+        foodSpecs: "alipay",
+        bankname: "person",
+        Usable: 0,
+        OrderID: this.$route.query.orderid,
+        payinfo: {
+          MemberID: this.$cookie.get("MemberID"),
+          OrderID: this.$route.query.orderid
+        },
+        monthpay: {
+          MemberID: this.$cookie.get("MemberID"),
+          PaymID: this.$route.query.payid
+        },
+        paylistinfo: {},
+        MerchantID: this.$cookie.get("MemberMerchantID"),
+        wechartpicVisible: false
+      };
+    },
+    components: {
       headTop,
       foot,
-      paytype: 1,
-      password: "",
-      Passmds: "",
-      tableFrozen: {},
-      foodSpecs: "alipay",
-      bankname: "person",
-      Usable: 0,
-      OrderID: this.$route.query.orderid,
-      payinfo: {
-        MemberID: this.$cookie.get("MemberID"),
-        OrderID: this.$route.query.orderid
-      },
-      monthpay: {
-        MemberID: this.$cookie.get("MemberID"),
-        PaymID: this.$route.query.payid
-      },
-      paylistinfo: {},
-      MerchantID: this.$cookie.get("MemberMerchantID"),
-      wechartpicVisible: false
-    };
-  },
-  components: {
-    headTop,
-    foot,
-    dropDown,
-    headMenuRouter,
-    leftMenuRouter
-  },
-  created() {
-    if (!this.$cookie.get("MemberMerchantID")) {
-      this.$message.info("你尚未入驻！");
-      this.$confirm("是否去入驻?", "你尚未入驻！", {
-        confirmButtonText: "去入驻",
-        cancelButtonText: "取消",
-        type: "warning"
-      }).then(() => {
-        this.$router.push("/settled");
-      });
-    } else {
-      this.AccountSummary();
-      this.GetPayInfo();
-    }
-  },
-  methods: {
-    // 获取账户余额
-    async AccountSummary() {
-      AccountSummary({
-        MemberID: this.payinfo.MemberID,
-        MerchantID: this.MerchantID
-      }).then(res => {
-        if (res.data.ResultCode == "000000") {
-          this.Usable = res.data.ResultValue.Usable;
-        }
-      });
+      dropDown,
+      headMenuRouter,
+      leftMenuRouterFina
     },
-    //获取运单信息
-    async GetPayInfo() {
-      let PayInfo;
-      if (this.payinfo.OrderID) {
-        PayInfo = await GetPayInfo(this.payinfo);
-        if (PayInfo && PayInfo.data.ResultCode == "000000") {
+    created() {
+      if (!this.$cookie.get("MemberMerchantID")) {
+        this.$message.info("你尚未入驻！");
+        this.$confirm("是否去入驻?", "你尚未入驻！", {
+          confirmButtonText: "去入驻",
+          cancelButtonText: "取消",
+          type: "warning"
+        }).then(() => {
+          this.$router.push("/settled");
+        });
+      } else {
+        this.AccountSummary();
+        this.GetPayInfo();
+      }
+    },
+    methods: {
+      // 获取账户余额
+      async AccountSummary() {
+        AccountSummary({
+          MemberID: this.payinfo.MemberID,
+          MerchantID: this.MerchantID
+        }).then(res => {
+          if (res.data.ResultCode == "000000") {
+            this.Usable = res.data.ResultValue.Usable;
+          }
+        });
+      },
+      //获取运单信息
+      async GetPayInfo() {
+        let PayInfo;
+        if (this.payinfo.OrderID) {
+          PayInfo = await GetPayInfo(this.payinfo);
+          if (PayInfo && PayInfo.data.ResultCode == "000000") {
+            this.$message({
+              type: "success",
+              message: PayInfo.data.ResultMessage
+            });
+            if (
+              (PayInfo && PayInfo.data.ResultValue == "") ||
+              !PayInfo.data.ResultValue
+            ) {
+              this.$message({
+                type: "error",
+                message: "抱歉，您的页面信息有误"
+              });
+            }
+            this.tableFrozen = PayInfo.data.ResultValue;
+            this.tableFrozen.Actual = PayInfo.data.ResultValue.Freight;
+          }
+        } else {
+          this.paytype = 2;
+          this.tableFrozen = JSON.parse(getStore("payList"));
+        }
+        // } else if (this.monthpay.PaymID) {
+        //   this.paytype = 2;
+        //   console.log(this.paytype);
+        //   PayInfo = await GetMonthlyPayInfo(this.monthpay);
+        // }
+        // if (PayInfo && PayInfo.data.ResultCode == "000000") {
+        //   this.$message({
+        //     type: "success",
+        //     message: PayInfo.data.ResultMessage
+        //   });
+        //   if (PayInfo && PayInfo.data.ResultValue == "" || !PayInfo.data.ResultValue) {
+        //     this.$message({
+        //       type: "error",
+        //       message: "抱歉，您的页面信息有误"
+        //     });
+        //   }
+        //   this.tableFrozen = PayInfo.data.ResultValue;
+        //   if (this.paytype == 2) {
+        //     this.tableFrozen.Freight = this.tableFrozen.Actual;
+        //   }
+        //   console.log(this.tableFrozen);
+        // } else {
+        //   this.$message({
+        //     type: "error",
+        //     message: PayInfo.data.ResultMessage
+        //   });
+        //   return false;
+        // }
+      },
+      //设置支付方式
+      paybtn() {
+        if (this.bankname == "person") {
+          this.DeadheadPayRequest();
+        } else if (this.bankname == "alipay") {
+          this.alipay();
+        } else {
+          this.WebWxPayPayment();
+        }
+      },
+      //支付宝支付
+      async alipay() {
+        let datlist;
+        let res;
+        if (this.paytype == 1) {
+          datlist = {
+            MerchantID: this.MerchantID,
+            MemberID: this.payinfo.MemberID,
+            totalAmout: this.tableFrozen.Actual,
+            tradeno: this.payinfo.OrderID
+          };
+          res = await AliPayRequest(datlist);
+        } else if (this.paytype == 2) {
+           datlist = {
+            MemberID: this.payinfo.MemberID,
+            TotalAmout: this.tableFrozen.Actual,
+            PayPWD: this.Passmds,
+            Payer: this.tableFrozen.Payer,
+            CreateStart: this.tableFrozen.CreateStart,
+            Payee: this.tableFrozen.Payee,
+            CreateEnd: this.tableFrozen.CreateEnd,
+            Should: this.tableFrozen.Should,
+            Actual: this.tableFrozen.Actual,
+            Reason: this.tableFrozen.Reason
+          };
+          res = await Monthlyalipay(datlist);
+        }
+        if (res.data.ResultCode == "000000") {
+          if(this.bankname != 'alipay'){
+            removeStore("payList");
+          }
           this.$message({
             type: "success",
-            message: PayInfo.data.ResultMessage
+            message: res.data.ResultMessage
           });
-          if (
-            (PayInfo && PayInfo.data.ResultValue == "") ||
-            !PayInfo.data.ResultValue
-          ) {
-            this.$message({
-              type: "error",
-              message: "抱歉，您的页面信息有误"
-            });
-          }
-          this.tableFrozen = PayInfo.data.ResultValue;
-          this.tableFrozen.Actual = PayInfo.data.ResultValue.Freight;
+          window.location.href = res.data.ResultValue;
+        } else {
+          this.$message({
+            type: "error",
+            message: res.data.ResultMessage
+          });
         }
-      } else {
-        this.paytype = 2;
-        this.tableFrozen = JSON.parse(getStore("payList"));
-      }
-      // } else if (this.monthpay.PaymID) {
-      //   this.paytype = 2;
-      //   console.log(this.paytype);
-      //   PayInfo = await GetMonthlyPayInfo(this.monthpay);
-      // }
-      // if (PayInfo && PayInfo.data.ResultCode == "000000") {
-      //   this.$message({
-      //     type: "success",
-      //     message: PayInfo.data.ResultMessage
-      //   });
-      //   if (PayInfo && PayInfo.data.ResultValue == "" || !PayInfo.data.ResultValue) {
-      //     this.$message({
-      //       type: "error",
-      //       message: "抱歉，您的页面信息有误"
-      //     });
-      //   }
-      //   this.tableFrozen = PayInfo.data.ResultValue;
-      //   if (this.paytype == 2) {
-      //     this.tableFrozen.Freight = this.tableFrozen.Actual;
-      //   }
-      //   console.log(this.tableFrozen);
-      // } else {
-      //   this.$message({
-      //     type: "error",
-      //     message: PayInfo.data.ResultMessage
-      //   });
-      //   return false;
-      // }
-    },
-    //设置支付方式
-    paybtn() {
-      if (this.bankname == "person") {
-        this.DeadheadPayRequest();
-      } else if (this.bankname == "alipay") {
-        this.alipay();
-      } else {
-        this.WebWxPayPayment();
-      }
-    },
-    //支付宝支付
-    async alipay() {
-      let datlist;
-      let res;
-      if (this.paytype == 1) {
-        datlist = {
-          MerchantID: this.MerchantID,
-          MemberID: this.payinfo.MemberID,
-          totalAmout: this.tableFrozen.Actual,
-          tradeno: this.payinfo.OrderID
-        };
-        res = await AliPayRequest(datlist);
-      } else if (this.paytype == 2) {
-         datlist = {
-          MemberID: this.payinfo.MemberID,
-          TotalAmout: this.tableFrozen.Actual,
-          PayPWD: this.Passmds,
-          Payer: this.tableFrozen.Payer,
-          CreateStart: this.tableFrozen.CreateStart,
-          Payee: this.tableFrozen.Payee,
-          CreateEnd: this.tableFrozen.CreateEnd,
-          Should: this.tableFrozen.Should,
-          Actual: this.tableFrozen.Actual,
-          Reason: this.tableFrozen.Reason
-        };
-        res = await Monthlyalipay(datlist);
-      }
-      if (res.data.ResultCode == "000000") {
-        if(this.bankname != 'alipay'){
-          removeStore("payList");
+      },
+      //余额支付
+      async DeadheadPayRequest() {
+        if (!this.password) {
+          this.$message({
+            type: "error",
+            message: "请先输入密码"
+          });
+          return;
         }
-        this.$message({
-          type: "success",
-          message: res.data.ResultMessage
-        });
-        window.location.href = res.data.ResultValue;
-      } else {
-        this.$message({
-          type: "error",
-          message: res.data.ResultMessage
-        });
-      }
-    },
-    //余额支付
-    async DeadheadPayRequest() {
-      if (!this.password) {
-        this.$message({
-          type: "error",
-          message: "请先输入密码"
-        });
-        return;
-      }
-      let datlist;
-      let res;
-      this.Passmds = md5(this.password);
-      if (this.paytype == 1) {
-        datlist = {
-          MemberID: this.payinfo.MemberID,
-          Money: this.tableFrozen.Actual,
-          OrderID: this.payinfo.OrderID,
-          PayPWD: this.Passmds
-        };
-        res = await DeadheadPayRequest(datlist);
-      } else if (this.paytype == 2) {
-        datlist = {
-          MemberID: this.payinfo.MemberID,
-          TotalAmout: this.tableFrozen.Actual,
-          PayPWD: this.Passmds,
-          Payer: this.tableFrozen.Payer,
-          CreateStart: this.tableFrozen.CreateStart,
-          Payee: this.tableFrozen.Payee,
-          CreateEnd: this.tableFrozen.CreateEnd,
-          Should: this.tableFrozen.Should,
-          Actual: this.tableFrozen.Actual,
-          Reason: this.tableFrozen.Reason
-        };
-        res = await MonthlyPayRequest(datlist);
-      }
-      if (res.data.ResultCode == "000000") {
-        removeStore("payList");
-        let msg = "";
+        let datlist;
+        let res;
+        this.Passmds = md5(this.password);
         if (this.paytype == 1) {
-          msg = "支付成功！密钥为" + res.data.ResultValue;
-        } else {
-          msg = res.data.ResultMessage;
+          datlist = {
+            MemberID: this.payinfo.MemberID,
+            Money: this.tableFrozen.Actual,
+            OrderID: this.payinfo.OrderID,
+            PayPWD: this.Passmds
+          };
+          res = await DeadheadPayRequest(datlist);
+        } else if (this.paytype == 2) {
+          datlist = {
+            MemberID: this.payinfo.MemberID,
+            TotalAmout: this.tableFrozen.Actual,
+            PayPWD: this.Passmds,
+            Payer: this.tableFrozen.Payer,
+            CreateStart: this.tableFrozen.CreateStart,
+            Payee: this.tableFrozen.Payee,
+            CreateEnd: this.tableFrozen.CreateEnd,
+            Should: this.tableFrozen.Should,
+            Actual: this.tableFrozen.Actual,
+            Reason: this.tableFrozen.Reason
+          };
+          res = await MonthlyPayRequest(datlist);
         }
-        this.$message({
-          type: "success",
-          message: msg
-        });
-        if(this.paytype == 1){
-          if(this.userType == 1){
-            this.$router.push("/sourceDetails/" + this.payinfo.OrderID );
-          } else {
-            this.$router.push("/orderDetails/" + this.payinfo.OrderID );
-          }
-        } else {
-          this.$router.go(-1);
-        }
-        // window.history.go(-1);
-      } else {
-        this.$message({
-          type: "error",
-          message: res.data.ResultMessage
-        });
-      }
-    },
-    timeoutClose() {
-      clearTimeout(this.time);
-      this.wechartpicVisible = false;
-    },
-    //微信支付
-    async WebWxPayPayment() {
-      let datlist;
-      let res;
-      if (this.paytype == 1) {
-        datlist = {
-          MerchantID: this.MerchantID,
-          MemberID: this.payinfo.MemberID,
-          Amount: this.tableFrozen.Actual,
-          OrderID: this.payinfo.OrderID
-        };
-        res = await WebWxPayPayment(datlist);
-      } else if (this.paytype == 2) {
-        datlist = {
-          MemberID: this.payinfo.MemberID,
-          Payer: this.tableFrozen.Payer,
-          Payee: this.tableFrozen.Payee,
-          CreateStart: this.tableFrozen.CreateStart,
-          CreateEnd: this.tableFrozen.CreateEnd,
-          Should: this.tableFrozen.Should,
-          Actual: this.tableFrozen.Actual,
-          Reason: this.tableFrozen.Reason
-        };
-        res = await WebWxPayMonthPayment(datlist);
-      }
-      if (res.data.ResultCode == "000000") {
-        this.wechartpicVisible = true;
-        this.wechartpic = decodeURIComponent(res.data.ResultValue.CodeUrl);
-        this.useqrcode(this.wechartpic);
-        this.monthpay.PaymID = res.data.ResultValue.PaymID;
-        this.WxPayPaymentSync();
-      } else {
-        this.$message({
-          type: "error",
-          message: res.data.ResultMessage
-        });
-      }
-    },
-    useqrcode(data) {
-      let canvas = document.getElementById("canvas");
-      QRCode.toCanvas(canvas, data, function(error) {
-        if (error) console.error(error);
-      });
-    },
-    qrcode() {
-      let qrcode = new QRCode("qrcode", {
-        width: 100,
-        height: 100, // 高度
-        text: "54456" // 二维码内容
-        // render: 'canvas', // 设置渲染方式（有两种方式 table和canvas，默认是canvas）
-        // background: '#f0f',
-        // foreground: '#ff0',
-      });
-    },
-
-    //核对微信支付
-    async WxPayPaymentSync() {
-      let datlist;
-      let res;
-      if (this.paytype == 1) {
-        datlist = {
-          MerchantID: this.MerchantID,
-          MemberID: this.payinfo.MemberID,
-          OrderID: this.payinfo.OrderID
-        };
-        res = await WxPayPaymentSync(datlist);
-      } else if (this.paytype == 2) {
-        datlist = {
-          MerchantID: this.MerchantID,
-          MemberID: this.payinfo.MemberID,
-          PaymID: this.monthpay.PaymID
-        };
-        res = await WxPayMonthSync(datlist);
-      }
-      if (res.data.ResultCode == "000000") {
-        if (res.data.ResultValue) {
+        if (res.data.ResultCode == "000000") {
           removeStore("payList");
-          this.wechartpicVisible = false;
           let msg = "";
           if (this.paytype == 1) {
             msg = "支付成功！密钥为" + res.data.ResultValue;
@@ -470,47 +361,156 @@ export default {
             type: "success",
             message: msg
           });
-          // window.history.go(-1);
           if(this.paytype == 1){
-            this.$router.push("/sourceDetails/" + this.payinfo.OrderID );
+            if(this.userType == 1){
+              this.$router.push("/sourceDetails/" + this.payinfo.OrderID );
+            } else {
+              this.$router.push("/orderDetails/" + this.payinfo.OrderID );
+            }
           } else {
             this.$router.go(-1);
           }
+          // window.history.go(-1);
         } else {
-          this.time = setTimeout(this.WxPayPaymentSync, 5000);
+          this.$message({
+            type: "error",
+            message: res.data.ResultMessage
+          });
         }
-      } else {
-        this.$message({
-          type: "error",
-          message: res.data.ResultMessage
+      },
+      timeoutClose() {
+        clearTimeout(this.time);
+        this.wechartpicVisible = false;
+      },
+      //微信支付
+      async WebWxPayPayment() {
+        let datlist;
+        let res;
+        if (this.paytype == 1) {
+          datlist = {
+            MerchantID: this.MerchantID,
+            MemberID: this.payinfo.MemberID,
+            Amount: this.tableFrozen.Actual,
+            OrderID: this.payinfo.OrderID
+          };
+          res = await WebWxPayPayment(datlist);
+        } else if (this.paytype == 2) {
+          datlist = {
+            MemberID: this.payinfo.MemberID,
+            Payer: this.tableFrozen.Payer,
+            Payee: this.tableFrozen.Payee,
+            CreateStart: this.tableFrozen.CreateStart,
+            CreateEnd: this.tableFrozen.CreateEnd,
+            Should: this.tableFrozen.Should,
+            Actual: this.tableFrozen.Actual,
+            Reason: this.tableFrozen.Reason
+          };
+          res = await WebWxPayMonthPayment(datlist);
+        }
+        if (res.data.ResultCode == "000000") {
+          this.wechartpicVisible = true;
+          this.wechartpic = decodeURIComponent(res.data.ResultValue.CodeUrl);
+          this.useqrcode(this.wechartpic);
+          this.monthpay.PaymID = res.data.ResultValue.PaymID;
+          this.WxPayPaymentSync();
+        } else {
+          this.$message({
+            type: "error",
+            message: res.data.ResultMessage
+          });
+        }
+      },
+      useqrcode(data) {
+        let canvas = document.getElementById("canvas");
+        QRCode.toCanvas(canvas, data, function(error) {
+          if (error) console.error(error);
         });
+      },
+      qrcode() {
+        let qrcode = new QRCode("qrcode", {
+          width: 100,
+          height: 100, // 高度
+          text: "54456" // 二维码内容
+          // render: 'canvas', // 设置渲染方式（有两种方式 table和canvas，默认是canvas）
+          // background: '#f0f',
+          // foreground: '#ff0',
+        });
+      },
+
+      //核对微信支付
+      async WxPayPaymentSync() {
+        let datlist;
+        let res;
+        if (this.paytype == 1) {
+          datlist = {
+            MerchantID: this.MerchantID,
+            MemberID: this.payinfo.MemberID,
+            OrderID: this.payinfo.OrderID
+          };
+          res = await WxPayPaymentSync(datlist);
+        } else if (this.paytype == 2) {
+          datlist = {
+            MerchantID: this.MerchantID,
+            MemberID: this.payinfo.MemberID,
+            PaymID: this.monthpay.PaymID
+          };
+          res = await WxPayMonthSync(datlist);
+        }
+        if (res.data.ResultCode == "000000") {
+          if (res.data.ResultValue) {
+            removeStore("payList");
+            this.wechartpicVisible = false;
+            let msg = "";
+            if (this.paytype == 1) {
+              msg = "支付成功！密钥为" + res.data.ResultValue;
+            } else {
+              msg = res.data.ResultMessage;
+            }
+            this.$message({
+              type: "success",
+              message: msg
+            });
+            // window.history.go(-1);
+            if(this.paytype == 1){
+              this.$router.push("/sourceDetails/" + this.payinfo.OrderID );
+            } else {
+              this.$router.go(-1);
+            }
+          } else {
+            this.time = setTimeout(this.WxPayPaymentSync, 5000);
+          }
+        } else {
+          this.$message({
+            type: "error",
+            message: res.data.ResultMessage
+          });
+        }
       }
+      // searchlist(){
+      //   console.log(this.choosetime)
+      //   //this.choosetime[0].getFullYear();
+      //   console.log(this.choosetime[0].getFullYear())
+      // },
+      // gettimes(data){
+      //   let date = new Date();
+      //   let seperator1 = "-";
+      //   let year = date.getFullYear();
+      //   let month = date.getMonth() + 1;
+      //   let strDate = date.getDate();
+      //   if (month >= 1 && month <= 9) {
+      //     month = "0" + month;
+      //   }
+      //   if (strDate >= 0 && strDate <= 9) {
+      //     strDate = "0" + strDate;
+      //   }
+      //   let currentdate = year + seperator1 + month + seperator1 + strDate;
+      //   return currentdate;
+      // }
+    },
+    computed: {
+      changeBubble() {}
     }
-    // searchlist(){
-    //   console.log(this.choosetime)
-    //   //this.choosetime[0].getFullYear();
-    //   console.log(this.choosetime[0].getFullYear())
-    // },
-    // gettimes(data){
-    //   let date = new Date();
-    //   let seperator1 = "-";
-    //   let year = date.getFullYear();
-    //   let month = date.getMonth() + 1;
-    //   let strDate = date.getDate();
-    //   if (month >= 1 && month <= 9) {
-    //     month = "0" + month;
-    //   }
-    //   if (strDate >= 0 && strDate <= 9) {
-    //     strDate = "0" + strDate;
-    //   }
-    //   let currentdate = year + seperator1 + month + seperator1 + strDate;
-    //   return currentdate;
-    // }
-  },
-  computed: {
-    changeBubble() {}
-  }
-};
+  };
 </script>
 
 <style lang="stylus" scoped>

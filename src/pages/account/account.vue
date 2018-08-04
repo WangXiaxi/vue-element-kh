@@ -3,23 +3,13 @@
     <head-top class="header">
       <span class="title" slot="index">{{userType == 1?'货主':'物流公司'}}-工作台</span>
       <div class="header-center" slot="menu">
-        <ul>
-          <router-link tag="li" to="/source" v-if="userType == 1">首页</router-link>
-          <router-link tag="li" to="/add" v-else>首页</router-link>
-          <router-link tag="li" to="/finaindex">财务管理</router-link>
-          <router-link tag="li" to="/account" class="active">账户信息</router-link>
-        </ul>
+        <head-menu-router activeLink="account"></head-menu-router>
       </div>
       <drop-down slot="info"></drop-down>
     </head-top>
     <div class="content clear">
       <div class="content-left">
-        <ul>
-          <router-link to="/account" tag="li" class="active">账户安全</router-link>
-          <router-link to="/subAccount" tag="li" v-if="getUserRole(userCharacter,'管理')">会员用户管理</router-link>
-          <router-link :to="userType == 1 ? '/blacklistFactory' : '/blacklistLogistics'" tag="li">黑名单管理</router-link>
-          <router-link to="/settled2" tag="li">入驻信息</router-link>
-        </ul>
+        <left-menu-router-account activeLink="account"></left-menu-router-account>
       </div>
       <div class="content-right">
         <div class="main fr">
@@ -169,6 +159,9 @@ import {
 import { imgPostUrl, imgUrl } from "api/env";
 import { mapGetters, mapMutations } from 'vuex';
 import { getUserRole } from 'config/myUtils';
+import headMenuRouter from 'components/headMenuRouter/headMenuRouter'; // 头部
+import leftMenuRouterAccount from 'components/leftMenuRouter/leftMenuRouterAccount'; // 左侧
+
 export default {
   data() {
     return {
@@ -375,7 +368,9 @@ export default {
   components: {
     headTop,
     dropDown,
-    foot
+    foot,
+    headMenuRouter,
+    leftMenuRouterAccount
   }
 };
 </script>
@@ -387,6 +382,7 @@ export default {
   height: 100%;
   width: 1200px;
   margin: 10px auto 40px;
+  position: relative;
 }
 
 .content-left {

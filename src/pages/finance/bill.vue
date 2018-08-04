@@ -3,13 +3,13 @@
     <head-top class="header">
       <span class="title" slot="index">{{userType == 1?'货主':'物流公司'}}-工作台</span>
       <div class="header-center" slot="menu">
-        <headMenuRouter :userType="userType" activeLink="finaindex"></headMenuRouter>
+        <head-menu-router activeLink="finaindex"></head-menu-router>
       </div>
       <drop-down slot="info"></drop-down>
     </head-top>
     <div class="content clear">
       <div class="content-left">
-        <leftMenuRouter :userType="userType" activeLink="pay"></leftMenuRouter>
+        <left-menu-router-fina activeLink="pay"></left-menu-router-fina>
       </div>
       <div class="content-right">
         <div class="title-box"><span class="title-name">物流运费账单</span></div>
@@ -53,97 +53,97 @@
 
 
 <script>
-import headTop from "components/header/head";
-import dropDown from "components/header/children/dropdown";
-import foot from "components/footer/foot";
-import { FreightSum } from "@/api/getData";
-import headMenuRouter from './headmenurouter.vue';
-import leftMenuRouter from './leftmenurouter.vue';
-export default {
-  data() {
-    return {
-      userType: this.$cookie.get("MemberCrowd"),
+  import headTop from "components/header/head";
+  import dropDown from "components/header/children/dropdown";
+  import foot from "components/footer/foot";
+  import { FreightSum } from "@/api/getData";
+  import headMenuRouter from 'components/headMenuRouter/headMenuRouter'; // 头部
+  import leftMenuRouterFina from 'components/leftMenuRouter/leftMenuRouterFina'; // 左侧
+  export default {
+    data() {
+      return {
+        userType: this.$cookie.get("MemberCrowd"),
+        headTop,
+        foot,
+        dropDown,
+        foodForm: {
+          money: ""
+        },
+        foodSpecs: "alipay",
+        banktype: "person",
+        bankname: "",
+        dialogVisible: false,
+        selectIndex: [],
+        selectbank: [],
+        withdrawForm: {
+          money: "",
+          bankname: "",
+          bankcard: "",
+          bankplace: ""
+        },
+        choosetime: "",
+        tableData5: [],
+        tableFrozen: [],
+        changebank: {},
+        merchartinfo: {},
+        MerchantID: this.$cookie.get("MemberMerchantID"),
+        MemberID: this.$cookie.get("MemberID")
+      };
+    },
+    computed: {
+      activeIndex: function() {
+        return this.$route.path.replace("/", "");
+      }
+    },
+    created() {
+      if (this.$cookie.get("MemberID")) {
+        if (this.userType == 1) {
+          this.FreightSum();
+        } else if (this.userType == 2) {
+          this.$message.info({ message: "身份类型错误！" });
+          this.$router.push("/finaindex");
+        }
+      } else {
+        this.$message.info({ message: "你尚未登录，请登录！" });
+        this.$router.push("/");
+      }
+    },
+    methods: {
+      async FreightSum() {
+        if(this.$cookie.get("MemberMerchantID")){
+          let datlist = { MemberID: this.MemberID, MerchantID: this.MerchantID };
+          const Updates = await FreightSum(datlist);
+          if (Updates.data.ResultCode == "000000") {
+            let jsons = Updates.data.ResultValue;
+            this.merchartinfo = jsons;
+          } else {
+            this.$message({
+              type: "error",
+              message: Updates.data.ResultMessage
+            });
+            return false;
+          }
+        } else {
+          this.$message.info("你尚未入驻！");
+          this.$confirm("是否去入驻?", "你尚未入驻！", {
+            confirmButtonText: "去入驻",
+            cancelButtonText: "取消",
+            type: "warning"
+          })
+            .then(() => {
+              this.$router.push("/settled");
+            })
+        }
+      }
+    },
+    components: {
       headTop,
       foot,
       dropDown,
-      foodForm: {
-        money: ""
-      },
-      foodSpecs: "alipay",
-      banktype: "person",
-      bankname: "",
-      dialogVisible: false,
-      selectIndex: [],
-      selectbank: [],
-      withdrawForm: {
-        money: "",
-        bankname: "",
-        bankcard: "",
-        bankplace: ""
-      },
-      choosetime: "",
-      tableData5: [],
-      tableFrozen: [],
-      changebank: {},
-      merchartinfo: {},
-      MerchantID: this.$cookie.get("MemberMerchantID"),
-      MemberID: this.$cookie.get("MemberID")
-    };
-  },
-  computed: {
-    activeIndex: function() {
-      return this.$route.path.replace("/", "");
+      headMenuRouter,
+      leftMenuRouterFina
     }
-  },
-  created() {
-    if (this.$cookie.get("MemberID")) {
-      if (this.userType == 1) {
-        this.FreightSum();
-      } else if (this.userType == 2) {
-        this.$message.info({ message: "身份类型错误！" });
-        this.$router.push("/finaindex");
-      }
-    } else {
-      this.$message.info({ message: "你尚未登录，请登录！" });
-      this.$router.push("/");
-    }
-  },
-  methods: {
-    async FreightSum() {
-      if(this.$cookie.get("MemberMerchantID")){
-        let datlist = { MemberID: this.MemberID, MerchantID: this.MerchantID };
-        const Updates = await FreightSum(datlist);
-        if (Updates.data.ResultCode == "000000") {
-          let jsons = Updates.data.ResultValue;
-          this.merchartinfo = jsons;
-        } else {
-          this.$message({
-            type: "error",
-            message: Updates.data.ResultMessage
-          });
-          return false;
-        }
-      } else {
-        this.$message.info("你尚未入驻！");
-        this.$confirm("是否去入驻?", "你尚未入驻！", {
-          confirmButtonText: "去入驻",
-          cancelButtonText: "取消",
-          type: "warning"
-        })
-          .then(() => {
-            this.$router.push("/settled");
-          })
-      }
-    }
-  },
-  components: {
-    headTop,
-    foot,
-    dropDown,
-    headMenuRouter,
-    leftMenuRouter
-  }
-};
+  };
 </script>
 
 <style lang="stylus" scoped>

@@ -5,6 +5,7 @@ import qs from 'qs'
 import router from '../router'
 import VueCookie from 'vue-cookie'
 import { Version } from '../config/publicParam'
+import { dropOut } from "config/dropOut"; // 清空操作
 
 let cancel, promiseArr = {};
 const CancelToken = axios.CancelToken;
@@ -29,52 +30,28 @@ const CancelToken = axios.CancelToken;
 axios.interceptors.response.use(response => {
     return response
 }, err => {
-    if (err && err.response) {
-        switch (err.response.status) {
-            case 400:
-                err.message = '错误请求';
-                break;
-            case 401:
-                err.message = '未授权，请重新登录';
-                break;
-            case 403:
-                err.message = '拒绝访问';
-                break;
-            case 404:
-                err.message = '请求错误,未找到该资源';
-                break;
-            case 405:
-                err.message = '请求方法未允许';
-                break;
-            case 408:
-                err.message = '请求超时';
-                break;
-            case 500:
-                err.message = '服务器端出错';
-                break;
-            case 501:
-                err.message = '网络未实现';
-                break;
-            case 502:
-                err.message = '网络错误';
-                break;
-            case 503:
-                err.message = '服务不可用';
-                break;
-            case 504:
-                err.message = '网络超时';
-                break;
-            case 505:
-                err.message = 'http版本不支持该请求';
-                break;
-            default:
-                err.message = `连接错误${err.response.status}`
-        }
-    } else {
-        err.message = "连接到服务器失败"
+    err.message = "连接超时，请刷新页面重试";
+    let date = new Date();
+    let hours = date.getHours();
+    if( hours >= 20 && hours <= 6 ){
+      //跳转到服务器升级页面
+      router.replace({
+        path: '/update'
+      });
+      return;
     }
-    Message.error({ message: err.message });
-    return Promise.resolve(err.response)
+
+    Message.error(err.message);
+    return Promise.resolve(
+      err.response ||
+      {
+        data:{
+          ResultCode: 999999,
+          ResultMessage:'连接超时，请刷新页面重试',
+          ResultValue:{}
+          }
+        }
+      )
 });
 
 //设置axios全局配置
@@ -102,6 +79,7 @@ export default {
             }).then(res => {
                 if (res.status == 200 && (res.data.ResultCode === '000012' || res.data.ResultCode === '000011')) {
                     Message.error({ message: res.data.ResultMessage });
+                    dropOut(); // 清除各种数据
                     router.replace({ // 登录页面有清空cookie 操作
                         path: '/'
                     })
@@ -123,6 +101,7 @@ export default {
             param.Token = VueCookie.get('Token');
             param.MemberID = VueCookie.get('MemberID');
             param.Version = Version;
+
             axios({
                 method: 'get',
                  params: param,
@@ -133,6 +112,7 @@ export default {
             }).then(res => {
                 if (res.status == 200 && (res.data.ResultCode === '000012' || res.data.ResultCode === '000011')) {
                     Message.error({ message: res.data.ResultMessage });
+                    dropOut(); // 清除各种数据
                     router.replace({ // 登录页面有清空cookie 操作
                         path: '/'
                     })
@@ -149,7 +129,7 @@ export default {
     },
     //post请求
     post(url, param) {
-        
+
         return new Promise((resolve, reject) => {
             if (!param) {
                 param = {};
@@ -171,6 +151,7 @@ export default {
                 }
                 if (res.status == 200 && (res.data.ResultCode === '000012' || res.data.ResultCode === '000011')) {
                     Message.error({ message: res.data.ResultMessage });
+                    dropOut(); // 清除各种数据
                     router.replace({ // 登录页面有清空cookie 操作
                         path: '/'
                     })

@@ -1,23 +1,15 @@
 <template>
-  <div>
+  <div class="source">
     <head-top>
       <span class="title" slot="index">{{userType == 1?'货主':'物流公司'}}-工作台</span>
       <div class="header-center" slot="menu">
-        <ul>
-          <router-link tag="li" to="/source" class="active">首页</router-link>
-          <router-link tag="li" to="/finaindex">财务管理</router-link>
-          <router-link tag="li" to="/account">账户信息</router-link>
-        </ul>
+        <head-menu-router activeLink="index"></head-menu-router>
       </div>
       <drop-down slot="info"></drop-down>
     </head-top>
     <div class="content clear">
       <div class="content-left">
-        <ul>
-          <router-link class="active" tag="li" to="/source">发布货源</router-link>
-          <router-link to="/sourceList" tag="li">货源列表</router-link>
-          <router-link to="/product" tag="li">产品库</router-link>
-        </ul>
+        <left-menu-router-home activeLink="source"></left-menu-router-home>
       </div>
       <div class="content-right" v-loading="loading">
         <div class="product fr">
@@ -53,11 +45,11 @@
                 <div class="list-right">
                   <template class="size14">
                     <el-table
-                    header-row-class-name="table-bg"
+                      class="source-table"
+                      header-row-class-name="table-bg"
                       :data="ProList"
                       style="width: 100%"
-                      size="small"
-                      max-height="571">
+                      size="small">
                       <template slot="empty">
                         <p>没有数据</p>
                       </template>
@@ -96,18 +88,13 @@
                         label="数量"
                         width="100">
                         <template slot-scope="scope">
-                          <!-- <el-input size="mini" v-model="scope.row.Amount"
-                                    @blur="checkNumber(scope.row.Amount,scope.$index,ProList)"></el-input> -->
-                          <!-- 小星 -->
                           <el-popover
                             placement="bottom-end"
                             title="数量(可手动输入)"
                             width="300"
                             trigger="click"
-                            v-model="showPopover[scope.$index]"
-                       >
+                            v-model="showPopover[scope.$index]">
                             <num-assemly :dataCur="scope" @getNum="getNum"></num-assemly>
-
                             <el-input size="mini" v-model="scope.row.Amount"  slot="reference"
                               @blur="checkNumber(scope.row.Amount,scope.$index,ProList)"></el-input>
                           </el-popover>
@@ -118,7 +105,7 @@
                         label="操作"
                         width="60">
                         <template slot-scope="scope">
-                          <el-tooltip class="item" effect="dark" content="移除" placement="top-start">
+                          <el-tooltip class="item" style="padding-top:5px;" effect="dark" content="移除" placement="top-start">
                             <i class="el-icon-error size20" @click="remove(scope.row.ModelID,scope.$index,ProList)"></i>
                           </el-tooltip>
                         </template>
@@ -157,24 +144,21 @@
                 </li>
                 <li class="large">
                   <p class="head-title large">总体积/m³</p>
-                  <p class="blue-txt"><el-input class="input" v-model="AllVolume" size="mini"></el-input></p>
+                  <p class="blue-txt">
+                    <!-- 总体积不让修改 -->
+                    <!-- <el-input class="input" v-model="AllVolume" size="mini"></el-input> -->
+                    {{AllVolume}}
+                  </p>
                 </li>
                 <li class="large">
                   <p class="head-title large">总重量/吨</p>
-                  <p class="blue-txt"><el-input class="input" v-model="AllWeight" size="mini"></el-input></p>
+                  <p class="blue-txt">
+                    <!-- 总重量不让修改 -->
+                    <!-- <el-input class="input" v-model="AllWeight" size="mini"></el-input> -->
+                    {{AllWeight}}
+                  </p>
                 </li>
               </ul>
-              <!-- <p class="info">
-                <span class="info-item">产品种类：<i class="blue-txt size16">{{AllCount}}</i> 种；</span>
-                <span class="info-item">产品件数：<i class="blue-txt size16">{{AllNumber}}</i>件；</span>
-                <span class="info-item">总货值:<i class="blue-txt size16">{{AllPrice}}</i>元；</span>
-              </p>
-              <p class="info">
-                <span class="info-item">泡货体积：<i class="blue-txt size16">{{bubblesVolume}}</i>M<sup>3</sup>;</span>
-                <span class="info-item">重货重量：<i class="size16 blue-txt">{{ProductWeight}}</i>吨；</span>
-                <span class="">总体积/重量：<i class="blue-txt size16">{{AllVolume}}</i>M<sup>3</sup>/<i
-                  class="size16 blue-txt">{{AllWeight}}</i>吨;</span>
-              </p> -->
             </div>
             <!--信息概览 end-->
             <div class="fill">
@@ -186,45 +170,38 @@
                   <el-radio v-model="sourceData.DeliveryMode" label="2">上门提货</el-radio>
                   <span class="gray-txt">（建议-出发地填写到详细地址）</span>
                 </el-form-item> -->
-                <el-form-item label="发货地" class="clear" prop="fromadd">
-                  <div class="fl">
+                <div class="item-box">
+
+                  <el-form-item label="发货地" prop="fromadd">
                     <el-cascader
                       class="address"
                       :show-all-levels="true"
                       :options="address"
                       v-model="sourceData.fromadd"
-
                       @change="handChange"
                     ></el-cascader>
-                  </div>
-                  <div class="detailes">
-                    <!--<el-form-item prop="MercAddress">-->
-                    <!--<el-input-->
-                    <!--@focus="IsShowMap = true"-->
-                    <!--v-model="sourceData.MercAddress"-->
-                    <!--suffix-icon="el-icon-location-outline"-->
-                    <!--placeholder="填选择具体街道门牌号 大厦 房间号码"-->
-                    <!--&gt;</el-input>-->
-                    <!--</el-form-item>-->
-                    <el-form-item prop="MercAddress">
-                      <el-input
-                        v-model="sourceData.MercAddress"
-                        @blur="getArea(sourceData.fromadd,sourceData.MercAddress,1)"
-                        placeholder="填选择具体街道门牌号 大厦 房间号码"
-                      >
-                      <template slot="suffix">
-                        <el-tooltip class="item cuspoint" effect="dark" content="点击地图选址" placement="top">
-                          <span class="mapIcon" @click="setValue('1')">
-                            <i class="el-icon-location-outline"></i>
-                          </span>
-                        </el-tooltip>
-                      </template>
-                      </el-input>
-                    </el-form-item>
-                  </div>
-                </el-form-item>
-                <el-form-item label="收货地" prop="toadd">
-                  <div class="fl">
+                  </el-form-item>
+
+                  <el-form-item prop="MercAddress">
+                    <el-input
+                      class="adress-details"
+                      v-model="sourceData.MercAddress"
+                      @blur="getArea(sourceData.fromadd,sourceData.MercAddress,1)"
+                      placeholder="填选择具体街道门牌号 大厦 房间号码"
+                    >
+                    <template slot="suffix">
+                      <el-tooltip class="item cuspoint" effect="dark" content="点击地图选址" placement="top">
+                        <span class="mapIcon" @click="setValue('1')">
+                          <i class="el-icon-location-outline"></i>
+                        </span>
+                      </el-tooltip>
+                    </template>
+                    </el-input>
+                  </el-form-item>
+
+                </div>
+                <div class="item-box">
+                  <el-form-item label="收货地" prop="toadd">
                     <el-cascader
                       class="address"
                       :show-all-levels="true"
@@ -233,25 +210,45 @@
                       @change="handChange1"
                       change-on-select
                     ></el-cascader>
-                  </div>
-                  <div class="detailes">
-                    <el-form-item prop="ToAddress">
-                      <el-input
-                        v-model="sourceData.ToAddress"
-                        @blur="getArea(sourceData.toadd,sourceData.ToAddress,0)"
-                        placeholder="填写具体街道门牌号 大厦 房间号码"
-                      >
-                      <template slot="suffix">
-                        <el-tooltip class="item cuspoint" effect="dark" content="点击地图选址" placement="top" >
-                          <span class="mapIcon" @click="setValue('2')">
-                            <i class="el-icon-location-outline"></i>
-                          </span>
-                        </el-tooltip>
-                      </template>
-                      </el-input>
-                    </el-form-item>
-                  </div>
-                </el-form-item>
+                  </el-form-item>
+                  <el-form-item prop="ToAddress" ref="ToAddress">
+                    <el-input
+                      class="adress-details"
+                      v-model="sourceData.ToAddress"
+                      @blur="getArea(sourceData.toadd,sourceData.ToAddress,0)"
+                      placeholder="填写具体街道门牌号 大厦 房间号码"
+                    >
+                    <template slot="suffix">
+                      <el-tooltip class="item cuspoint" effect="dark" content="点击地图选址" placement="top" >
+                        <span class="mapIcon" @click="setValue('2')">
+                          <i class="el-icon-location-outline"></i>
+                        </span>
+                      </el-tooltip>
+                    </template>
+                    </el-input>
+                  </el-form-item>
+                </div>
+
+                <!-- 收货人信息 start -->
+                <div class="item-box">
+                  <el-form-item label="收货人信息" prop="Receiver" ref="Receiver">
+                    <div class="normal">
+                      <el-input v-model="sourceData.Receiver"
+                        placeholder="请输入收货人名称"
+                      ></el-input>
+                    </div>
+                  </el-form-item>
+
+                  <el-form-item prop="ReceivePhone" ref="ReceivePhone">
+                    <div class="normal">
+                      <el-input v-model="sourceData.ReceivePhone"
+                        placeholder="请输入收货人联系电话"
+                      ></el-input>
+                    </div>
+                  </el-form-item>
+                </div>
+                <!-- 收货人信息 end -->
+
                 <el-form-item label="装货时间" prop="LoadTime">
                   <el-col>
                     <el-date-picker
@@ -265,64 +262,52 @@
                     </el-date-picker>
                   </el-col>
                 </el-form-item>
-                <el-form-item label="车长/车型" prop="Long">
-                  <div class="fl mr-10">
-                    <el-form-item prop="Long">
-                      <el-autocomplete
-                        class="normal"
-                        v-model="sourceData.Long"
-                        :fetch-suggestions='getLongList'
-                        placeholder="车长"
-                      ></el-autocomplete>
-                    </el-form-item>
-                  </div>
-                  <div class="fl">
-                    <el-form-item prop="Model">
-                      <el-select placeholder="车型" v-model="sourceData.Model">
-                        <el-option
-                          v-for="(item,index) in ModelList"
-                          :key="item.index"
-                          :label="item.DictName"
-                          :value="item.DictID"
-                        >
-                        </el-option>
-                      </el-select>
-                    </el-form-item>
-                  </div>
-                </el-form-item>
+
+                <div class="item-box">
+                  <el-form-item label="车长/车型" prop="LongCopy">
+                    <el-autocomplete
+                      class="normal"
+                      v-model="sourceData.LongCopy"
+                      :fetch-suggestions='getLongList'
+                      placeholder="车长"
+                    ></el-autocomplete>
+                  </el-form-item>
+                  <el-form-item prop="Model">
+                    <el-select placeholder="车型" v-model="sourceData.Model">
+                      <el-option
+                        v-for="(item,index) in ModelList"
+                        :key="item.index"
+                        :label="item.DictName"
+                        :value="item.DictID"
+                      >
+                      </el-option>
+                    </el-select>
+                  </el-form-item>
+                </div>
                 <el-form-item label="货物类型" prop="CargoName">
                   <div class="normal">
                     <el-input  v-model="sourceData.CargoName" disabled></el-input>
                   </div>
                 </el-form-item>
                 <el-form-item label="运输类型" prop="Way">
-                  <el-radio v-model="sourceData.Way" label="1">物流公司（月结账单）</el-radio>
-                  <el-radio v-model="sourceData.Way" label="2">个体司机（无发票）</el-radio>
+                  <el-radio v-model="sourceData.Way" label="1">物流公司</el-radio>
+                  <el-radio v-model="sourceData.Way" label="2">个体司机</el-radio>
                 </el-form-item>
-
-                <!-- 添加结算方式 -->
-                <el-form-item label="结算方式" prop="Settlement" v-if="sourceData.Way == 1">
-                  <el-radio v-model="sourceData.Settlement" label="1">工厂月结</el-radio>
-                  <el-radio v-model="sourceData.Settlement" label="2">收货方到付</el-radio>
-                </el-form-item>
-
-                <el-form-item v-if="sourceData.Way == 1 && sourceData.Settlement == 2" label="收货人名称" prop="Receiver">
-                  <div class="normal">
-                    <el-input v-model="sourceData.Receiver"></el-input>
-                  </div>
-                </el-form-item>
-
-                <el-form-item v-if="sourceData.Way == 1 && sourceData.Settlement == 2" label="收货人电话" prop="ReceivePhone">
-                  <div class="normal">
-                    <el-input v-model="sourceData.ReceivePhone"></el-input>
-                  </div>
-                </el-form-item>
-                <!-- 添加结算方式 -->
 
                 <el-form-item label="接单模式" prop="Parttern">
                   <el-radio v-model="sourceData.Parttern" label="1">抢单</el-radio>
                   <el-radio v-model="sourceData.Parttern" label="2">最低价</el-radio>
                 </el-form-item>
+
+                <!-- 添加结算方式 -->
+                <el-form-item label="结算方式" prop="Settlement" v-if="sourceData.Way == 1 && (sourceData.Parttern == 1 || sourceData.Parttern == 2)">
+                  <el-radio v-if="sourceData.Parttern == 2" v-model="sourceData.Settlement" label="1">货主月结</el-radio>
+                  <el-radio v-if="sourceData.Parttern == 1" v-model="sourceData.Settlement" label="0">货主现结</el-radio>
+                  <el-radio v-model="sourceData.Settlement" label="2">收货方到付</el-radio>
+                  <span class="gray-txt">（收货地详细地址，收货人信息必填，司机报价送货费）</span>
+                </el-form-item>
+                <!-- 添加结算方式 -->
+
                 <el-form-item label="运费金额（元）" prop="Freight" v-if="sourceData.Parttern == 1 ">
                   <div class="normal">
                     <el-input placeholder="运费价格" v-model="sourceData.Freight"></el-input>
@@ -346,36 +331,17 @@
       </div>
     </div>
     <foot></foot>
-    <el-dialog title="选择发货地址" :visible.sync="IsShowMap" :close-on-click-modal="false" width="1000px"
+    <el-dialog title="选择地址" :visible.sync="IsShowMap" :close-on-click-modal="false" width="1000px"
                :close-on-press-escape="false">
       <div class="tip-box">
         <vue-map v-if="IsShowMap" :inputName="index" :location="mapData.address" :lng-lat="mapData.lnglat" @setFilter="locationFilter"></vue-map>
       </div>
     </el-dialog>
-    <!-- 小星引入未审核弹窗与发布成功后弹窗 -->
-    <issue-dialog
-      v-if="ifShowIssueDialog"
-      :ifShowIssueDialog="ifShowIssueDialog"
-      @closeDialog="closeIssueDialog"
-      :issueDialogInfo="issueDialogInfo"
-      @goDetails="goDetails"
-    ></issue-dialog>
-
-    <login-dialog v-if="ifShowLoginDialog"
-     :ifShowLoginDialog="ifShowLoginDialog"
-     @closeDialog="ifShowLoginDialog=false"
-     :merchantStatus="merchantStatus"></login-dialog>
-    <!-- 结束 -->
     <!-- 引入重复发布弹窗 -->
-    <repeat-dialog v-if="ifShowRepeatDialog"
-      :ifShowRepeatDialog="ifShowRepeatDialog" 
-      @goPublish="publishAct()"
-      @closeDialog="closeRepeatDialog()">
-    </repeat-dialog>
+    <hint-dialog :dialogObject="hintDialogObject" @sureDialog="publishActSure()"></hint-dialog>
     <!-- 结束 -->
   </div>
 </template>
-
 
 <script type="es6">
 import headTop from "components/header/head";
@@ -386,15 +352,14 @@ import vueMap from 'components/AMap/AMap';
 import address from "config/address";
 import AMap from "AMap";
 import regs from "config/regExp";
-import { getTimes } from 'config/getTimes'
+import { getTimes } from 'config/getTimes';
 
  /** 小星引入未审核弹窗与发布成功后弹窗 **/
 import { CarLongList } from "config/publicParam"; // 提取了下CarLongList
-import issueDialog from 'components/issueDialog/issueDialog';
-import loginDialog from 'components/loginDialog/loginDialog';
-import repeatDialog from 'components/repeatDialog/repeatDialog';
+import hintDialog from 'components/hintDialog/hintDialog';
  /** 结束 **/
-
+import leftMenuRouterHome from 'components/leftMenuRouter/leftMenuRouterHome'; // 左侧
+import headMenuRouter from 'components/headMenuRouter/headMenuRouter'; // 头部
 import { mapGetters, mapMutations } from 'vuex';
 
 import {
@@ -412,20 +377,18 @@ import {
 
 import { getUserRole } from 'config/myUtils';
 
+const ClassifySpec = { // 定义 常量 特殊的产品类型
+  coldLogistics: {id: '2239b1840bd540498abad53a235e8341', name: '冷链运输'},
+  hazaChemicals: {id: '293022d917b644cb983f8858cf1f077f', name: '危化品'}
+}
+
 export default {
   data() {
     const data = [];
     return {
+      isSurepublish: {}, // 记录检查接口返回显示弹窗，结合
+      hintDialogObject: {}, // 重复发货提醒
       merchantStatus: this.$cookie.get("MerchantStatus"), // 新参数 用户审核状态
-      ifShowIssueDialog: false, // 是否显示未审核弹窗
-      ifShowLoginDialog: false, // 是否显示发布成功后弹窗
-      ifShowRepeatDialog: false, // 重复发货提醒
-      issueDialogInfo: { // 发布成功弹窗数据
-        ResultMessage: '',
-        ResultOrderID: '',
-        ResultPiPei: ''
-      },
-      loading: false,
       index: '1',//确定点击的输入框
       userCharacter: this.$cookie.get("MemberDutiesID"),
       volumeCopy: '',//总体积副本
@@ -490,13 +453,14 @@ export default {
         Model: "",
         CargoName: "",
         Freight: "",
-        Long: "不限",
+        Long: "99",
+        LongCopy: '不限', // 添加lengthCopy 减少重复代码
         Product: "",
         Way: "",
         Classify: "",
         Remark: "",
         Type: "",
-        // DeliveryMode: "0"(
+        // DeliveryMode: "0"
       },
       sourceDataRules: {
         //验证规则
@@ -515,11 +479,14 @@ export default {
             trigger: "blur"
           },
         ],
-        // MercAddress: [{required: true, message: '请选择详细地址', trigger: 'blur'}],
         toadd: [
           { required: true, message: "请选择收货地址", trigger: "blur" },
           {
             validator: (rule, value, callback) => {
+              let _ = this.sourceData.fromadd;
+              if (_[0] == value[0] && _[1] == value[1] && _[2] == value[2]) {
+                callback(new Error("发货地收货地省市区不能完全相同"));
+              }
               if(value.length < 2){
                 callback(new Error("收货地请选择到省市"));
               } else {
@@ -533,79 +500,134 @@ export default {
         LoadTime: [
           { required: true, message: "请选择装货时间", trigger: "blur" }
         ],
-        Long: [
-          // { required: true, message: "请输入或者选择车长", trigger: "change" },
-          // {pattern: regs.CarLong, message: '请输入正确的车长', trigger: 'blur'}
+        LongCopy: [
           {
             validator: (rule, value, callback) => {
-              if (value >= 1 && value <= 20) {
+              if (value >= 1 && value <= 35) {
                 callback();
               } else if (value == "不限") {
                 callback();
               } else {
-                callback(new Error("车长最大为20米！"));
+                callback(new Error("车长最大为35米！"));
               }
             },
-            trigger: "blur"
+            trigger: "change"
           }
         ],
-        // CargoName: [
-        //   { required: true, message: "请输入货物名称", trigger: "blur" },
-        //   {
-        //     validator: (rule, value, callback) => {
-        //       if (value === "") {
-        //         callback(new Error("请输入货物名称"));
-        //       } else if (value.length >= 2 && value.length <= 8) {
-        //         callback();
-        //       } else {
-        //         callback(new Error("名称长度为2-8个字符"));
-        //       }
-        //     },
-        //     trigger: "blur"
-        //   }
-        // ],
         Parttern: [
           { required: true, message: "请选择接单模式", trigger: "change" }
         ],
         Freight: [
           { required: true, message: "请输入运费金额", trigger: "blur" },
-          { pattern: regs.NF2, message: "请输入正确的金额", trigger: "blur" }
+          { pattern: regs.NF2, message: "请输入正确的金额", trigger: "blur" },
+          {
+            validator: (rule, value, callback) => {
+              if (Number(value) <= 0) {
+                callback('金额必须大于0');
+              } else {
+                callback();
+              }
+            },
+            trigger: "blur"
+          }
         ],
-        Way: [{ required: true, message: "请选择货运类型", trigger: "change,blur" }],
-        // Remark: [
-        //   {required: true, message: '请输入备注信息', trigger: 'blur'},
-        //   {validator: this.checkLeng, trigger: 'blur'}
-        // ]
-        Receiver: [{ required: true, message: '收货人名称不能为空', trigger: 'blur'}],
+        Way: [{ required: true, message: "请选择货运类型", trigger: "change, blur" }],
+        Receiver: [
+          {
+            validator: (rule, value, callback) => { // 当选中送货上门货主到付 必须填收货人等
+              if ((this.sourceData.Way == '1' && this.sourceData.Settlement == '2')) {
+                if (!value) {
+                  callback('请输入收货人名称')
+                } else {
+                  callback()
+                }
+              } else {
+                callback()
+              }
+            },
+            trigger: "blur"
+          }
+        ],
         ReceivePhone: [
-          { required: true, message: '请输入正确手机号', trigger: 'blur'},
-          { pattern: regs.Phone, message: '请输入正确手机号', trigger: 'blur'}
+          {
+            validator: (rule, value, callback) => { // 当选中送货上门货主到付 必须填收货人等
+              if ((this.sourceData.Way == '1' && this.sourceData.Settlement == '2')) {
+                if (!regs.Phone.test(value)) {
+                  callback('请输入正确格式手机号')
+                } else {
+                  callback()
+                }
+              } else if (value && !regs.Phone.test(value)) {
+                callback('您输入的手机号码格式不正确')
+              } else {
+                callback()
+              }
+            },
+            trigger: "blur"
+          }
+        ],
+        ToAddress: [
+          {
+            validator: (rule, value, callback) => { // 当选中送货上门货主到付 必须填收货人等
+              if ((this.sourceData.Way == '1' && this.sourceData.Settlement == '2')) {
+                if (!value) {
+                  callback('请输入具体收货地地址')
+                } else {
+                  callback()
+                }
+              } else {
+                callback()
+              }
+            }
+          }
         ]
       }
     };
   },
   methods: {
     getUserRole: getUserRole,
-    closeRepeatDialog () { // 弹框取消操作
-      this.ifShowRepeatDialog = false;
+    delePathFields () { // 清除下部分表单验证 收货人信息是否必填等
+      this.$refs['Receiver'].clearValidate()
+      this.$refs['ToAddress'].clearValidate()
+      this.$refs['ReceivePhone'].clearValidate()
     },
-    closeIssueDialog () {
-      if(this.sourceData.Long == '99'){
-        this.sourceData.Long = "不限";
+    resetPathFields () { // 重置部分表单验证 收货人信息是否必填等
+      this.$refs['sourceData'].validateField('Receiver')
+      this.$refs['sourceData'].validateField('ToAddress')
+      this.$refs['sourceData'].validateField('ReceivePhone')
+    },
+    publishActSure () { // 由于可能同事显示两种弹窗 得发布前确认
+      let _ = this;
+      if (_.isSurepublish.IsNoCarrier) {
+        _.isSurepublish.IsNoCarrier = false;
+        if (_.isSurepublish.IsRepeat) {
+          _.loading = true;
+          setTimeout(() => {
+            _.loading = false;
+            this.hintDialogObject = {
+              visible: true, // 是否显示
+              btnL: '取消发布', // 取消按钮名称
+              btnR: '确定发布', // 确定按钮名称
+              tip: '同样信息货源，您今天已发布一单！', // 提示
+              des: '是否再次发布货源？', // 描述
+              color: 'red', // 描述字颜色
+              i: 'warning', // 图标
+              iColor: '#fecb12' // 图标颜色
+            }
+          }, 600);
+        } else {
+          _.publishAct();
+        }
+      } else { // 说明是第二个弹窗
+        _.publishAct();
       }
-      this.ifShowIssueDialog = false;
-      this.$router.push('/source')
     },
     async publishAct () { // 发布操作
-      this.ifShowRepeatDialog = false;
       if (this.hasCommit) {
         return;
       }
       this.hasCommit = true;
       this.loading = true;
-      if (this.sourceData.Long == '不限') {
-        this.sourceData.Long = '99';
-      }
       let res;
       if (this.$route.params.id) {
         if (this.$route.params.type) {
@@ -618,29 +640,29 @@ export default {
       }
       this.hasCommit = false;
       this.loading = false;
-      if (this.sourceData.Long == 99) {
-        this.sourceData.Long = '不限';
-      }
       if (res.data.ResultCode == "000000") {
         if (this.curClickType == '1') {
-          this.issueDialogInfo.ResultMessage = res.data.ResultMessage
-          this.issueDialogInfo.ResultOrderID = res.data.ResultOrderID
-          this.issueDialogInfo.ResultPiPei = res.data.ResultPiPei
-          this.ifShowIssueDialog = true
-          // 数据清空
-          this.$refs.data5.setCheckedKeys([]);
-          this.ProList = [];
-          this.$refs.sourceData.resetFields();
-          this.volumeCopy = "";
-          this.weightCopy = "";
+          // 发布成功后跳转
+          if(this.sourceData.Parttern == 2 && !res.data.ResultValue.PiPei) { // PiPei = 1 则无车辆 直接跳转至成功页 = 0 说明有车辆需要选择承运
+            this.$router.push('/carrier/'+ res.data.ResultValue.OrderId);
+            return;
+          }
+          // 否则跳至成功页
+          this.$router.push({
+            path: '/publishTipsPage',
+            query: {
+              i: 'success',
+              tip: '恭喜您，货源发布成功！',
+              des: res.data.ResultMessage,
+              color: !res.data.ResultValue.PiPei ? '#999' : 'red',
+              orderID: res.data.ResultValue.OrderId
+            }
+          });
         } else {
           this.$message.success({message: '保存货源成功！'});
           this.$router.push("/sourceList");
         }
       }
-    },
-    goDetails () { // 查看货源详情
-      this.$router.push(`/sourceDetails/${this.issueDialogInfo.ResultOrderID}`);
     },
     // 获取 数量
     getNum (num, scope) { // 小星添加
@@ -664,7 +686,7 @@ export default {
       return arr;
     },
     // 设置地图传回的参数到输入框
-    setValue(index){
+    setValue (index) {
       this.IsShowMap = true;
       this.index = index;
       if(index == "1"){
@@ -755,52 +777,41 @@ export default {
     },
     //获取产品分类
     async GetPropertyTree() {
-      let IDS = this.$cookie.get("MemberMerchantID");
-      if (IDS == undefined || IDS == null || IDS == "") {
-        this.$message.info("你尚未入驻！");
-        this.$confirm("是否去入驻?", "发布货源需认证入驻才能发布！", {
-          confirmButtonText: "去入驻",
-          cancelButtonText: "取消",
-          type: "warning"
-        }).then(() => {
-          this.$router.push("/settled");
-        });
-      } else {
-        let form = { MerchantID: this.$cookie.get("MemberMerchantID") };
-        const MerchantGetApplys = await GetPropertyTree(form);
-        if (MerchantGetApplys.data.ResultCode == "000000") {
-          let josnlist = MerchantGetApplys.data.ResultValue;
-          this.treeData = [];
-          josnlist.forEach(item => {
-            let tableData = {};
-            tableData.id = item.FirstID;
-            tableData.label = item.FirstName;
-            tableData.index = 1;
-            tableData.children = [];
-            item.SecondList.forEach(items => {
-              const tableDatas = {};
-              tableDatas.id = items.SecondID;
-              tableDatas.label = items.SecondName;
-              tableDatas.index = 2;
-              tableDatas.children = [];
-              tableData.children.push(tableDatas);
-              items.ThirdList.forEach(list => {
-                const tablelist = {};
-                tablelist.id = list.ThirdID;
-                tablelist.label = list.ThirdName;
-                tableDatas.children.push(tablelist);
+      let form = { MerchantID: this.$cookie.get("MemberMerchantID") };
+      return new Promise((resolve, reject) => {
+        GetPropertyTree(form).then((res) => {
+          if (res.data.ResultCode == "000000") {
+            let josnlist = res.data.ResultValue;
+            this.treeData = [];
+            josnlist.forEach(item => {
+              let tableData = {};
+              tableData.id = item.FirstID;
+              tableData.label = item.FirstName;
+              tableData.index = 1;
+              tableData.children = [];
+              item.SecondList.forEach(items => {
+                const tableDatas = {};
+                tableDatas.id = items.SecondID;
+                tableDatas.label = items.SecondName;
+                tableDatas.index = 2;
+                tableDatas.children = [];
+                tableData.children.push(tableDatas);
+                items.ThirdList.forEach(list => {
+                  const tablelist = {};
+                  tablelist.id = list.ThirdID;
+                  tablelist.label = list.ThirdName;
+                  tableDatas.children.push(tablelist);
+                });
               });
+              this.treeData.push(tableData);
+              this.data5 = JSON.parse(JSON.stringify(this.treeData));
             });
-            this.treeData.push(tableData);
-            this.data5 = JSON.parse(JSON.stringify(this.treeData));
-          });
-        } else {
-          this.$message({
-            type: "error",
-            message: MerchantGetApplys.data.ResultMessage
-          });
-        }
-      }
+          }
+          resolve('success')
+        }).catch(() => {
+          resolve('error')
+        })
+      })
     },
     //左侧筛选获取列表数据
     filter() {
@@ -827,23 +838,24 @@ export default {
         this.volumeCopy = "";
         this.weightCopy = "";
         let List = [];
-        // console.log(res.data.ResultValue);
-        for (let i in res.data.ResultValue) {
-          res.data.ResultValue[i].Amount = "1";
+        for (let i in res.data.ResultValue) { // 每次选择都请求了productGetAll 需要重置数量 采取轮询
+          let Amount = '1',
+              cur = res.data.ResultValue[i];
+          this.ProList.forEach((c, j) => {
+            if (c.ModelID === cur.ModelID) {
+              Amount = c.Amount;
+            }
+          });
+          cur.Amount = Amount;
         }
-        if (
-          res.data.ResultValue[0].ClassifyID ==
-            "2239b1840bd540498abad53a235e8341" ||
-          res.data.ResultValue[0].ClassifyID ==
-            "293022d917b644cb983f8858cf1f077f"
-        ) {
+        if ( res.data.ResultValue[0].ClassifyID == ClassifySpec.coldLogistics.id || res.data.ResultValue[0].ClassifyID == ClassifySpec.hazaChemicals.id ) {
           let FirstID = res.data.ResultValue[0].ClassifyID;
-          if (FirstID == "2239b1840bd540498abad53a235e8341") {
-            this.sourceData.Classify = "2239b1840bd540498abad53a235e8341";
-            this.sourceData.CargoName = "冷链运输";
+          if (FirstID == ClassifySpec.coldLogistics.id) {
+            this.sourceData.Classify = ClassifySpec.coldLogistics.id;
+            this.sourceData.CargoName = ClassifySpec.coldLogistics.name;
           } else {
-            this.sourceData.Classify = "293022d917b644cb983f8858cf1f077f";
-            this.sourceData.CargoName = "危化品";
+            this.sourceData.Classify = ClassifySpec.hazaChemicals.id;
+            this.sourceData.CargoName = ClassifySpec.hazaChemicals.name;
           }
           if (res.data.ResultValue.length > 1) {
             for(let item in res.data.ResultValue){
@@ -863,12 +875,7 @@ export default {
           let Classify = [];
           let ClassifyName = [];
           for (let index = 0; index < res.data.ResultValue.length; index++) {
-            if (
-              res.data.ResultValue[index].ClassifyID !=
-                "2239b1840bd540498abad53a235e8341" &&
-              res.data.ResultValue[index].ClassifyID !=
-                "293022d917b644cb983f8858cf1f077f"
-            ) {
+            if ( res.data.ResultValue[index].ClassifyID != ClassifySpec.coldLogistics.id && res.data.ResultValue[index].ClassifyID != ClassifySpec.hazaChemicals.id) {
               List.push(res.data.ResultValue[index]);
               for (let i = 0; i < List.length; i++) {
                 Classify.push(List[i].ClassifyID);
@@ -877,7 +884,7 @@ export default {
             } else {
               if (res.data.ResultValue.length > 1) {
                 for(let item in res.data.ResultValue){
-                  if( res.data.ResultValue[item].ClassifyID ==  "2239b1840bd540498abad53a235e8341" ||  res.data.ResultValue[item].ClassifyID == '293022d917b644cb983f8858cf1f077f'){
+                  if( res.data.ResultValue[item].ClassifyID ==  ClassifySpec.coldLogistics.id ||  res.data.ResultValue[item].ClassifyID == ClassifySpec.hazaChemicals.id){
                     this.$message.info({
                     message: "冷链运输和危化品不能和其他货物一起运输！"
                   });
@@ -907,85 +914,102 @@ export default {
     //发布提交
     async addSource(sourceData, type) {
       this.curClickType = type; // 判断当前 时发布货源还是保存货源
-      // 提前验证是否审核过
-      if (this.merchantStatus == 0 || this.merchantStatus == 1 || this.merchantStatus == -1 ) {
-        this.ifShowLoginDialog = true
-        return
-      }
       // 结束
       this.$refs[sourceData].validate(async valid => {
         if (this.ProList.length <= 0) {
           this.$message.error({ message: "请选择发货的产品！" });
-        } else {
-          if(!regs.NF2.test(this.sourceData.Volume)){
-            this.$message.error({message: '总体积格式填写有误！，请填写数字，最多保留两位小数！'})
-          } else if (!regs.NF2.test(this.sourceData.Weight)){
-            this.$message.error({message: '总重量格式填写有误！，请填写数字，最多保留两位小数！'})
-          } else {
-            if (valid) {
-              this.hasCommit = true;
-              this.loading = true;
-              let json = [];
-              let productType = "";
-              for (let index in this.ProList) {
-                json.push({
-                  ProductID: this.ProList[index].ProductID,
-                  Amount: this.ProList[index].Amount
-                });
-                productType += this.ProList[index].ClassifyID + ",";
-              }
-              this.sourceData.Type = type;
-              this.sourceData.Product = JSON.stringify(json);
-              this.sourceData.ProductCategory = this.AllCount;
-              this.sourceData.ProductCount = this.AllNumber;
-              this.sourceData.Money = this.AllPrice;
-              if (this.sourceData.Long == '不限') {
-                this.sourceData.Long = '99';
-              }
-              if (!this.sourceData.Model) {
-                this.sourceData.Model = "";
-              }
-              this.sourceData.LightCargo = this.bubblesVolume;
-              this.sourceData.HeavyCargo = this.ProductWeight;
-              // this.sourceData.Weight = this.AllWeight;
-              // this.sourceData.Volume = this.AllVolume;
-              if (this.sourceData.MercAddress) {
-                this.sourceData.FromAddress = this.sourceData.MercAddress;
-              } else {
-                this.sourceData.FromAddress = "";
-              }
-              this.sourceData.ToCity = this.sourceData.toadd[
-                this.sourceData.toadd.length - 1
-              ];
-              this.sourceData.FromCity = this.sourceData.fromadd[
-                this.sourceData.fromadd.length - 1
-              ];
-              //在发布前检测 检测是否已经发布 现在接口没好 先注释
-              let resCheck = await JudgeOrderRepeatForFactory(Object.assign({Owner: 1}, this.sourceData));
-              this.hasCommit = false;
-              this.loading = false;
-              if (this.sourceData.Long == 99) {
-                this.sourceData.Long = '不限';
-              }
-              if (resCheck.data.ResultCode === '000000' && resCheck.data.ResultValue) {
-                  this.ifShowRepeatDialog = true;
-              } else if (resCheck.data.ResultCode === '000000') {
-                this.publishAct(); // 执行发布操作
-              }
-            }
-          }
+          return;
         }
+        if(!regs.NF2.test(this.sourceData.Volume)){
+          this.$message.error({message: '总体积格式填写有误！，请填写数字，最多保留两位小数！'})
+          return;
+        }
+        if (!regs.NF2.test(this.sourceData.Weight)){
+          this.$message.error({message: '总重量格式填写有误！，请填写数字，最多保留两位小数！'})
+          return;
+        }
+        if (!valid) {
+          return;
+        }
+        this.hasCommit = true;
+        this.loading = true;
+        let json = [];
+        let productType = "";
+        for (let index in this.ProList) {
+          json.push({
+            ProductID: this.ProList[index].ProductID,
+            Amount: this.ProList[index].Amount
+          });
+          productType += this.ProList[index].ClassifyID + ",";
+        }
+        this.sourceData.Type = type;
+        this.sourceData.Product = JSON.stringify(json);
+        this.sourceData.ProductCategory = this.AllCount;
+        this.sourceData.ProductCount = this.AllNumber;
+        this.sourceData.Money = this.AllPrice;
+        this.sourceData.Long = this.sourceData.LongCopy === '不限' ? '99' : this.sourceData.LongCopy; // 赋值length
+        if (!this.sourceData.Model) {
+          this.sourceData.Model = "";
+        }
+        this.sourceData.LightCargo = this.bubblesVolume;
+        this.sourceData.HeavyCargo = this.ProductWeight;
+        if (this.sourceData.MercAddress) {
+          this.sourceData.FromAddress = this.sourceData.MercAddress;
+        } else {
+          this.sourceData.FromAddress = "";
+        }
+        this.sourceData.ToCity = this.sourceData.toadd[
+          this.sourceData.toadd.length - 1
+        ];
+        this.sourceData.FromCity = this.sourceData.fromadd[
+          this.sourceData.fromadd.length - 1
+        ];
+        //在发布前检测 检测是否已经发布
+        const {data: {ResultCode, ResultMessage, ResultValue}} = await JudgeOrderRepeatForFactory(Object.assign({Owner: 1}, this.sourceData));
+        this.hasCommit = false;
+        this.loading = false;
+        if (ResultCode !== '000000') return; // 请求失败直接结束
+        this.isSurepublish = ResultValue; // 记录弹窗，集合
+        if (ResultValue && ResultValue.IsNoCarrier) {
+          this.hintDialogObject = {
+            visible: true, // 是否显示
+            btnL: '取消发布', // 取消按钮名称
+            btnR: '确定发布', // 确定按钮名称
+            tip: '十分抱歉 T_T～！', // 提示
+            des: '尊敬的用户，该路线暂无物流公司开通，可能长时间无承运人抢单！', // 描述
+            color: 'red', // 描述字颜色
+            i: 'warning', // 图标
+            iColor: '#fecb12' // 图标颜色
+          }
+          return;
+        }
+        if (ResultValue && ResultValue.IsRepeat) {
+          this.hintDialogObject = {
+            visible: true, // 是否显示
+            btnL: '取消发布', // 取消按钮名称
+            btnR: '确定发布', // 确定按钮名称
+            tip: '同样信息货源，您今天已发布一单！', // 提示
+            des: '是否再次发布货源？', // 描述
+            color: 'red', // 描述字颜色
+            i: 'warning', // 图标
+            iColor: '#fecb12' // 图标颜色
+          }
+          return;
+        }
+        this.publishAct(); // 执行发布操作
       });
     },
     //移除产品选中
     remove(id, index, list) {
       list.splice(index, 1);
-      let checkedIDs = [];
-      list.forEach(function(l, i){
-          checkedIDs.push(l.ModelID);
+      let checkedIDs = [],
+          cargoNameArr = []; // 为了筛除货物类型
+      list.forEach(function(l, i) {
+        checkedIDs.push(l.ModelID);
+        cargoNameArr.push(l.ClassifyName);
       });
       this.$refs.data5.setCheckedKeys(checkedIDs);
-      this.filter();
+      this.sourceData.CargoName = this.arrQc(cargoNameArr).join(',');
     },
     //获取城市联动的label
     getArea(cityID, address, type) {
@@ -1018,12 +1042,11 @@ export default {
     },
     // 获取货源基本信息
     async getSource() {
-      this.loading = true;
-      getSourceInfo2({
-        OrdeID: this.$route.params.id,
-        MemberID: this.$cookie.get("MemberID")
-      })
-        .then(res => {
+      return new Promise((resolve, reject) => {
+        getSourceInfo2({
+          OrdeID: this.$route.params.id,
+          MemberID: this.$cookie.get("MemberID")
+        }).then(res => {
           if (
             res.data &&
             res.data.ResultCode == "000000" &&
@@ -1056,14 +1079,14 @@ export default {
             this.sourceData.ToAddress = Data.ToAddress;
             this.sourceData.LoadTime = Data.LoadTime;
             if (Data.Long == "99") {
-              this.sourceData.Long = "不限";
+              this.sourceData.LongCopy = "不限";
             } else {
-              this.sourceData.Long = String(Data.Long);
+              this.sourceData.LongCopy = String(Data.Long);
             }
             this.sourceData.Model = String(Data.Model);
             this.sourceData.Code = Data.Code;
             this.sourceData.Classify = Data.ClassifyID;
-            this.sourceData.CargoName = Data.Classify;
+            this.sourceData.CargoName = Data.CargoName;
             this.volumeCopy = Data.Volume;
             this.weightCopy = Data.Weight;
             this.sourceData.Weight = String(Data.Weight);
@@ -1075,26 +1098,26 @@ export default {
             this.sourceData.Freight = Data.Freight;
             this.sourceData.LoadTime = Data.LoadTime;
             this.ProList = Data.Product;
+            this.ProList.forEach((c) => { // 字段ID 不同统一下
+              c.ModelID = c.ProdModel;
+            })
             this.sourceData.DeliveryMode = Data.DeliveryMode;
+            this.sourceData.Receiver = Data.OrdeReceiver;
+            this.sourceData.ReceivePhone = Data.OrdeReceivePhone;
             if (Data.Way == 1) { // 运输类型 为1 物流公司得判断下结算方式 和 是否到付
               this.sourceData.Settlement = String(Data.OrdeSettlement);
-              if (Data.OrdeSettlement == 2) {
-                this.sourceData.Receiver = Data.OrdeReceiver;
-                this.sourceData.ReceivePhone = Data.OrdeReceivePhone;
-              }
             }
             let key = [];
             for (let item in this.ProList) {
-              key.push(this.ProList[item].ProdModel);
+              key.push(this.ProList[item].ModelID);
             }
             this.$refs.data5.setCheckedKeys(key);
-            this.loading = false;
           }
+          resolve('success'); // 定义个promise
+        }).catch(() => {
+          resolve('error');
         })
-        .catch(err => {
-          console.log(err);
-          this.$router.push("/sourceList");
-        });
+      })
     },
     async GetHeavyCargoStandard () {
       const resData = await GetHeavyCargoStandard()
@@ -1107,70 +1130,75 @@ export default {
     })
   },
   created() {
-    if (this.$cookie.get("MemberID")) {
-      if (this.userType == 1) {
-        this.loading = true;
-        //获取树形数据
-        this.GetPropertyTree();
-        //获取车型列表
-        getCarModelList()
-          .then(res => {
-            if (res.data.ResultCode === "000000" && res.data.ResultValue) {
-              res.data.ResultValue.push({ DictID: "", DictName: "不限" });
-              this.ModelList = res.data.ResultValue;
-            }
-          })
-          .catch(err => {
-            console.log(err);
-          });
-        //获取入驻的公司地址
-        if (!this.$route.params.id) {
-          getEnterAddress({ MemberID: this.$cookie.get("MemberID") }).then(
-            res => {
-              if (res.data.ResultCode === "000000" && res.data.ResultValue) {
-                let arr = res.data.ResultValue.FromCityID.split(",");
-                for (let i in arr) {
-                  this.sourceData.fromadd.push(Number(arr[i]));
-                }
-                this.sourceData.MercAddress = res.data.ResultValue.FromAddress;
-                this.mapData.address = res.data.ResultValue.FromAddress;
-                this.getArea(this.sourceData.fromadd, this.sourceData.MercAddress, 1);
-              }
-              this.loading = false;
-            }
-          ).catch(err=>{
-            this.loading = false;
-          });
-        }
-        if (this.$route.params.id) {
-          this.sourceData.OrderID = this.$route.params.id;
-          this.getSource();
-        }
-      } else {
-        this.$message.info({message: '身份类型错误！'});
-        this.$router.push("/add");
-      }
-    } else {
-      this.$message.info({ message: "你尚未登录，请登录！" });
-      this.$router.push("/");
+    if (this.userType != 1) {
+      this.$router.push("/add");
+      return;
     }
+
+    this.loading = true; // 加载 开启loading
+
+    let promise1 = new Promise((resolve, reject) => {  //获取树形数据 用promise实现下同步
+      this.GetPropertyTree().then((res) => {
+        resolve(res);
+      })
+    })
+
+    let promise2 = new Promise((resolve, reject) => {  //获取车型列表 用promise实现下同步
+      getCarModelList().then(res => {
+        if (res.data.ResultCode === "000000" && res.data.ResultValue) {
+          res.data.ResultValue.push({ DictID: "", DictName: "不限" });
+          this.ModelList = res.data.ResultValue;
+        }
+        resolve(res);
+      }).catch(() => {
+        resolve('error');
+      })
+    })
+
+    let promise3 = new Promise((resolve, reject) => { // 获取入驻的公司地址 用promise实现下同步
+      if (!this.$route.params.id) {
+        getEnterAddress({ MemberID: this.$cookie.get("MemberID") }).then(res => {
+          if (res.data.ResultCode === "000000" && res.data.ResultValue) {
+            let arr = res.data.ResultValue.FromCityID.split(",");
+            for (let i in arr) {
+              this.sourceData.fromadd.push(Number(arr[i]));
+            }
+            this.sourceData.MercAddress = res.data.ResultValue.FromAddress;
+            this.mapData.address = res.data.ResultValue.FromAddress;
+            this.getArea(this.sourceData.fromadd, this.sourceData.MercAddress, 1);
+          }
+          resolve(res);
+        }).catch(() => {
+          resolve('error');
+        })
+      } else {
+        resolve('end');
+      }
+    })
+
+    let promise4 = new Promise((resolve, reject) => { // 获取相对应数据 有ID情况
+      if (this.$route.params.id) {
+        this.sourceData.OrderID = this.$route.params.id;
+        this.getSource().then((res) => {
+          resolve(res);
+        }).catch(() => {
+          resolve('error');
+        })
+      } else {
+        resolve('end');
+      }
+    })
+
+    Promise.all([promise1, promise2, promise3, promise4]).then(() => { // 加载完毕关闭loading
+      this.loading = false;
+    })
+
     // 判断阈值是否存在
     if (this.bulkyCargo < 0) {
       this.GetHeavyCargoStandard()
     }
   },
   mounted () {
-    if (this.merchantStatus == 0 || this.merchantStatus == 1 || this.merchantStatus == -1) {
-      let param = 'ifShowIssueDialogNum' + this.$cookie.get("MemberID");
-      let ifshowdNum = sessionStorage.getItem(param)
-      if (!ifshowdNum) {
-        sessionStorage.setItem(param, '0')
-      }
-      if (ifshowdNum == 0 || !ifshowdNum) {
-        sessionStorage.setItem(param, '1')
-        this.ifShowLoginDialog = true
-      }
-    }
   },
   computed: {
     //总货值
@@ -1214,18 +1242,13 @@ export default {
         }
       },
       set(val) {
-        // if(!regs.NF2.test(val)){
-        //   this.$message.info({message: "请输入数字，最多保留两位小数位！"});
-        // } else {
-        //   this.sourceData.Volume = val;
-        // }
         this.sourceData.Volume = val;
       }
     },
     //总重量
     AllWeight: {
-      get(){
-        if(this.weightCopy){
+      get() {
+        if(this.weightCopy) {
           return this.weightCopy;
         } else {
           let weight = 0;
@@ -1239,12 +1262,7 @@ export default {
           return weight.toFixed(2);
         }
       },
-      set(val){
-        // if(!regs.NF2.test(val)){
-        //   this.$message.info({message: "请输入数字，最多保留两位小数位！"});
-        // } else {
-        //   this.sourceData.Weight = val;
-        // }
+      set(val) {
         this.sourceData.Weight = val;
       }
     },
@@ -1294,10 +1312,10 @@ export default {
           }
         }
       }
-      if (this.AllWeight - WeightProduct < 0) {
+      if (Number(this.AllWeight) - WeightProduct < 0) {
         return 0.0;
       } else {
-        return (this.AllWeight - WeightProduct).toFixed(2);
+        return (Number(this.AllWeight) - WeightProduct).toFixed(2);
       }
     },
     ...mapGetters([
@@ -1310,9 +1328,42 @@ export default {
     foot,
     numAssemly,
     vueMap,
-    issueDialog, // 注册组件
-    loginDialog,
-    repeatDialog
+    hintDialog,
+    leftMenuRouterHome, // 左侧导航
+    headMenuRouter // 左侧
+  },
+  watch: {
+    'sourceData.Way' (n) { // 监听运输类型 对部分表单验证
+      if (this.sourceData.Settlement == '2' && n == '1') {
+        this.resetPathFields()
+      } else {
+        this.delePathFields()
+      }
+      if (n) {
+        this.$refs['sourceData'].validateField('Way')
+      }
+    },
+    'sourceData.Settlement' (n) { // 监听是否到付 对部分表单验证
+      if (n == '2') {
+        this.resetPathFields()
+      } else {
+        this.delePathFields()
+      }
+    },
+    'sourceData.Parttern' (n) { // 接单模式修改清除不掉提示问题 优化
+      switch (n) {
+
+        case '2':
+        this.sourceData.Settlement = '1';
+        break;
+        case '1':
+        this.sourceData.Settlement = '0';
+        break;
+      }
+      if (n) {
+        this.$refs['sourceData'].validateField('Parttern')
+      }
+    },
   }
 };
 </script>
@@ -1503,25 +1554,20 @@ export default {
 
 .fill {
   padding: 0 20px;
-
   .address {
-    float: left;
     width: 300px;
-    margin-right: 10px;
   }
-  .detailes{
-    float: left;
+  .adress-details {
     width: 400px;
-    margin-right: 10px;
-    .mapIcon{
-      display: inline-block
-      width: 30px
-      height: 30px
-      line-height: 30px
-    }
+  }
+  .mapIcon {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
   }
   .large{
-    width: 444px
+    width: 444px;
   }
 }
 
@@ -1551,4 +1597,19 @@ export default {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+</style>
+
+<style lang="stylus">
+.source // 添加外层样式防止 样式外泄
+  .source-table.el-table--scrollable-x .el-table__body-wrapper
+      overflow-x: hidden
+  .item-box // 重置一行多个el-input
+    margin-bottom: 22px
+    font-size: 0
+    .el-form-item
+      margin-bottom: 0
+      display: inline-block
+      &:not(:first-child)
+        .el-form-item__content
+          margin-left: 10px !important
 </style>

@@ -3,20 +3,13 @@
     <head-top>
       <span class="title" slot="index">{{userType == 1?'货主':'物流公司'}}-工作台</span>
       <div class="header-center" slot="menu">
-        <ul>
-          <router-link tag="li" to="/add" class="active">首页</router-link>
-          <router-link tag="li" to="/finaindex">财务管理</router-link>
-          <router-link tag="li" to="/account">账户信息</router-link>
-        </ul>
+        <head-menu-router activeLink="index"></head-menu-router>
       </div>
       <drop-down slot="info"></drop-down>
     </head-top>
     <div class="content clear" v-loading="loading">
       <div class="content-left">
-        <ul>
-          <router-link tag="li" to="/add">发布货源</router-link>
-          <router-link to="/orderList" tag="li" class="active">货源列表</router-link>
-        </ul>
+        <left-menu-router-home activeLink="orderList"></left-menu-router-home>
       </div>
       <div class="content-right">
         <div class="main fr">
@@ -25,10 +18,11 @@
           <div class="container">
             <!--进度条 start -->
             <div class="step">
-              <el-steps :active="stepType" align-center v-if="!(baseInfo.Status == -3 || baseInfo.Status == -4 || baseInfo.Status == -2)">
+              <el-steps :active="stepType" align-center v-if="!(baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL
+              || baseInfo.Status == orderStatus.ORDER_REJECT_CANCEL || baseInfo.Status == orderStatus.ORDER_CANCELED)">
                 <el-step title="已发布" description=""></el-step>
                 <el-step title="待确认" description=""></el-step>
-                <el-step title="已发货" description=""></el-step>
+                <el-step title="待发货" description=""></el-step>
                 <el-step title="运输中" description=""></el-step>
                 <el-step title="已完成" description=""></el-step>
               </el-steps>
@@ -36,7 +30,9 @@
             <!--进度条 end -->
             <!--进度条 start -->
             <div class="step">
-              <el-steps :active="baseInfo.Status==-3?1:2" v-if="baseInfo.Status == -3 || baseInfo.Status == -4 || baseInfo.Status == -2"
+              <el-steps :active="baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL?1:2"
+                        v-if="baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL
+                        || baseInfo.Status == orderStatus.ORDER_REJECT_CANCEL || baseInfo.Status == orderStatus.ORDER_CANCELED"
                         align-center>
                 <el-step title="取消申请中" description=""></el-step>
                 <el-step title="处理结果" description=""></el-step>
@@ -59,7 +55,7 @@
                   <li><span class="item-name">运输类型：</span>{{ baseInfo.Way==1?'物流公司':'个体司机'}}</li>
                   <li><span class="item-name">体积重量：</span><span class="orange-text">{{baseInfo.Volume}}m³/{{baseInfo.Weight}}吨</span>
                   </li>
-                  <li v-if="baseInfo.Parttern == 1 || (baseInfo.Parttern == 2 && baseInfo.Status != 1 && baseInfo.Status != 2 )">
+                  <li v-if="baseInfo.Parttern == 1 || (baseInfo.Parttern == 2 && baseInfo.Status != orderStatus.ORDER_RELEASED && baseInfo.Status != orderStatus.ORDER_PUBLISHED )">
                     <span class="item-name">运费：</span><span class="orange-text">￥{{baseInfo.Freight}}</span>
                   </li>
                   <li><span class="item-name">装货时间：</span><span class="orange-text">{{baseInfo.LoadTime}}</span></li>
@@ -76,75 +72,81 @@
               <!--右侧-->
               <div class="center-right">
                 <div class="top">
-                  <!--<p class="time-info">货源信息还有<span class="orange-text">{{}}天12小时</span>到装货时间，即将过期！</p>-->
                   <p class="size16">
                     货源状态：<span class="orange-text">{{baseInfo.StatusName}}</span>
                   </p>
                   <p v-if="baseInfo.Status < 0" class="reason">{{baseInfo.Reason}}</p>
                   <div class="mt-40">
-                    <!-- <el-button v-if="baseInfo.Status == 1 && !getUserRole(userCharacter,'财务')" type="primary" height="30px" class="normal mr-10" size="mini"
-                               @click="sourceCommit(baseInfo.OrdeID)">立即发布
-                    </el-button> -->
-                    <!-- <router-link :to="{path: '/add/'+ baseInfo.OrdeID}" class="mr-10">
-                      <el-button v-if="baseInfo.Status == 1 && !getUserRole(userCharacter,'财务')" type="primary" height="30px"
-                                 class="normal" plain size="mini">编辑
-                      </el-button>
-                    </router-link> -->
-                    <el-button v-if="baseInfo.Status == 2 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
+
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_PUBLISHED && baseInfo.Parttern == 2 && !getUserRole(userCharacter,'财务')" type="primary" size="mini" class="mr-10"
+                               @click="gourl('/carrier/' + baseInfo.OrdeID)">选择承运人
+                    </el-button>
+
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_PUBLISHED && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
+                               @click="SendAgain(baseInfo.OrdeID, baseInfo.Code)">重发
+                    </el-button>
+
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_PUBLISHED && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
                                @click="canSource(baseInfo.OrdeID,baseInfo.Code)">撤销货源
                     </el-button>
-                    <router-link :to="{name: 'add',params:{id: baseInfo.OrdeID,type: 1}}" class="mr-10">
-                      <el-button v-if="(baseInfo.Status == -1 || baseInfo.status == 6 || baseInfo.status == -2) && !getUserRole(userCharacter,'财务')" size="mini" class="normal">重发
-                      </el-button>
-                    </router-link>
-                    <router-link :to="{path: '/payment',query:{orderid: baseInfo.OrdeID}}" class="mr-10">
-                      <el-button v-if="baseInfo.Status == 4 && baseInfo.PayResult != 1 && baseInfo.Grab.CrowdType == 3 && !getUserRole(userCharacter,'财务')"
-                                 size="mini" class="normal">支付运费
-                      </el-button>
-                    </router-link>
-                    <el-button v-if="baseInfo.Status == 3 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
+  
+                    <el-button v-if="(baseInfo.Status == orderStatus.ORDER_CLOSED || baseInfo.status == orderStatus.ORDER_ARRIVED || baseInfo.Status == orderStatus.ORDER_CANCELED) && !getUserRole(userCharacter,'财务')" @click="gourl({name: 'add',params:{id: baseInfo.OrdeID,type: 1}})" size="mini" class="normal mr-10">再发一单
+                    </el-button>
+
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_CONFIRMED && baseInfo.PayResult != 1 && baseInfo.Grab.CrowdType == 3 && !getUserRole(userCharacter,'财务')"
+                              @click="gourl({path: '/payment',query:{orderid: baseInfo.OrdeID}})"
+                              size="mini" class="normal mr-10">支付运费
+                    </el-button>
+
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_PENDING && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
                                @click="canSource(baseInfo.OrdeID,baseInfo.Code)">撤销货源
                     </el-button>
-                    <el-button v-if="baseInfo.Status == 4 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_CONFIRMED && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
                                @click="cancelOrder(baseInfo.OrdeID,baseInfo.Code)">取消运单
                     </el-button>
-                    <el-button v-if="baseInfo.Status == -3 && baseInfo.Nullifier == 1 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL && baseInfo.Nullifier == 1 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
                                @click="backOrder(baseInfo.OrdeID,baseInfo.Code)">撤回申请
                     </el-button>
-                    <el-button v-if="baseInfo.Status == -3 && baseInfo.Nullifier == 2 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL && baseInfo.Nullifier == 2 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
                                @click="agreeCancelOrder(baseInfo.OrdeID,baseInfo.Code,baseInfo.Grab.MerchantID)">同意申请
                     </el-button>
-                    <el-button v-if="baseInfo.Status == -3 && baseInfo.Nullifier == 2 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL && baseInfo.Nullifier == 2 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
                                @click="disAgreeCan(baseInfo.OrdeID,baseInfo.Code,baseInfo.Grab.MerchantID)">拒绝申请
                     </el-button>
-                    <el-button v-if="baseInfo.Status == 6 && baseInfo.Evaluated == 0 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_ARRIVED && baseInfo.Evaluated == 0 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
                                @click="OrderRate(baseInfo.OrdeID,baseInfo.Grab.CrowdType,baseInfo.Grab.Name)">评价
                     </el-button>
-                    <el-button v-if="baseInfo.Status == -4" size="mini" class="normal" @click="serviceTip">联系客服
+                    <el-button v-if="baseInfo.Status == orderStatus.ORDER_REJECT_CANCEL" size="mini" class="normal" @click="serviceTip">联系客服
                     </el-button>
                     <span class="key"
-                          v-if="(baseInfo.Status == 4 || baseInfo.Status == 5 || baseInfo.Status == 6 ) && baseInfo.PayResult == 1 &&  baseInfo.Grab.CrowdType == 3">
+                          v-if="(baseInfo.Status == orderStatus.ORDER_CONFIRMED
+                          || baseInfo.Status == orderStatus.ORDER_SHIPPED
+                          || baseInfo.Status == orderStatus.ORDER_ARRIVED ) && baseInfo.PayResult == 1 &&  baseInfo.Grab.CrowdType == 3">
                       <i class="left">支付秘钥</i>
                       <i class="right">{{baseInfo.SecretKey}}</i>
                     </span>
                   </div>
                   <p
-                    v-if="(baseInfo.Status == 4 || baseInfo.Status == 5 || baseInfo.Status == 6 ) && baseInfo.PayResult == 1 && baseInfo.CrowdType == 3"
+                    v-if="(baseInfo.Status == orderStatus.ORDER_CONFIRMED
+                    || baseInfo.Status == orderStatus.ORDER_SHIPPED
+                    || baseInfo.Status == orderStatus.ORDER_ARRIVED ) && baseInfo.PayResult == 1 && baseInfo.CrowdType == 3"
                     class="size12 gray-txt mt-20">秘钥支付：货主支付运费生成秘钥 <i class="el-icon-arrow-right"></i>货主确认卸货告知司机秘钥<i
                     class="el-icon-arrow-right"></i>司机输入秘钥收款</p>
                   <div class="info-list">
-                    <p class="gray-txt size12 mb-4" v-if="baseInfo.Nullifier == 2 && baseInfo.Status == -3">
+                    <p class="gray-txt size12 mb-4" v-if="baseInfo.Nullifier == 2 && baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL">
                       司机发起取消申请，货主和司机沟通达成一致后，货主同意取消，运单关闭。 </p>
-                    <p class="gray-txt size12" v-if="baseInfo.Nullifier == 2 && baseInfo.Status == -3">
+                    <p class="gray-txt size12" v-if="baseInfo.Nullifier == 2 && baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL">
                       货主选择拒绝取消，运单转为拒绝取消，记司机违约一次，罚款200元。 </p>
-                    <p class="gray-txt size12 mb-4" v-if="baseInfo.Nullifier == 1 && baseInfo.Status == -3">
+                    <p class="gray-txt size12 mb-4" v-if="baseInfo.Nullifier == 1 && baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL">
                       货主发起取消申请，货主和司机沟通达成一致后，司机同意取消，运单关闭。</p>
-                    <p class="gray-txt size12" v-if="baseInfo.Nullifier == 1 && baseInfo.Status == -3">
+                    <p class="gray-txt size12" v-if="baseInfo.Nullifier == 1 && baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL">
                       司机选择拒绝取消，运单转为拒绝取消，记货主违约一次，罚款200元。</p>
                   </div>
                 </div>
 
-                <div class="bottom" v-if="baseInfo.Grab && baseInfo.Status != 1 && baseInfo.Status != 2 && baseInfo.Status != -1">
+                <div class="bottom" v-if="baseInfo.Grab && baseInfo.Status != orderStatus.ORDER_RELEASED
+                && baseInfo.Status != orderStatus.ORDER_PUBLISHED
+                && baseInfo.Status != orderStatus.ORDER_CLOSED">
                   <p class="user-info">
                     <span v-if="baseInfo.Parttern == 1">抢单司机：</span>
                     <span v-else>承运司机：</span>
@@ -155,11 +157,11 @@
                   </p>
                   <div class="list">
                     <ul>
-                      <li v-if="(baseInfo.Status != 1 && baseInfo.Status != 2 && baseInfo.Status != 3)"><span
+                      <li v-if="(baseInfo.Status != orderStatus.ORDER_RELEASED && baseInfo.Status != orderStatus.ORDER_PUBLISHED && baseInfo.Status != orderStatus.ORDER_PENDING)"><span
                         class="gray-txt">{{baseInfo.Parttern == 1?'抢单时间':'承运时间'}}：</span>{{baseInfo.GrabTime}}
                       </li>
                       <li><span class="gray-txt">联系电话：</span>{{baseInfo.Grab.Phone}}</li>
-                      <li v-if="baseInfo.Parttern == 2 && baseInfo.Status != 1 && baseInfo.Status != 2 ">
+                      <li v-if="baseInfo.Parttern == 2 && baseInfo.Status != orderStatus.ORDER_RELEASED && baseInfo.Status != orderStatus.ORDER_PUBLISHED ">
                         <span class="gray-txt">运费：</span><span class="orange-text">￥{{baseInfo.Freight}}</span>
                       </li>
                       <li v-if="baseInfo.Grab.MercCollect && baseInfo.Grab.CrowdType == 2">
@@ -167,15 +169,12 @@
                       </li>
                     </ul>
                     <p class="mt-20">
-                      <el-button v-if="baseInfo.Status == 3 && baseInfo.Parttern == 1 && !getUserRole(userCharacter,'财务')" type="primary" size="mini"
+                      <el-button v-if="baseInfo.Status == orderStatus.ORDER_PENDING && baseInfo.Parttern == 1 && !getUserRole(userCharacter,'财务')" type="primary" size="mini"
                                  @click="checked(baseInfo.OrdeID,baseInfo.Code,baseInfo.Grab.MerchantID)">选他承运
                       </el-button>
-                      <el-button v-if="baseInfo.Status == 3 && baseInfo.Parttern == 2 && !getUserRole(userCharacter,'财务')" type="primary" size="mini"
-                                 @click="CancelCarrier(baseInfo.OrdeID)">取消承运
+                      <el-button v-if="baseInfo.Status == orderStatus.ORDER_PENDING && baseInfo.Parttern == 2 && !getUserRole(userCharacter,'财务')" type="primary" size="mini"
+                                 @click="gourl('/carrier/' + baseInfo.OrdeID)">更换司机
                       </el-button>
-                      <!--<p v-if="item.Status == 3 && item.Parttern == 2" class="mt-6"><span class="blue-txt cuspoint"-->
-                      <!--@click="CancelCarrier(item.OrdeID,index)">取消承运</span>-->
-                      <!--</p>-->
                       <el-button type="primary" plain size="mini" @click="showInfo(baseInfo.Grab.MerchantID)">查看资质
                       </el-button>
                     </p>
@@ -188,43 +187,6 @@
               </div>
             </div>
             <!--中间 end-->
-            <!--司机列表 start-->
-            <div class="car-list" v-if="isShowCarList && baseInfo.Status == 2 && baseInfo.Parttern == 2">
-              <div class="list-menu">
-                <ul>
-                  <li class="first">司机信息</li>
-                  <li class="center">报价信息</li>
-                  <li class="last">操作</li>
-                </ul>
-              </div>
-              <div class="list-content">
-                <ul v-if="baseInfo.Grab.MatchingMerchant.length>0">
-                  <li v-for="(item,index) in baseInfo.Grab.MatchingMerchant" :key="index">
-                    <div class="left">
-                      <span class="number">{{index+1}}</span>
-                      <span class="car-name" @click="showInfo(item.MerchantID)">{{item.Name}}</span>
-                      <span class="pass">已认证</span>
-                      <span class="bao">保</span>
-                    </div>
-                    <div class="center">
-                      <span class="center-item">泡货：<i class="orange-text">{{item.LightPrice}}元/m³</i></span>
-                      <span class="center-item">重货：<i class="orange-text">{{item.HeavyPrice}}元/吨</i></span>
-                      <span>运费报价：<i class="orange-text">¥{{item.Freight}} </i></span>
-                    </div>
-                    <div class="right">
-                      <p v-if="!getUserRole(userCharacter,'财务')"
-                        @click="checked(baseInfo.OrdeID,baseInfo.Code,item.MerchantID,item.Freight,item.RouteID)">
-                        选他承运</p>
-                    </div>
-                  </li>
-                </ul>
-                <div v-else class="text-center mb-20 mt-60">
-                  <p><img src="../../assets/images/null.png" alt="加载失败"></p>
-                  <p class="gray-txt mt-20">暂无匹配数据</p>
-                </div>
-              </div>
-            </div>
-            <!--司机列表 end-->
 
             <!--底部信息产品 start-->
             <div class="mt-10">
@@ -285,7 +247,7 @@
                 </el-tab-pane>
                 <el-tab-pane label="物流信息">
                   <div class="tabItem">
-                    <p class="mb-20" v-if="baseInfo.Status >= 5 && baseInfo.LogisticsInfo">
+                    <p class="mb-20" v-if="baseInfo.Status >= orderStatus.ORDER_SHIPPED && baseInfo.LogisticsInfo">
                       <span class="mr-10" v-if="baseInfo.LogisticsInfo.UnloadRemark!='' && baseInfo.LogisticsInfo.UnloadPhotos!=''">卸货凭证： {{baseInfo.LogisticsInfo.UnloadRemark}}</span>
                       <span class="mr-10" v-if="baseInfo.LogisticsInfo.UnloadPhotos!=''">
                         <img v-for="item in baseInfo.LogisticsInfo.UnloadPhotos.split(',')" class="image cuspoint"
@@ -295,7 +257,7 @@
                              :src="imgUrl + item" width="30" height="30">
                       </span>
                     </p>
-                    <p class="mb-20" v-if="baseInfo.Status >= 5 && baseInfo.LogisticsInfo">
+                    <p class="mb-20" v-if="baseInfo.Status >= orderStatus.ORDER_SHIPPED && baseInfo.LogisticsInfo">
                       <span class="mr-10">
                         承运车辆： 车牌号码{{baseInfo.LogisticsInfo.Code}}
                       </span>
@@ -314,11 +276,11 @@
                              height="30">
                       </span>
                     </p>
-                    <div v-if="baseInfo.Status >= 5">
-                      <div class="map-content" v-if="carPosition">
+                    <div v-if="baseInfo.Status >= orderStatus.ORDER_SHIPPED">
+                      <div class="map-content" v-show="carPosition">
                         <div id="mymap" class="mymap"></div>
                       </div>
-                      <div class="map-list" v-if="carPosition">
+                      <div class="map-list" v-show="carPosition">
                         <p class="title">物流信息</p>
                         <el-steps align-center direction="vertical" space="20%" :active="1">
                           <el-step title="当前位置"
@@ -326,14 +288,14 @@
                         </el-steps>
                       </div>
                     </div>
-                    <div v-else class="text-center mt-60">
+                    <div v-if="!carPosition" class="text-center mt-60">
                       <p><img src="../../assets/images/null.png" alt=""></p>
                       <p class="gray-txt mt-20">暂无物流信息</p>
                     </div>
                   </div>
                 </el-tab-pane>
 
-                <el-tab-pane v-if="baseInfo.Parttern == 2 && baseInfo.Status != 1 && baseInfo.Status != 2 " :label="baseInfo.Parttern == 2?'报价信息':''">
+                <el-tab-pane v-if="baseInfo.Parttern == 2 && baseInfo.Status != orderStatus.ORDER_RELEASED && baseInfo.Status != orderStatus.ORDER_PUBLISHED " :label="baseInfo.Parttern == 2?'报价信息':''">
                   <div class="car-list tabItem" style="margin-left:-16px;margin-right:-16px;border-bottom:0;">
                     <div class="list-menu">
                       <ul>
@@ -410,7 +372,7 @@
                         <span class="fl">【A-司机为个体司机】</span>
                         <div class="fl mb-20" style="width: 80%">
                          1.货主发布货源 > 2.司机抢单 > 3.货主选择司机承运 > 4.货主支付运费生成支付秘钥 > 5.司机运货，卸货后询问货主秘钥，
-                            收款 > 6-货主评价司机
+                            收款 > 6.货主评价司机
                         </div>
                       </div>
                       <div class="clear mt-20">
@@ -611,6 +573,7 @@
   import regs from 'config/regExp'
   import AMap from 'AMap'
   import {imgUrl, imgPostUrl} from "api/env"
+  import {orderStatus} from 'config/statusManager'
   import {
     PicUpload, // 图片接口
     getSourceInfo,
@@ -628,9 +591,13 @@
     rate1,
     rate2,
     rate4,
-    SnapshotGetPage // 获取快照一页
+    SnapshotGetPage, // 获取快照一页
+    SendAgain
   } from 'api/getData'
   import { getUserRole } from 'config/myUtils';
+  import leftMenuRouterHome from 'components/leftMenuRouter/leftMenuRouterHome'; // 左侧
+  import headMenuRouter from 'components/headMenuRouter/headMenuRouter'; // 头部
+
   export default {
     data() {
       return {
@@ -640,6 +607,7 @@
         dialogVisible: false, // 评价图片放大dialog
         userCharacter: this.$cookie.get("MemberDutiesID"),
         OrdeID: '',
+        orderStatus,
         AMap,//高德地图对象
         imgPostUrl,//图片请求地址
         imgUrl,//图片显示地址
@@ -684,6 +652,19 @@
     },
     methods: {
       getUserRole: getUserRole,
+      gourl (val) {
+        this.$router.push(val);
+      },
+      async SendAgain (orderID, code) { // 重发操作
+        let params = {OrderID: orderID}
+        this.loading = true;
+        const { data: { ResultCode, ResultValue, ResultMessage, TotalRecords }} = await SendAgain(params);
+        this.loading = false;
+        if (ResultCode === '000000') {
+          this.$message.success({message: ResultMessage});
+          this.getSource();
+        }
+      },
       // 翻页
       handleQuotationPageChange () {
         this.quotationRequest.PageIndex = val;
@@ -691,7 +672,7 @@
       },
       // 根据条件请求 获取报价信息 快照 小星
       async getQuotation (base) {
-        if (base.Parttern === 2 && base.Status >= 3) {
+        if (base.Parttern === 2 && base.Status >= orderStatus.ORDER_PENDING) {
           // 赋值 尽量 不跟老代码扯一起
           this.quotationLoading = true;
           this.quotationRequest.OrderID = this.OrdeID;
@@ -801,8 +782,8 @@
           resizeEnable: true,
           zoom: 15
         });
-        getCarAddress({OrderCode: this.baseInfo.OrdeID}).then(res => {
-          if (res.data.ResultCode == "000000") {
+        getCarAddress({OrderCode: this.baseInfo.Code}).then(res => {
+          if (res.data.ResultCode == "000000" && res.data.ResultValue) {
             let marker = new AMap.Marker({
               position: [res.data.ResultValue.lat, res.data.ResultValue.lon],
               draggable: false,
@@ -823,10 +804,11 @@
       },
       // 获取货源基本信息
       async getSource() {
+        this.loading = true;
         getSourceInfo({OrdeID: this.$route.params.id, MemberID: this.$cookie.get('MemberID')}).then(res => {
           if (res.data && res.data.ResultCode == '000000' && res.data.ResultValue) {
             this.baseInfo = res.data.ResultValue;
-            if (res.data.ResultValue.Status >= 5) {
+            if (res.data.ResultValue.Status >= this.orderStatus.ORDER_SHIPPED) {
               this.isSetMap = true;
             }
             this.OrdeID = res.data.ResultValue.OrdeID;
@@ -927,13 +909,6 @@
                 this.isShowCarList = false;
                 this.$message.success({message: res.data.ResultMessage});
                 this.getSource();
-                // if(that.baseInfo.Parttern == 2){
-                //   this.baseInfo.Status = 3;
-                //   this.baseInfo.StatusName = '货源已选择承运方，等待对方确认订单；';
-                // } else {
-                //   this.baseInfo.Status = 4;
-                //   this.baseInfo.StatusName = '货源已选择承运公司，等待货主支付运费到平台；';
-                // }
               }
             }
           });
@@ -978,8 +953,6 @@
           }).then(res => {
             if (res.data.ResultCode === '000000') {
               this.$message.success({message: res.data.ResultMessage});
-              // this.baseInfo.Status = -1;
-              // this.baseInfo.StatusName = '货源已关闭！';
               this.getSource();
             }
           })
@@ -1003,9 +976,6 @@
           }).then(res => {
             if (res.data.ResultCode === '000000') {
               this.$message.success({message: res.data.ResultMessage});
-              // this.baseInfo.Status = -1;
-              // this.baseInfo.StatusName = '货源已关闭';
-              // this.baseInfo.Reason = value;
               this.getSource();
             }
           })
@@ -1036,10 +1006,6 @@
           }).then(res => {
             if (res.data.ResultCode === '000000') {
               this.$message.success({message: res.data.ResultMessage});
-              // this.baseInfo.Status = -3;
-              // this.baseInfo.StatusName = '取消中，货主申请取消订单，待司机处理；';
-              // this.baseInfo.Reason = value;
-              // this.baseInfo.Nullifier = 1;
               this.getSource();
             }
           })
@@ -1061,8 +1027,6 @@
           }).then(res => {
             if (res.data.ResultCode === '000000') {
               this.$message.success({message: res.data.ResultMessage});
-              // this.baseInfo.Status = 4;
-              // this.baseInfo.StatusName = '货源已选择承运公司，等待货主支付运费到平台；';
               this.getSource();
             }
           })
@@ -1082,8 +1046,6 @@
           }).then(res => {
             if (res.data.ResultCode === '000000') {
               this.$message.success({message: res.data.ResultMessage});
-              // this.baseInfo.Status = -2;
-              // this.baseInfo.StatusName = '货源已关闭，司机取消订单；'
               this.getSource();
             }
           })
@@ -1103,8 +1065,6 @@
           }).then(res => {
             if (res.data.ResultCode === '000000') {
               this.$message.success({message: res.data.ResultMessage});
-              // this.baseInfo.Status = -4;
-              // this.baseInfo.StatusName = '拒绝取消，司机申请取消订单，货主已拒绝申请；';
               this.getSource();
             }
           })
@@ -1145,8 +1105,6 @@
             rate1(this.rate).then(res => {
               if (res.data.ResultCode === '000000') {
                 this.$message.success({message: res.data.ResultMessage});
-                // this.baseInfo.Status = 7;
-                // this.baseInfo.StatusName = '已评价';
                 this.isShowRate = false;
                 this.getSource();
               }
@@ -1154,9 +1112,6 @@
           } else if (this.rate.Type == 2) {
             rate2(this.rate).then(res => {
               if (res.data.ResultCode === '000000') {
-                // this.$message.success({message: res.data.ResultMessage});
-                // this.baseInfo.Status = 7;
-                // this.baseInfo.StatusName = '已评价';
                 this.isShowRate = false;
                 this.getSource();
               }
@@ -1165,8 +1120,6 @@
             rate4(this.rate).then(res => {
               if (res.data.ResultCode === '000000') {
                 this.$message.success({message: res.data.ResultMessage});
-                // this.baseInfo.Status = 7;
-                // this.baseInfo.StatusName = '已评价';
                 this.isShowRate = false;
                 this.getSource();
               }
@@ -1185,7 +1138,6 @@
             .then(res => {
               if (res.data.ResultCode === '000000') {
                 this.$message.success({message: res.data.ResultMessage});
-                // this.baseInfo.Status = 2;
                 this.getSource();
               }
             });
@@ -1207,16 +1159,21 @@
     computed: {
       //设置进度条的状态
       stepType() {
-        if (this.baseInfo.Status == 1 || this.baseInfo.Status == -1 || this.baseInfo.Status == -4 || this.baseInfo.Status == -2) {
-        } else if (this.baseInfo.Status == 2) {
+        if (this.baseInfo.Status == orderStatus.ORDER_RELEASED
+          || this.baseInfo.Status == orderStatus.ORDER_CLOSED
+          || this.baseInfo.Status == orderStatus.ORDER_REJECT_CANCEL
+          || this.baseInfo.Status == orderStatus.ORDER_CANCELED) {
+        } else if (this.baseInfo.Status == orderStatus.ORDER_PUBLISHED) {
           return 1;
-        } else if (this.baseInfo.Status == 3) {
+        } else if (this.baseInfo.Status == orderStatus.ORDER_PENDING) {
           return 2;
-        } else if (this.baseInfo.Status == 4) {
-          return 2;
-        } else if (this.baseInfo.Status == 5) {
+        } else if (this.baseInfo.Status == orderStatus.ORDER_CONFIRMED) {
+          return 3;
+        } else if (this.baseInfo.Status == orderStatus.ORDER_LOADING) {
+          return 3;
+        } else if (this.baseInfo.Status == orderStatus.ORDER_SHIPPED) {
           return 4;
-        } else if (this.baseInfo.Status == 7 || this.baseInfo.Status == 6) {
+        } else if (this.baseInfo.Status == orderStatus.ORDER_EVALUATION || this.baseInfo.Status == orderStatus.ORDER_ARRIVED) {
           return 5;
         } else {
           return 0;
@@ -1227,13 +1184,15 @@
         return this.picIndex
       }
     },
-    // watch: {
-    //   isSetMap(newVal,oldVal){
-    //     if(newVal){
-    //       this.initMap();
-    //     }
-    //   }
-    // },
+    watch: {
+      isSetMap(newVal,oldVal){
+        if(newVal){
+          setTimeout(() => {
+            this.initMap();
+          }, 20)
+        }
+      }
+    },
     created() {
       this.loading = true;
       if (this.$cookie.get("MemberID")) {
@@ -1250,15 +1209,13 @@
       }
     },
     mounted() {
-      let that = this;
-      if(that.baseInfo.OrdeID){
-        this.initMap();
-      }
     },
     components: {
       headTop,
       dropDown,
-      foot
+      foot,
+      leftMenuRouterHome, // 左侧导航
+      headMenuRouter // 左侧
     }
   }
 </script>
@@ -1321,7 +1278,12 @@
   .step
     width: 100%
     margin: 10px 0 20px
-
+    &:first-child
+      .el-step
+        width: 20%
+    &:last-child
+      .el-step
+        width: 50%
   .center
     overflow: hidden
     border: 1px solid $borderColor
@@ -1377,6 +1339,7 @@
         color: #027CFF
         border: 1px solid #8BCAF9
         border-radius: 4px
+        vertical-align: middle
         .left
           float: left
           width: 70px
