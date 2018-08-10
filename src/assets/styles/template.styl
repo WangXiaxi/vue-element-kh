@@ -1,69 +1,47 @@
 @import "variable.styl"
-.el-menu-demo {
-  margin-bottom: 20px !important;
-}
-
-.el-tabs--border-card {
-  box-shadow: none;
-}
-
-.content {
-  width: 1200px;
-  margin: 10px auto 40px;
-  position: relative;
-}
-
-.content-left {
-  float: left;
-  width: 200px;
-
-  > ul {
-    position: absolute;
-    height: 100%;
-    width: 200px;
-    background: #ffffff;
-
-    > li {
-      height: 30px;
-      line-height: 30px;
-      padding-left: 40px;
-      margin: 10px 0;
-      border-left: 3px solid transparent;
-
-      &:hover {
-        border-left-color: $blue;
-        color: $blue;
-        cursor: pointer;
-      }
-    }
-
-    .active {
-      border-left-color: $blue;
-      color: $blue;
-    }
-  }
-}
-
-.content-right {
-  float: right;
-  background-color: #fff;
-  width: 990px;
-
-  .title-box {
-    box-shadow: 0 1px 0 0 #E0E0E0;
-
-    .title-name {
-      display: inline-block;
-      padding-left: 20px;
-      height: 30px;
-      line-height: 30px;
-      margin: 10px 0;
-      border-left: 3px solid $blue;
-    }
-  }
-}
-
-.container {
+.el-menu-demo 
+  margin-bottom: 20px !important
+.el-tabs--border-card 
+  box-shadow: none
+.content 
+  width: 1200px
+  margin: 10px auto 40px
+  position: relative
+.content-left 
+  float: left
+  width: 200px
+  > ul 
+    position: absolute
+    height: 100%
+    width: 200px
+    background: #ffffff
+    > li 
+      height: 30px
+      line-height: 30px
+      padding-left: 40px
+      margin: 10px 0
+      border-left: 3px solid transparent
+      &:hover 
+        border-left-color: $blue
+        color: $blue
+        cursor: pointer
+    .active 
+      border-left-color: $blue
+      color: $blue
+.content-right 
+  float: right
+  background-color: #fff
+  width: 990px
+  .title-box 
+    box-shadow: 0 1px 0 0 #E0E0E0
+    .title-name 
+      display: inline-block
+      padding-left: 20px
+      height: 30px
+      line-height: 30px
+      margin: 10px 0
+      border-left: 3px solid $blue
+.container 
   min-height: 700px
-  padding: 40px;
-}
+  padding: 40px
+

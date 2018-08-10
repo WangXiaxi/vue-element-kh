@@ -202,39 +202,25 @@ export default {
 </script>
 
 <style  lang="stylus" scoped>
-@import '../../../assets/styles/variable.styl';
-
-.orange-text {
-  color: $orange;
-}
-
-.green-text {
-  color: $green;
-}
-
-.withdraw-span {
-  padding: 0 10px;
-}
-
-.withdraw-check {
-  height: 30px;
-  line-height: 30px;
-  padding: 6px 0;
-
-  dt {
-    padding-left: 10px;
-    float: left;
-    width: 70px;
-  }
-
-  dd {
-    float: left;
-    padding: 0 20px;
-    cursor: pointer;
-  }
-
-  dd.active {
-    color: $blue;
-  }
-}
+@import '../../../assets/styles/variable.styl'
+.orange-text 
+  color: $orange
+.green-text 
+  color: $green
+.withdraw-span 
+  padding: 0 10px
+.withdraw-check 
+  height: 30px
+  line-height: 30px
+  padding: 6px 0
+  dt 
+    padding-left: 10px
+    float: left
+    width: 70px
+  dd 
+    float: left
+    padding: 0 20px
+    cursor: pointer
+  dd.active 
+    color: $blue
 </style>

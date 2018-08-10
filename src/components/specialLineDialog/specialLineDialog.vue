@@ -23,11 +23,12 @@
         </el-form-item>
         <el-form-item label="目的地" prop="toAddress">
           <el-cascader class="small-item"
-            :options="address"
+            :options="addressSpecTo"
             placeholder="请选择发货地"
             v-model="formData.toAddress"
             size="small"
             clearable
+            @change="handChange"
             change-on-select>
           </el-cascader>
         </el-form-item>
@@ -109,7 +110,7 @@
 
         <el-form-item class="mt-20">
           <el-button class="btn" type="primary" round @click="onSubmit">保存</el-button>
-          <el-button class="btn" round v-if="dialog.type === 'edit'" @click="dele">删除</el-button>
+          <!--<el-button class="btn" round v-if="dialog.type === 'edit'" @click="dele">删除</el-button>-->
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -146,6 +147,7 @@
         quotedExplainDialog: { visible: false },
         address: address.area,
         addressSpec: [],
+        addressSpecTo: [], // 目的地区添加全部
         ModelList: [],
         Rules: {
           toAddress: [
@@ -214,6 +216,8 @@
     },
     created () {
       this.addressHandle();
+      this.addressSpecToAct(); // 操作下数据
+
       //获取车型列表
       getCarModelList().then(res => {
         if (res.data.ResultCode === '000000' && res.data.ResultValue) {
@@ -223,7 +227,8 @@
       })
     },
     methods: {
-      addressHandle () { // 处理下不让选省市
+
+	  addressHandle () { // 处理下不让选省市
         let fa = this.formData.fromAddress,
             arr = [];
         address.area.forEach((c, i) => {
@@ -238,6 +243,29 @@
           }
         });
         this.addressSpec = arr;
+      },
+
+      handChange (val) { // 如果存在空删除 为了显示统一
+        if (!val[2]) {
+          val.splice(2, 1)
+        }
+      },
+      addressSpecToAct () {
+        let addressCopy = JSON.parse(JSON.stringify(this.address)); // 复制一个
+        console.log(addressCopy)
+        addressCopy.forEach((c) => {
+          if (c.children) {
+            c.children.forEach((d) => {
+              if (d.children) {
+                d.children.splice(0, 0, {
+                  value: '',
+                  label: '全部'
+                })
+              }
+            })
+          }
+        })
+        this.addressSpecTo = addressCopy;
       },
       onSubmit () {
         if (Number(this.formData.LightCeilingPrice) <= Number(this.formData.LightFloorPrice)) {
@@ -370,6 +398,9 @@
     .item-box
       .el-form-item
         display: inline-block
+        &:not(&:first-child)
+          .el-form-item__content
+            margin-left: 10px !important
     .bubble-text
       color: $blue
       cursor: pointer

@@ -201,7 +201,6 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-.withdraw-span {
-  padding: 0 10px;
-}
+.withdraw-span
+  padding: 0 10px
 </style>

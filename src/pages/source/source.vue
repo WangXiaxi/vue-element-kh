@@ -652,8 +652,8 @@ export default {
             path: '/publishTipsPage',
             query: {
               i: 'success',
-              tip: '恭喜您，货源发布成功！',
-              des: res.data.ResultMessage,
+              tip: encodeURIComponent('恭喜您，货源发布成功！'),
+              des: encodeURIComponent(res.data.ResultMessage),
               color: !res.data.ResultValue.PiPei ? '#999' : 'red',
               orderID: res.data.ResultValue.OrderId
             }
@@ -917,7 +917,7 @@ export default {
       // 结束
       this.$refs[sourceData].validate(async valid => {
         if (this.ProList.length <= 0) {
-          this.$message.error({ message: "请选择发货的产品！" });
+          this.$message.error({ message: "请选择发货的产品！产品可在产品库添加" });
           return;
         }
         if(!regs.NF2.test(this.sourceData.Volume)){
@@ -1370,233 +1370,166 @@ export default {
 
 <style lang="stylus" scoped>
 @import '../../assets/styles/variable.styl';
+.content
+  position: relative
+  width: 1200px
+  margin: 10px auto 40px
+.content-left
+  float: left
+  width: 200px
+  background: #ffffff
+  > ul
+    width: 200px
+    position: absolute
+    height: 100%
+    background-color: #fff
 
-.content {
-  position: relative;
-  width: 1200px;
-  margin: 10px auto 40px;
-}
-
-.content-left {
-  float: left;
-  width: 200px;
-  background: #ffffff;
-
-  > ul {
-    width: 200px;
-    position: absolute;
-    height: 100%;
-    background-color: #fff;
-
-    > li {
-      height: 30px;
-      line-height: 30px;
-      padding-left: 40px;
-      margin: 10px 0;
-      border-left: 3px solid transparent;
-
-      &:hover {
-        border-left-color: $blue;
-        color: $blue;
-        cursor: pointer;
-      }
-    }
-
-    .active {
-      border-left-color: $blue;
-      color: $blue;
-    }
-  }
-}
-
-.content-right {
-  float: right;
-  background-color: #fff;
-
-  .product {
-    background: #FFFFFF;
-
-    .title-box {
-      box-shadow: 0 1px 0 0 #E0E0E0;
-    }
-
-    .title-name {
-      display: inline-block;
-      padding-left: 20px;
-      height: 30px;
-      line-height: 30px;
-      margin: 10px 0;
-      border-left: 3px solid $blue;
-    }
-  }
-
-  .container {
-    padding: 40px;
-
-    .list-content {
-      position: relative;
-      overflow: hidden;
-    }
-
-    .list-left {
-      float: left;
-      width: 207px;
-      height: 400px;
-      border-left: 1px solid $borderColor;
-      border-bottom: 1px solid $borderColor;
-
-      .left-name {
-        height: 38px;
-        line-height: 38px;
-        text-align: center;
-        color: #909399;
-        background-color: #FAFAFA;
-        border: 1px solid $borderColor;
-        border-left: 0;
-      }
-
-      .tree-list {
-        height: 359px;
-        border-right: 1px solid $borderColor;
-        overflow: auto;
-        overflow-y: auto;
-        overflow-x: hidden;
-
-        .tree-name {
-          float: left;
-          width: 150px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-      }
-    }
-
-    .list-right {
-      float: left;
-      width: 701px;
-      height: 399px;
-      overflow-y: auto;
-      overflow-x: hidden;
-      border-right: 1px solid $borderColor;
-      border-bottom: 1px solid $borderColor;
-      border-top: 1px solid $borderColor;
-
-      .add {
-        color: $blue;
-        text-align: center;
-        cursor: pointer;
-      }
-
-      .text-ellipsis {
-        display: inline-block;
-        max-width: 70px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-    }
-  }
-}
-
-.source-info {
-  height: 90px;
-  line-height: 90px;
-  margin: 20px 0;
-  border: 1px solid $borderColor;
-  >ul{
+    > li
+      height: 30px
+      line-height: 30px
+      padding-left: 40px
+      margin: 10px 0
+      border-left: 3px solid transparent
+      &:hover
+        border-left-color: $blue
+        color: $blue
+        cursor: pointer
+    .active
+      border-left-color: $blue
+      color: $blue
+.content-right
+  float: right
+  background-color: #fff
+  .product
+    background: #FFFFFF
+    .title-box
+      box-shadow: 0 1px 0 0 #E0E0E0
+    .title-name
+      display: inline-block
+      padding-left: 20px
+      height: 30px
+      line-height: 30px
+      margin: 10px 0
+      border-left: 3px solid $blue
+  .container
+    padding: 40px
+    .list-content
+      position: relative
+      overflow: hidden
+    .list-left
+      float: left
+      width: 207px
+      height: 400px
+      border-left: 1px solid $borderColor
+      border-bottom: 1px solid $borderColor
+      .left-name
+        height: 38px
+        line-height: 38px
+        text-align: center
+        color: #909399
+        background-color: #FAFAFA
+        border: 1px solid $borderColor
+        border-left: 0
+      .tree-list
+        height: 359px
+        border-right: 1px solid $borderColor
+        overflow: auto
+        overflow-y: auto
+        overflow-x: hidden
+        .tree-name
+          float: left
+          width: 150px
+          overflow: hidden
+          text-overflow: ellipsis
+          white-space: nowrap
+    .list-right
+      float: left
+      width: 701px
+      height: 399px
+      overflow-y: auto
+      overflow-x: hidden
+      border-right: 1px solid $borderColor
+      border-bottom: 1px solid $borderColor
+      border-top: 1px solid $borderColor
+      .add
+        color: $blue
+        text-align: center
+        cursor: pointer
+      .text-ellipsis
+        display: inline-block
+        max-width: 70px
+        overflow: hidden
+        text-overflow: ellipsis
+        white-space: nowrap
+.source-info
+  height: 90px
+  line-height: 90px
+  margin: 20px 0
+  border: 1px solid $borderColor
+  >ul
     float: left
-    line-height: normal;
-    overflow: hidden;
-    li{
-      float: left;
+    line-height: normal
+    overflow: hidden
+    li
+      float: left
       width: 100px
-      .head-title{
+      .head-title
         height: 40px
         line-height: 40px
         text-align: center
         background-color: #F7FBFB
-      }
-      .blue-txt{
+      .blue-txt
         height: 50px
         line-height: 50px
         text-align: center
-      }
-      .input{
+      .input
         width: 100px
-      }
-    }
-    .large{
+    .large
       width: 120px
-    }
-    .normal{
+    .normal
       width: 114px
-    }
-  }
-  .left-title {
-    float: left;
-    width: 120px;
-    text-align: center;
-    color: #ffff;
-    background: #409eff;
-    font-size: 16px;
-  }
-
-  .info {
-    margin-top: 12px;
-    line-height: normal;
-
-    .info-item {
-      margin-right: 20px;
-    }
-  }
-}
-
-.fill {
-  padding: 0 20px;
-  .address {
-    width: 300px;
-  }
-  .adress-details {
-    width: 400px;
-  }
-  .mapIcon {
-    display: inline-block;
-    width: 30px;
-    height: 30px;
-    line-height: 30px;
-  }
-  .large{
-    width: 444px;
-  }
-}
-
-.tip-box {
-  padding: 0 40px 50px;
-}
-
-.tip-icon {
-  margin-left: 10px;
-  color: $blue;
-  font-size: 24px;
-  cursor: pointer;
-}
-
-.normal {
-  width: 217px;
-}
-
-.add-now {
-  width: 200px;
-  font-size: 16px;
-}
-
-.product-name {
-  width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+  .left-title
+    float: left
+    width: 120px
+    text-align: center
+    color: #ffff
+    background: #409eff
+    font-size: 16px
+  .info
+    margin-top: 12px
+    line-height: normal
+    .info-item
+      margin-right: 20px
+.fill
+  padding: 0 20px
+  .address
+    width: 300px
+  .adress-details
+    width: 400px
+  .mapIcon
+    display: inline-block
+    width: 30px
+    height: 30px
+    line-height: 30px
+  .large
+    width: 444px
+.tip-box
+  padding: 0 40px 50px
+.tip-icon
+  margin-left: 10px
+  color: $blue
+  font-size: 24px
+  cursor: pointer
+.normal
+  width: 217px
+.add-now
+  width: 200px
+  font-size: 16px
+.product-name
+  width: 180px
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
 </style>
 
 <style lang="stylus">

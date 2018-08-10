@@ -23,11 +23,11 @@
               <div class="info-img">
                 <img src="../../assets/images/success-big.png" v-if="getParams.i === 'success'">
               </div>
-              <div class="info-tip">
-                {{getParams.tip}}
+              <div class="info-tip" v-if="getParams.tip">
+                {{decodeURIComponent(getParams.tip)}}
               </div>
-              <div class="info-des" :style="{color: getParams.color}">
-                {{getParams.des}}
+              <div class="info-des" v-if="getParams.des" :style="{color: getParams.color}">
+                {{decodeURIComponent(getParams.des)}}
               </div>
               <a href="http://app.sdhwlw.com/Agreement/service.html" target="_blank" class="info-xieyi">
                 《速达汇用户协议》提醒您：请勿要求司机代收货款！
@@ -75,7 +75,7 @@
           orderID: ''
         },
       }
-    },    
+    },
     created () {
       // 公用 页面 不需要 验证 身份类型
       let isLogin = this.checkLoginStatus();

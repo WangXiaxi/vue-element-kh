@@ -23,17 +23,17 @@
               <div class="info-img">
                 <img src="../../assets/images/success-big.png" v-if="getParams.i === 'success'">
               </div>
-              <div class="info-tip">
-                {{getParams.tip}}
+              <div class="info-tip" v-if="getParams.tip">
+                {{decodeURIComponent(getParams.tip)}}
               </div>
-              <div class="info-des" :style="{color: getParams.color}">
-                {{getParams.des}}
+              <div class="info-des" v-if="getParams.des" :style="{color: getParams.color}">
+                {{decodeURIComponent(getParams.des)}}
               </div>
               <a href="http://app.sdhwlw.com/Agreement/service.html" target="_blank" class="info-xieyi">
                 《速达汇用户协议》提醒您：请勿要求司机代收货款！
               </a>
               <div class="btn-list">
-                <el-button class="go-on" @click="goUrl({path: '/slipPublish'})" plain>继续发布</el-button>
+                <el-button class="go-on" @click="goUrl({path: '/goodsManage'})" plain>继续发布</el-button>
                 <el-button type="primary" class="add-now" @click="goUrl({path: '/waybillDetail' + '/' + getParams.orderID})">查看货源详情</el-button>
               </div>
             </div>
@@ -73,12 +73,12 @@
           orderID: ''
         },
       }
-    },    
+    },
     created () {
       // 公用 页面 不需要 验证 身份类型
       let isLogin = this.checkLoginStatus();
       if(!isLogin) return;
-      let identityPass = _.checkLoginIdentity(2, '/add');
+      let identityPass = this.checkLoginIdentity(2, '/add');
       if (!identityPass) return;
       this.getParams = this.$route.query;
     },

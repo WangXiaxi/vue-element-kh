@@ -82,17 +82,18 @@
                       <li>发布时间：{{item.OrderPublish}}</li>
                       <li>装货时间：{{item.OrderLoadTime}}</li>
                     </ul>
-                    <span class="fr orange-text">{{item.OrderStatusName}}</span>
+                    <span class="fr" :style="{ color: showOrderStatusColor(item.OrderStatus) }">{{item.OrderStatusName}}</span>
                   </div>
                   <!--头标题 end-->
                   <div class="main-list">
                     <!--物流信息 start-->
                     <div class="main-top">
                       <div class="top-left">
-                        <p class="origin">{{item.OrderFromCity}}
+                        <p class="origin"><span>{{item.OrderFromCity}}
                           <img src="../../assets/images/gofrom.png" alt="">
-                          {{item.OrderToCity}}
+                          {{item.OrderToCity}}</span>
                           <span class="order-type">{{pattern[item.OrderParttern]}}</span>
+                          <router-link :to="{path: '/orderDetails/'+item.OrderformID}" class="item-transfer" v-if="item.OrderIsTransfer">已转单，货源编号{{item.OrderTransferID}}</router-link>
                         </p>
                         <div class="info">
                           <ul>
@@ -183,7 +184,7 @@
     GetOrderformPageForCompany,
   } from 'api/getData'
   import { getUserRole } from 'config/myUtils';
-  import {orderStatus,pattern} from 'config/statusManager'
+  import {orderStatus, pattern, showOrderStatusColor} from 'config/statusManager'
   import leftMenuRouterHome from 'components/leftMenuRouter/leftMenuRouterHome' // 左侧
   import headMenuRouter from 'components/headMenuRouter/headMenuRouter' // 头部
   import m_login from '@/mixins/m_login'
@@ -236,6 +237,7 @@
       }
     },
     methods: {
+      showOrderStatusColor: showOrderStatusColor,
       getUserRole: getUserRole,
       //获取列表数据
       async getWaybillList(){
@@ -333,14 +335,14 @@
 <style lang="stylus" scoped>
   @import "../../assets/styles/variable.styl"
   .avatar-uploader .el-upload
-    border: 1px dashed #d9d9d9;
-    border-radius: 6px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
+    border: 1px dashed #d9d9d9
+    border-radius: 6px
+    cursor: pointer
+    position: relative
+    overflow: hidden
 
   .avatar-uploader .el-upload:hover
-    border-color: #409EFF;
+    border-color: #409EFF
 
   .el-upload--picture-card
     width: 0
@@ -459,6 +461,10 @@
           margin-bottom: 10px
           font-size: 16px
           font-weight: bold
+          >span
+            vertical-align: middle
+          >a
+            vertical-align: middle 
         .info
           ul
             overflow: hidden
@@ -607,7 +613,7 @@
     .info
       padding-left: 70px
   .inline {
-    display: inline-block;
+    display: inline-block
   }
   .order-type
     display: inline-block
@@ -619,4 +625,12 @@
     border-radius: 4px
     color: $blue
     border: 1px solid $blue
+  .item-transfer
+    background: #ECF5FE
+    border: 1px solid #A4D0FF
+    border-radius: 2px
+    display: inline-block
+    font-size: 12px
+    color: #027CFF
+    padding: 2px 7px
 </style>

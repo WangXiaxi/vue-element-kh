@@ -174,114 +174,87 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-@import '../../assets/styles/variable.styl';
+@import '../../assets/styles/variable.styl'
 
 // .header
 // position: absolute
 // top: 0
 // z-index: 1000
-.blue-btn-p {
-  display: inline-block;
-  height: 38px;
-  line-height: 38px;
-  padding: 0 15px;
-  border: 1px solid $blue;
-  border-radius: 4px;
-  text-align: center;
-
-  &:hover {
-    background-color: $blue;
-    color: #ffffff;
-  }
-}
-
-.login-content {
-  overflow: hidden;
-  clear: both;
+.blue-btn-p 
+  display: inline-block
+  height: 38px
+  line-height: 38px
+  padding: 0 15px
+  border: 1px solid $blue
+  border-radius: 4px
+  text-align: center
+  &:hover 
+    background-color: $blue
+    color: #ffffff
+.login-content 
+  overflow: hidden
+  clear: both
   // position: absolute
   // top: 50%
   // left: 50%
   // z-index: 10
-  width: 900px;
-  height: 600px;
-  margin: 80px auto 120px;
-
+  width: 900px
+  height: 600px
+  margin: 80px auto 120px
   // margin: -325px 0 0 -450px
-  .login-left {
-    position: relative;
-    float: left;
-    width: 500px;
-    height: 600px;
-    box-shadow: 0 0 15px #CFCFCF;
-    border-radius: 4px;
-    background-color: #fff;
-
-    .item {
-      width: 300px;
-      margin: 50px auto 0;
-
-      h1 {
-        margin-bottom: 20px;
-        font-size: 48px;
-        font-weight: normal;
-      }
-
-      .type {
-        position: absolute;
-        top: 66px;
-        right: 60px;
-        display: inline-block;
-        padding: 0 10px;
-        height: 22px;
-        line-height: 22px;
-        text-align: center;
-        font-size: 14px;
-        color: #027cff;
-        border: 1px solid #027CFF;
-        border-radius: 20px;
-      }
-    }
-
-    .login-box {
-      margin-top: 10px;
-
-      .code-input {
-        float: left;
-        width: 180px;
-      }
-
-      .code-btn {
-        float: right;
-        width: 120px;
-        text-align: right;
-      }
-
-      .btn-box {
-        margin-top: 35px;
-
-        button {
-          width: 150px;
-          heigth: 40px;
-          line-height: 40px;
-          padding: 0;
-          text-align: center;
-        }
-      }
-
-      .go-login {
-        float: right;
-        height: 26px;
-        line-height: 26px;
-        color: $blue;
-        font-size: 12px;
-      }
-    }
-  }
-
-  .login-right {
-    float: left;
-    width: 400px;
-    height: 600px;
-  }
-}
+  .login-left 
+    position: relative
+    float: left
+    width: 500px
+    height: 600px
+    box-shadow: 0 0 15px #CFCFCF
+    border-radius: 4px
+    background-color: #fff
+    .item 
+      width: 300px
+      margin: 50px auto 0
+      h1 
+        margin-bottom: 20px
+        font-size: 48px
+        font-weight: normal
+      .type 
+        position: absolute
+        top: 66px
+        right: 60px
+        display: inline-block
+        padding: 0 10px
+        height: 22px
+        line-height: 22px
+        text-align: center
+        font-size: 14px
+        color: #027cff
+        border: 1px solid #027CFF
+        border-radius: 20px
+    .login-box 
+      margin-top: 10px
+      .code-input 
+        float: left
+        width: 180px
+      .code-btn 
+        float: right
+        width: 120px
+        text-align: right
+      .btn-box 
+        margin-top: 35px
+        button 
+          width: 150px
+          heigth: 40px
+          line-height: 40px
+          padding: 0
+          text-align: center
+      .go-login 
+        float: right
+        height: 26px
+        line-height: 26px
+        color: $blue
+        font-size: 12px
+  .login-right 
+    float: left
+    width: 400px
+    height: 600px
 </style>

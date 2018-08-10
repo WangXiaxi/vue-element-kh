@@ -157,6 +157,6 @@
     #tipinput
       width: 200px 
     .container
-      min-height: auto;
+      min-height: auto
       padding: 0
 </style>

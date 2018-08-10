@@ -74,7 +74,7 @@
                   <p class="size16">
                     货源状态：<span class="orange-text">{{baseInfo.OrderStatusName}}</span>
                   </p>
-                  <p v-if="baseInfo.OrderStatus < 0" class="reason">{{baseInfo.CanceReason}}</p>.
+                  <p v-if="baseInfo.OrderStatus < 0" class="reason">{{baseInfo.CanceReason}}</p>
 
                 </div>
 
@@ -403,10 +403,10 @@
       height: 100%
       background-color: #fff
       > li
-        height: 30px;
-        line-height: 30px;
-        padding-left: 40px;
-        margin: 10px 0;
+        height: 30px
+        line-height: 30px
+        padding-left: 40px
+        margin: 10px 0
         border-left: 3px solid transparent
         &:hover
           border-left-color: $blue
@@ -466,8 +466,8 @@
         width: 80px
         color: $gray
         text-align: justify;
-        text-justify: distribute-all-lines;
-        text-align-last: justify;
+        text-justify: distribute-all-lines
+        text-align-last: justify
       .remark
         float: left
         width: 180px
@@ -478,7 +478,7 @@
       position:relative
       .warming
         display: inline-block;
-        margin: 6px 20px 8px;
+        margin: 6px 20px 8px
       .notify
         background: #FFFEF6
         border: 1px solid #FFC1AB
@@ -700,14 +700,14 @@
   .container
     padding: 30px 40px
   .product-name
-    width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    width: 200px
+    overflow: hidden
+    text-overflow: ellipsis
+    white-space: nowrap
 
   .model-name
     float: left
-    max-width: 98px;
+    max-width: 98px
     overflow: hidden
     text-overflow: ellipsis
     white-space: nowrap

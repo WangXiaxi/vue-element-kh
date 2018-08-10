@@ -285,9 +285,8 @@ export default {
 };
 </script>
 
-<style scoped>
-.mini{
-  width: 300px;
-  float: left;
-}
+<style lang="stylus" scoped>
+.mini
+  width: 300px
+  float: left
 </style>

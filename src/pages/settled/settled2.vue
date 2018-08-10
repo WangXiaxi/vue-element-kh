@@ -404,179 +404,125 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-@import '../../assets/styles/variable.styl';
+@import '../../assets/styles/variable.styl'
 
-.avatar-uploader .el-upload {
-  border: 1px dashed #d9d9d9;
-  border-radius: 6px;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
+.avatar-uploader .el-upload 
+  border: 1px dashed #d9d9d9
+  border-radius: 6px
+  cursor: pointer
+  position: relative
+  overflow: hidden
+.avatar-uploader .el-upload:hover 
+  border-color: #409EFF
+.el-upload--picture-card 
+  width: 0
+  height: 0
+.avatar 
+  width: 146px
+  height: 146px
+  display: block
+.blue-btn-p 
+  display: inline-block
+  height: 38px
+  line-height: 38px
+  padding: 0 15px
+  border: 1px solid $blue
+  border-radius: 4px
+  text-align: center
+  &:hover 
+    background-color: $blue
+    color: #ffffff
+.tip 
+  width: 988px
+  height: 80px
+  line-height: 80px
+  background: #FEF2F0
+  border: 1px solid #FFBEA6
+  border-radius: 1px
+  .msg 
+    padding-left: 150px
+    position: relative
+  .tip-icon 
+    position: absolute
+    left: 80px
+    top: 18px
+    font-size: 50px
+    margin-bottom: -50px
+  .on 
+    color: $gray
+  .pass 
+    color: $green
+  .failed 
+    color: $red
+  .info 
+    color: #666
+    font-size: 16px
+.settled 
+  position: relative
+  width: 1200px
+  margin: 10px auto 40px
+  overflow: hidden
+  clear: both
+  .content-left 
+    float: left
+  .settled-left 
+    min-height: $minHeight
+    height: 100%
+    float: left
+    width: 200px
+    background: #ffffff
+    >ul 
+      width: 200px
+      position: absolute
+      height: 100%
+      background-color: #fff
+      >li 
+        height: 30px
+        line-height: 30px
+        padding-left: 40px
+        margin: 10px 0
+        border-left: 3px solid transparent
 
-.avatar-uploader .el-upload:hover {
-  border-color: #409EFF;
-}
-
-.el-upload--picture-card {
-  width: 0;
-  height: 0;
-}
-
-.avatar {
-  width: 146px;
-  height: 146px;
-  display: block;
-}
-
-.blue-btn-p {
-  display: inline-block;
-  height: 38px;
-  line-height: 38px;
-  padding: 0 15px;
-  border: 1px solid $blue;
-  border-radius: 4px;
-  text-align: center;
-
-  &:hover {
-    background-color: $blue;
-    color: #ffffff;
-  }
-}
-
-.tip {
-  width: 988px;
-  height: 80px;
-  line-height: 80px;
-  background: #FEF2F0;
-  border: 1px solid #FFBEA6;
-  border-radius: 1px;
-
-  .msg {
-    padding-left: 150px;
-    position: relative;
-  }
-
-  .tip-icon {
-    position: absolute;
-    left: 80px;
-    top: 18px;
-    font-size: 50px;
-    margin-bottom: -50px;
-  }
-
-  .on {
-    color: $gray;
-  }
-
-  .pass {
-    color: $green;
-  }
-
-  .failed {
-    color: $red;
-  }
-
-  .info {
-    color: #666;
-    font-size: 16px;
-  }
-}
-
-.settled {
-  position: relative;
-  width: 1200px;
-  margin: 10px auto 40px;
-  overflow: hidden;
-  clear: both;
-
-  .settled-left {
-    min-height: $minHeight;
-    height: 100%;
-    float: left;
-    width: 200px;
-    background: #ffffff;
-
-    >ul {
-      width: 200px;
-      position: absolute;
-      height: 100%;
-      background-color: #fff;
-
-      >li {
-        height: 30px;
-        line-height: 30px;
-        padding-left: 40px;
-        margin: 10px 0;
-        border-left: 3px solid transparent;
-
-        &:hover {
-          border-left-color: $blue;
-          color: $blue;
-          cursor: pointer;
-        }
-      }
-
-      .active {
-        border-left-color: $blue;
-        color: $blue;
-      }
-    }
-  }
-
-  .settled-right {
-    float: right;
-    width: 990px;
-    background-color: #fff;
-  }
-
-  .step-content {
-    width: 1000px;
-    margin: 50px auto 20px;
-  }
-
-  .title {
-    width: 100%;
-    height: 49px;
-    line-height: 49px;
-    border-bottom: 1px solid $borderColor;
-
-    .name {
-      display: inline-block;
-      height: 30px;
-      line-height: 30px;
-      padding-left: 26px;
-      border-left: 3px solid $blue;
-    }
-  }
-
-  .content {
-    margin: 0 80px;
-    padding: 50px 0;
-
-    .normal {
-      width: 300px;
-    }
-
-    .small {
-      width: 200px;
-    }
-
-    .large {
-      width: 500px;
-    }
-
-    .msg {
-      text-align: center;
-      font-size: 14px;
-      color: $blue;
-    }
-
-    .btn {
-      width: 200px;
-      height: 40px;
-      margin-top: 40px;
-    }
-  }
-}
+        &:hover 
+          border-left-color: $blue
+          color: $blue
+          cursor: pointer
+      .active 
+        border-left-color: $blue
+        color: $blue
+  .settled-right 
+    float: right
+    width: 990px
+    background-color: #fff
+  .step-content 
+    width: 1000px
+    margin: 50px auto 20px
+  .title 
+    width: 100%
+    height: 49px
+    line-height: 49px
+    border-bottom: 1px solid $borderColor
+    .name 
+      display: inline-block
+      height: 30px
+      line-height: 30px
+      padding-left: 26px
+      border-left: 3px solid $blue
+  .content 
+    margin: 0 80px
+    padding: 50px 0
+    .normal 
+      width: 300px
+    .small 
+      width: 200px
+    .large 
+      width: 500px
+    .msg 
+      text-align: center
+      font-size: 14px
+      color: $blue
+    .btn 
+      width: 200px
+      height: 40px
+      margin-top: 40px
 </style>

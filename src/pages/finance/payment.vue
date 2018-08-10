@@ -514,275 +514,182 @@
 </script>
 
 <style lang="stylus" scoped>
-@import '../../assets/styles/variable.styl';
-
-.payicon {
-  background: url('../../assets/images/payicon.png') no-repeat;
-  display: inline-block;
-  width: 30px;
-  height: 30px;
-  vertical-align: middle;
-  margin-right: 10px;
-}
-
-.payicon1 {
-  background-position: 0 0px;
-}
-
-.payicon2 {
-  background-position: -30px 0;
-}
-
-.payicon3 {
-  background-position: -60px 0;
-}
-
-.payicon4 {
-  background-position: -90px 0;
-}
-
-.el-tabs--border-card {
-  box-shadow: none;
-}
-
-.content {
-  width: 1200px;
-  margin: 10px auto 40px;
-  position: relative;
-}
-
-.content-left {
-  float: left;
-  width: 200px;
-
-  > ul {
-    position: absolute;
-    height: 100%;
-    width: 200px;
-    background: #ffffff;
-
-    > li {
-      height: 24px;
-      line-height: 24px;
-      padding-left: 40px;
-      margin: 8px 0;
-      border-left: 3px solid transparent;
-
-      &:hover {
-        border-left-color: $blue;
-        color: $blue;
-        cursor: pointer;
-      }
-    }
-
-    .active {
-      border-left-color: $blue;
-      color: $blue;
-    }
-  }
-}
-
-.content-right {
-  float: right;
-  background-color: #fff;
-  width: 990px;
-
-  .title-box {
-    box-shadow: 0 1px 0 0 #E0E0E0;
-
-    .title-name {
-      display: inline-block;
-      padding-left: 20px;
-      height: 30px;
-      line-height: 30px;
-      margin: 10px 0;
-      border-left: 3px solid $blue;
-    }
-  }
-}
-
-.container {
-  padding: 40px;
-}
-
-.yugoldbox {
-  margin-bottom: 20px;
-  border: 1px solid #E0E0E0;
-}
-
-.payment-title {
-  background: #FAFAFA;
-  border-bottom: 1px solid #E0E0E0;
-  line-height: 40px;
-  height: 40px;
-  padding-left: 20px;
-}
-
-.payment-info {
-  padding: 10px 20px;
-  overflow: hidden;
-
-  dl {
-    width: 700px;
-
-    dt {
-      display: block;
-      font-size: 16px;
-      color: #333333;
-      line-height: 34px;
-      margin-bottom: 6px;
-    }
-
-    dd {
-      display: block;
-      line-height: 30px;
-    }
-  }
-
-  dl.payment-dlhalf {
-    width: 600px;
-    height: 100px;
-
-    dt {
-      display: block;
-      font-size: 16px;
-      color: #333333;
-      line-height: 34px;
-      margin-bottom: 6px;
-
-      img {
-        vertical-align: middle;
-        margin: 0 5px;
-      }
-    }
-
-    dd {
-      width: 300px;
-      float: left;
-
-      p {
-        width: 230px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-    }
-  }
-
-  .orange-text {
-    line-height: 100px;
-    font-size: 24px;
-  }
-}
-
-.payway {
-  li {
-    width: 100%;
-
-    .el-radio {
-      width: 888px;
-      padding: 0 10px;
-      border: 1px solid transparent;
-      border-bottom: 1px dashed #E0E0E0;
-      height: 60px;
-      display: block;
-      line-height: 60px;
-
-      span {
-        font-size: 18px;
-      }
-    }
-
-    label.is-checked {
-      border: 1px solid #027CFF;
-
-      .el-radio__label .fr {
-        color: #333;
-      }
-    }
-
-    .orange-text {
-      font-size: 20px;
-    }
-  }
-}
-
-.payformbox {
-  padding-bottom: 60px;
-  padding-top: 20px;
-
-  strong {
-    line-height: 40px;
-    height: 40px;
-  }
-
-  .payform {
-    width: 100%;
-    margin-bottom: 50px;
-
-    .el-input {
-      width: 300px;
-      display: inline-block;
-      margin-right: 6px;
-    }
-  }
-
-  .el-button {
-    width: 200px;
-  }
-}
-
-.qrcodebox {
-  position: fixed;
-  left: 50%;
-  top: 50%;
-  width: 300px;
-  height: 300px;
-  margin: -150px auto auto -150px;
-  background: #ffffff;
-  box-shadow: 0 0 6px 0 #999;
-
-  strong {
-    line-height: 40px;
-    height: 40px;
-    display: block;
-    border-left: 3px solid #20a0ff;
-    font-size: 16px;
-    padding-left: 10px;
-    color: #6c6c6c;
-
-    em {
-      float: right;
-      width: 40px;
-      height: 40px;
-      line-height: 37px;
-      text-align: center;
-      cursor: pointer;
-      font-size: 28px;
-      transition: all 0.4s;
-    }
-
-    em:hover {
-      color: #20a0ff;
-      transform: rotate(180deg);
-    }
-  }
-}
-
-.pos-right {
-  position: absolute;
-  right: 10px;
-  top: 0;
-}
-
-.wechartpicbox {
-  width: 250px;
-  height: 250px;
-  margin: 0 auto;
-
-  #canvas {
-    width: 100% !important;
-    height: 100% !important;
-  }
-}
+@import '../../assets/styles/variable.styl'
+.payicon 
+  background: url('../../assets/images/payicon.png') no-repeat
+  display: inline-block
+  width: 30px
+  height: 30px
+  vertical-align: middle
+  margin-right: 10px
+.payicon1 
+  background-position: 0 0px
+.payicon2 
+  background-position: -30px 0
+.payicon3 
+  background-position: -60px 0
+.payicon4 
+  background-position: -90px 0
+.el-tabs--border-card 
+  box-shadow: none
+.content 
+  width: 1200px
+  margin: 10px auto 40px
+  position: relative
+.content-left 
+  float: left
+  width: 200px
+  > ul 
+    position: absolute
+    height: 100%
+    width: 200px
+    background: #ffffff
+    > li 
+      height: 24px
+      line-height: 24px
+      padding-left: 40px
+      margin: 8px 0
+      border-left: 3px solid transparent
+      &:hover 
+        border-left-color: $blue
+        color: $blue
+        cursor: pointer
+    .active 
+      border-left-color: $blue
+      color: $blue
+.content-right 
+  float: right
+  background-color: #fff
+  width: 990px
+  .title-box 
+    box-shadow: 0 1px 0 0 #E0E0E0
+    .title-name 
+      display: inline-block
+      padding-left: 20px
+      height: 30px
+      line-height: 30px
+      margin: 10px 0
+      border-left: 3px solid $blue
+.container 
+  padding: 40px
+.yugoldbox 
+  margin-bottom: 20px
+  border: 1px solid #E0E0E0
+.payment-title 
+  background: #FAFAFA
+  border-bottom: 1px solid #E0E0E0
+  line-height: 40px
+  height: 40px
+  padding-left: 20px
+.payment-info 
+  padding: 10px 20px
+  overflow: hidden
+  dl 
+    width: 700px
+    dt 
+      display: block
+      font-size: 16px
+      color: #333333
+      line-height: 34px
+      margin-bottom: 6px
+    dd 
+      display: block
+      line-height: 30px
+  dl.payment-dlhalf 
+    width: 600px
+    height: 100px
+    dt 
+      display: block
+      font-size: 16px
+      color: #333333
+      line-height: 34px
+      margin-bottom: 6px
+      img 
+        vertical-align: middle
+        margin: 0 5px
+    dd 
+      width: 300px
+      float: left
+      p 
+        width: 230px
+        overflow: hidden
+        text-overflow: ellipsis
+        white-space: nowrap
+  .orange-text 
+    line-height: 100px
+    font-size: 24px
+.payway 
+  li 
+    width: 100%
+    .el-radio 
+      width: 888px
+      padding: 0 10px
+      border: 1px solid transparent
+      border-bottom: 1px dashed #E0E0E0
+      height: 60px
+      display: block
+      line-height: 60px
+      span 
+        font-size: 18px
+    label.is-checked 
+      border: 1px solid #027CFF
+      .el-radio__label .fr 
+        color: #333
+    .orange-text 
+      font-size: 20px
+.payformbox 
+  padding-bottom: 60px
+  padding-top: 20px
+  strong 
+    line-height: 40px
+    height: 40px
+  .payform 
+    width: 100%
+    margin-bottom: 50px
+    .el-input 
+      width: 300px
+      display: inline-block
+      margin-right: 6px
+  .el-button 
+    width: 200px
+.qrcodebox 
+  position: fixed
+  left: 50%
+  top: 50%
+  width: 300px
+  height: 300px
+  margin: -150px auto auto -150px
+  background: #ffffff
+  box-shadow: 0 0 6px 0 #999
+  strong 
+    line-height: 40px
+    height: 40px
+    display: block
+    border-left: 3px solid #20a0ff
+    font-size: 16px
+    padding-left: 10px
+    color: #6c6c6c
+    em 
+      float: right
+      width: 40px
+      height: 40px
+      line-height: 37px
+      text-align: center
+      cursor: pointer
+      font-size: 28px
+      transition: all 0.4s
+    em:hover 
+      color: #20a0ff
+      transform: rotate(180deg)
+.pos-right 
+  position: absolute
+  right: 10px
+  top: 0
+.wechartpicbox 
+  width: 250px
+  height: 250px
+  margin: 0 auto
+  #canvas 
+    width: 100% !important
+    height: 100% !important
 </style>

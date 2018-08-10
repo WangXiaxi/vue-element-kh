@@ -303,7 +303,7 @@ export default {
                 path: '/publishTipsPage',
                 query: {
                   i: 'success',
-                  tip: '恭喜您，选择承运人成功！',
+                  tip: encodeURIComponent('恭喜您，选择承运人成功！'),
                   orderID: orderID
                 }
               });
@@ -336,6 +336,7 @@ export default {
     //获取资质信息
     async showInfo(MerchantID) {
       this.isShowInfo = true;
+      if(Object.keys(this.companyInfo).length > 0 ) return; //获取资质信息之后就可以不再调用了
       let res = await getCompanyInfo({MerchantID: MerchantID});
       if (res.data.ResultCode === '000000' && res.data.ResultValue) {
         let Data = res.data.ResultValue;

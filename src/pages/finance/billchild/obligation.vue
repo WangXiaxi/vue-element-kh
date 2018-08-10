@@ -153,8 +153,8 @@ export default {
     async FreightBill() {
       const Updates = await LogisticsFreightBill(this.withdrawForm);
       if (Updates.data.ResultCode == "000000") {
-        this.count = Updates.data.ResultValue.Paid.length;
-        this.tableFrozen = Updates.data.ResultValue.Paid;
+        this.count = Updates.data.ResultValue.length;
+        this.tableFrozen = Updates.data.ResultValue;
         this.withdrawForm.TotalRecords = Updates.data.TotalRecords;
       } else {
         this.$message({

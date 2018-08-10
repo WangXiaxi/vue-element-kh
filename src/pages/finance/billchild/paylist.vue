@@ -162,8 +162,8 @@ export default {
       if (this.$cookie.get("MemberMerchantID")) {
         const Updates = await LogisticsFreightBill(this.withdrawForm);
         if (Updates.data.ResultCode == "000000") {
-          this.count = Updates.data.ResultValue.Arrearage.length;
-          this.tableFrozen = Updates.data.ResultValue.Arrearage;
+          this.count = Updates.data.ResultValue.length;
+          this.tableFrozen = Updates.data.ResultValue;
           this.tableFrozen.forEach((item,index)=>{
             this.$set(item,'count',this.minCount);
             this.$set(item,'isClose',true);
@@ -243,6 +243,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-</style>

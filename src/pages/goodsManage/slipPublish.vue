@@ -27,7 +27,7 @@
           <ul class="order-list">
             <li class="order-item" v-for="(item, index) in orderList" :key="index">
               <div class="info-title">
-                <div class="fl order-code">订单{{index}}</div>
+                <div class="fl order-code">分单{{index + 1}}</div>
                 <div class="fl order-num">货源编号：<span class="blue">{{item.OrderCode}}</span></div>
               </div>
               <div class="info-con">
@@ -41,12 +41,12 @@
                   <span class="lab">体积重量：</span><span class="val orange">{{item.OrderVolume}}m³/{{item.OrderWeight}}吨</span>
                 </div>
                 <div class="con-item mt-20">
-                  <span class="lab">结算方式：</span><span class="val">否</span>
+                  <span class="lab">结算方式：</span><span class="val">{{item.OrderSettlementName}}</span>
                 </div>
                 <div class="con-item mt-20">
                   <span class="lab">运&nbsp;&nbsp;费：</span><span class="val orange">¥{{item.OrderFreight}}</span>
                 </div>
-                <div class="con-item mt-20 w-100">
+                <div class="con-item mt-20 w-100" v-if="item.OrderReceiver || item.OrderReceiverPhone && item.OrderToAddress">
                   <span class="lab">收货人名称：</span><span class="val"><span class="mr-20">{{item.OrderReceiver}}</span><span class="mr-20">{{item.OrderReceiverPhone}}</span><span class="mr-20">{{item.OrderToAddress}}</span></span>
                 </div>
               </div>
@@ -116,13 +116,13 @@
                 </el-form-item>
               </div>
 
-              <el-form-item label="接单模式" prop="Parttern">
+<!--               <el-form-item label="接单模式" prop="Parttern">
                 <el-radio v-model="publishForm.Parttern" label="1">抢单</el-radio>
                 <el-radio v-model="publishForm.Parttern" label="2">最低价</el-radio>
-              </el-form-item>
+              </el-form-item> -->
               <el-form-item label="运费金额（元）" prop="Freight" v-if="publishForm.Parttern == 1 ">
                 <div class="normal">
-                  <el-input placeholder="运费价格" v-model="publishForm.Freight"></el-input>
+                  <el-input placeholder="运费价格" v-model="publishForm.Freight" disabled></el-input>
                 </div>
               </el-form-item>
               <el-form-item label="备注" prop="Remark">
@@ -205,7 +205,7 @@
           Freight: '',
           LoadTime: getTimes(new Date(new Date().getTime() + 3600000), "yyyy-MM-dd hh:mm"),
           Remark: '',
-          Parttern: ''
+          Parttern: '1'
         },
         pickerOptions: { // 限制时间输入
           disabledDate (time) {
@@ -285,22 +285,24 @@
       getUserRole: getUserRole,
       publishAct () { // 发布操作
         let _ = this;
-        _.publishForm.FromCityID = _.publishForm.fromAdd[0];
-        _.publishForm.FromCountyID = _.publishForm.fromAdd[1];
-        _.publishForm.FromProvinceID = _.publishForm.fromAdd[2];
-        this.$refs['publishForm'].validate(async valid => {
+        _.publishForm.FromCityID = _.publishForm.fromAdd[1];
+        _.publishForm.FromCountyID = _.publishForm.fromAdd[2];
+        _.publishForm.FromProvinceID = _.publishForm.fromAdd[0];
+        _.$refs['publishForm'].validate(async valid => {
           if (!valid) return;
+          _.loading = true;
           const {data : { ResultCode, ResultValue, ResultMessage, TotalRecords }} = await ReleaseTransferOrder(_.publishForm);
+          _.loading = false;
           if (ResultCode === '000000') {
             // 否则跳至成功页
             this.$router.push({
               path: '/slipPublishTipsPage',
               query: {
                 i: 'success',
-                tip: '恭喜您，货源发布成功！',
-                des: res.data.ResultMessage,
-                color: !res.data.ResultValue.PiPei ? '#999' : 'red',
-                orderID: res.data.ResultValue.OrderId
+                tip: encodeURIComponent('恭喜您，货源发布成功！'),
+                des: encodeURIComponent(ResultMessage),
+                color: !ResultValue.PiPei ? '#999' : 'red',
+                orderID: ResultValue.OrderID
               }
             });
           }
@@ -344,24 +346,15 @@
         })
       },
 
-      TransferOrderDetails () { // 获取所有信息
+      TransferOrderDetails () { // 获取所有订单列表
         let _ = this,
             params = {OrderID: _.$route.params.formID, MerchantID: _.MemberMerchantID};
         return new Promise((resolve, reject) => {
           TransferOrderDetails(params).then((res) => {
             const {data : { ResultCode, ResultValue, ResultMessage, TotalRecords }} = res;
             if (ResultCode === '000000') {
-              resolve(res);
               _.orderList = ResultValue;
-
-              console.log(_.orderList);
-              // _.publishForm.ToProvinceID = 
-              // _.publishForm.ToCityID = 
-              // _.publishForm.ToCountyID =
-              _.publishForm.Classify = ResultValue.OrderClassifyName.join(',');
-              _.publishForm.Weight = ResultValue.OrderWeight;
-              _.publishForm.Freight = ResultValue.OrderFreight;
-              _.publishForm.Volume = ResultValue.OrderVolume;
+              resolve(res);
             } else {
               reject(res); // 报错停止
             }
@@ -378,8 +371,9 @@
           GetOrderDetailsInfo(params).then((res) => {
             const { data: { ResultCode, ResultValue, ResultMessage, TotalRecords }} = res;
             if (ResultCode === '000000') {
+              _.getInfoObj = ResultValue;
+              _.publishForm.Freight = ResultValue.OrderFreight;
               resolve(res);
-              this.getInfoObj = ResultValue;
             } else {
               reject(res); // 报错停止
             }
@@ -546,7 +540,7 @@
           .lab
             color: #999
           .orange
-            color: $orange 
+            color: $orange
   .form-box
     margin-top: 20px
     padding-left: 10px

@@ -56,7 +56,7 @@
                     <el-option v-for="(item, index) in productList" :label="item.DictName" :value="item.DictID" :key="index"></el-option>
                   </el-select>
                 </el-form-item>
-                  
+
                 <el-form-item label="车长">
                   <el-autocomplete
                     class="normal"
@@ -72,7 +72,7 @@
                   </el-select>
                 </el-form-item>
 
-                
+
 
                 <el-form-item style="margin-right:0; float: right">
                   <el-button type="primary" @click="handleCurrentChange(1)">搜索</el-button>
@@ -95,29 +95,28 @@
                 </el-table-column>
                 <el-table-column
                   label="货源详情"
-                  width="140">
-                  <template slot-scope="props">
-                    <span class="grey">货源</span><router-link to="/">{{props.row.OrderCode}}</router-link>
+                  width="100">
+                  <template slot-scope="props"><router-link :to="`/waybillDetail/${props.row.OrderformID}`">{{props.row.OrderCode}}</router-link>
                   </template>
                 </el-table-column>
                 <el-table-column
                   label="货运目的地"
-                  width="120"
+                  width="94"
                   prop="OrderToCityName">
                 </el-table-column>
                 <el-table-column
                   label="体积(m³)"
-                  width="80"
+                  width="75"
                   prop="OrderVolume">
                 </el-table-column>
                 <el-table-column
                   label="重量(吨)"
-                  width="80"
+                  width="75"
                   prop="OrderWeight">
                 </el-table-column>
                 <el-table-column
                   label="货物类型"
-                  width="108"
+                  width="85"
                   prop="OrderClassifyName">
                 </el-table-column>
                 <el-table-column
@@ -135,9 +134,16 @@
                   width="76"
                   prop="OrderStatusName">
                 </el-table-column>
+
+                <el-table-column
+                  label="结算方式"
+                  width="94"
+                  prop="OrderSettlementName">
+                </el-table-column>
+
                 <el-table-column
                   label="创建时间"
-                  width="150"
+                  width="155"
                   prop="OrderCreate">
                 </el-table-column>
               </el-table>
@@ -174,7 +180,7 @@
                 <span>已选择{{nextData.Num}}单，总体积/总重量：<span class="orange">{{nextData.Volume}}m³/{{nextData.Weight}}吨</span></span>
               </div>
               <div @click="goNext(1, chooseData.length)" class="next-btn" :class="{grey : !chooseData.length}">
-                下一步，立即发布
+                下一步，立即发车
               </div>
               <div @click="goNext(2, chooseData.length)" class="next-btn-zd" :class="{grey : !chooseData.length}">
                 转单-发布货源
@@ -207,6 +213,15 @@
     getCarModelList, // 获取车型
     GetOrderformListForCompany, // 查询获取一页
   } from "api/getData";
+
+  // 定义不可选状态集合
+  const NoChooseStatus = [orderStatus.ORDER_ARRIVED, orderStatus.ORDER_EVALUATION, orderStatus.ORDER_SHIPPED];
+
+  // 定义 常量 特殊的产品类型
+  const ClassifySpec = {
+    coldLogistics: {id: '2239b1840bd540498abad53a235e8341', name: '冷链运输'},
+    hazaChemicals: {id: '293022d917b644cb983f8858cf1f077f', name: '危化品'}
+  }
 
   export default {
     mixins: [m_login],
@@ -252,7 +267,7 @@
         this.handleCurrentChange(1);
       },
       selectable (row, index) {
-        if (row.OrderStatus == orderStatus.ORDER_ARRIVED || row.OrderStatus == orderStatus.ORDER_EVALUATION) {
+        if (NoChooseStatus.indexOf(row.OrderStatus) > -1) {
           return false;
         }
         return true;
@@ -272,8 +287,25 @@
       handleCheckedAllChange (val) {
         let _ = this;
         if (val) {
+          // 全选首先判断是否是待发货 如果有全部选项 这里需要轮询
+          if (NoChooseStatus.indexOf(_.searchForm.OrderStatus) > -1) {
+            _.checkedAll = !val;
+            this.$message.info('当前目录中无可选订单！');
+            return;
+          } // 非待发货状态直接结束
+
+          if (_.judIsOrderClassify(_.tableData)) { // 判断是否选择到付等
+            _.checkedAll = !val;
+            return;
+          }
+
+          if (_.judIsOrderSettlement(_.tableData)) { // 判断是否选择到付等
+            _.checkedAll = !val;
+            return;
+          }
+
           if (_.judCheckedIsAddress(_.tableData)) { // 判断是否有目的地不同的
-            this.checkedAll = !val;
+            _.checkedAll = !val;
             return;
           }
           _.tableData.forEach((c, i) => { // 判断是否全选
@@ -284,7 +316,7 @@
                 isExist = true;
               }
             })
-            if (c.OrderStatus == orderStatus.ORDER_ARRIVED || c.OrderStatus == orderStatus.ORDER_EVALUATION) {
+            if (NoChooseStatus.indexOf(c.OrderStatus) > -1) {
               isCanChoose = false;
             }
             if (!isExist && isCanChoose) {
@@ -330,7 +362,7 @@
           _.CreateEnd = getTimes(val[1], 'yyyy-MM-dd');
         } else {
           _.CreateStart = '1970-01-01';
-          _.CreateEnd = this.getTimes(new Date(), 'yyyy-MM-dd');
+          _.CreateEnd = getTimes(new Date(), 'yyyy-MM-dd');
         }
       },
       handleAddressChange (val) {
@@ -358,6 +390,16 @@
           }
         })
         if (!isExist && isChoose) { // 不存在则添加
+          if (_.judIsOrderClassify(row)) { // 判断是否有目的地不同的
+            _.$refs.table.toggleRowSelection(row, false);
+            return;
+          }
+
+          if (_.judIsOrderSettlement(row)) { // 判断是否选择到付等
+            _.$refs.table.toggleRowSelection(row, false);
+            return;
+          }
+
           if (_.judCheckedIsAddress(row)) { // 判断是否有目的地不同的
             _.$refs.table.toggleRowSelection(row, false);
             return;
@@ -379,20 +421,70 @@
         this.$message.info('您当前选择的目的地与已选货物中目的地不同');
         return true;
       },
-      judIsRepeat (data) { // 争对当前类型数组 判断是否有不相同
+      judIsRepeat (cur) { // 争对当前类型数组 判断是否有不相同
+        let data = cur.concat(this.chooseData);
         for (let i = 0; i < data.length - 1; i++ ) {
           if (data[i].OrderToCity !== data[i + 1].OrderToCity) return true;
         }
         return false;
+      },
+      judIsOrderSettlement (cur) { // 到付不能与其他一起选择
+        let _ = this,
+            data,
+            num = 0;
+        if (Array.isArray(cur)) {
+          data = cur.concat(_.chooseData);
+        } else {
+          let arr = [];
+          arr.push(cur);
+          data = arr.concat(_.chooseData);
+        }
+        for (let i = 0; i < data.length; i++ ) {
+          if ( Number(data[i].OrderSettlement) === 2) {
+            num ++;
+          }
+        }
+        if (num !== 0 && num !== data.length) { // 有到付并且还有其他则不让选择
+          this.$message.info('收货方到付订单不能与其他订单一起选择');
+          return true;
+        }
+        return false;
+      },
+      judIsOrderClassify (cur) { // 冷链 威化不能与其他一起
+        let _ = this,
+            data,
+            numw = 0,
+            numl = 0;
+        if (Array.isArray(cur)) {
+          data = cur.concat(_.chooseData);
+        } else {
+          let arr = [];
+          arr.push(cur);
+          data = arr.concat(_.chooseData);
+        }
+
+        for (let i = 0; i < data.length; i++ ) {
+          if (data[i].OrderClassify.indexOf(ClassifySpec.coldLogistics.id) > -1) { // 冷链数量
+            numl ++;
+          }
+          if (data[i].OrderClassify.indexOf(ClassifySpec.hazaChemicals.id) > -1) { // 危化品
+            numw ++;
+          }
+        }
+        if ((numw > 0 && numw !== data.length) || (numw > 0 && numw !== data.length)) {
+          _.$message.info('危化品与冷链运输不能与其他物品一起选择');
+          return true;
+        }
+        return false;
+
       },
       judCheckedAll () { // 判断是否全选
         let _ = this,
             isCheckedNum = 0, // 本页有多少是选中
             isCanChoose = 0; // 有多少状态是计算到可选中 除掉已评价 已到达
         _.checkedAll = false;
-        
         _.tableData.forEach((d, j) => {
-          if (d.OrderStatus != orderStatus.ORDER_ARRIVED && d.OrderStatus != orderStatus.ORDER_EVALUATION) isCanChoose ++; // 计算需要被计算到全选中的数量
+          if (NoChooseStatus.indexOf(d.OrderStatus) === -1) isCanChoose ++; // 计算需要被计算到全选中的数量
           _.chooseData.forEach((c, i) => { // 判断是否全选
             if (c.OrderformID === d.OrderformID) {
               _.$refs.table.toggleRowSelection(d, true);
@@ -445,7 +537,7 @@
           setTimeout(() => {
             _.judCheckedAll();
           }, 20)
-          
+
         }
       }
     },
@@ -497,6 +589,8 @@
   .good-manage
     .content-right
       min-height: 600px
+      .container
+        padding-top: 20px
       .search-form
         .el-form-item.el-form-item--small
           margin-bottom: 18px

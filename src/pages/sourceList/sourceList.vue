@@ -89,16 +89,16 @@
                       <li>发布时间：{{item.Create.slice(0,19)}}</li>
                       <li>装货时间：{{item.LoadTime.slice(0,16)}}</li>
                     </ul>
-                    <span class="fr orange-text">{{item.StatusName}}</span>
+                    <span class="fr" :style="{color : showOrderStatusColor(item.Status)}">{{item.StatusName}}</span>
                   </div>
                   <!--头标题 end-->
                   <div class="main-list">
                     <!--物流信息 start-->
                     <div class="main-top">
                       <div class="top-left">
-                        <p class="origin">{{item.FromCity}}
+                        <p class="origin"><span>{{item.FromCity}}
                           <img src="../../assets/images/gofrom.png" alt="">
-                          {{item.ToCity}}
+                          {{item.ToCity}}</span>
                           <span class="order-type">{{item.Parttern==1?'抢单模式':'最低价模式'}}</span>
                         </p>
                         <div class="info">
@@ -138,7 +138,7 @@
                                                                       @click="cancelOrder(item.OrdeID,item.Code,index)">取消运单</span>
                         </p>
                         <p class="mt-6"
-                           v-if="item.Status == orderStatus.ORDER_CONFIRMED && item.Grab.CrowdType == 3 && item.PayResult != 1 && !getUserRole(userCharacter,'财务')">
+                           v-if="item.Status == orderStatus.ORDER_CONFIRMED && item.PayResult != 1 && !getUserRole(userCharacter,'财务')">
                           <router-link :to="{path: '/payment',query:{orderid: item.OrdeID}}">支付运费</router-link>
                         </p>
                         <p class="mt-6" v-if="item.Status == orderStatus.ORDER_SHIPPED">
@@ -538,7 +538,7 @@
     SendAgain // 重发接口
   } from 'api/getData'
   import { getUserRole } from 'config/myUtils';
-  import { orderStatus } from 'config/statusManager';
+  import { orderStatus, showOrderStatusColor } from 'config/statusManager';
   import leftMenuRouterHome from 'components/leftMenuRouter/leftMenuRouterHome'; // 左侧
   import headMenuRouter from 'components/headMenuRouter/headMenuRouter'; // 头部
   import quotedExplainDialog from 'components/quotedExplainDialog/quotedExplainDialog'; // 运费价格解说
@@ -618,6 +618,7 @@
       }
     },
     methods: {
+      showOrderStatusColor: showOrderStatusColor,
       getUserRole: getUserRole,
       async SendAgain (orderID, code, index) { // 重发操作
         let params = {OrderID: orderID}
@@ -752,6 +753,7 @@
       //获取资质信息
       async showInfo(MerchantID) {
         this.isShowInfo = true;
+        if(Object.keys(this.companyInfo).length > 0 ) return; //获取资质信息之后就可以不再调用了
         let res = await getCompanyInfo({MerchantID: MerchantID});
         if (res.data.ResultCode === '000000' && res.data.ResultValue) {
           let Data = res.data.ResultValue;
@@ -1231,6 +1233,8 @@
           margin-bottom: 10px
           font-size: 16px
           font-weight: bold
+          >span
+            vertical-align: middle
         .order-type
           display: inline-block
           height: 20px
@@ -1317,7 +1321,7 @@
     width: 200px
 
   .tip-list
-    margin-left: 138px;
+    margin-left: 138px
     .circle
       display: inline-block
       height: 6px

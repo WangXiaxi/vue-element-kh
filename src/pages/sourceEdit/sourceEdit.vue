@@ -412,305 +412,235 @@
 </script>
 
 <style lang="stylus" scoped>
-  @import '../../assets/styles/variable.styl';
+  @import '../../assets/styles/variable.styl'
 
-  .content {
-    position: relative;
-    width: 1200px;
-    margin: 10px auto 40px;
-  }
-
-  .content-left {
-    float: left;
-    width: 200px;
-    background: #ffffff;
-
-    > ul {
-      width: 200px;
-      position: absolute;
-      height: 100%;
-      background-color: #fff;
-
-      > li {
-        height: 30px;
-        line-height: 30px;
-        padding-left: 40px;
-        margin: 10px 0;
-        border-left: 3px solid transparent;
-
-        &:hover {
-          border-left-color: $blue;
-          color: $blue;
-          cursor: pointer;
-        }
-      }
-
-      .active {
-        border-left-color: $blue;
-        color: $blue;
-      }
-    }
-  }
-
-  .content-right {
-    float: right;
-    background-color: #fff;
-
-    .product {
-      background: #FFFFFF;
-
-      .title-box {
-        box-shadow: 0 1px 0 0 #E0E0E0;
-      }
-
-      .title-name {
-        display: inline-block;
-        padding-left: 20px;
-        height: 30px;
-        line-height: 30px;
-        margin: 10px 0;
-        border-left: 3px solid $blue;
-      }
-    }
-
-    .container {
-      padding: 40px;
-
-      .list-content {
-        position: relative;
-        overflow: hidden;
-      }
-
-      .list-right {
-        height: 399px;
-        overflow-y: auto;
-        overflow-x: hidden;
-        border: 1px solid $borderColor;
-
-        .add {
-          color: $blue;
-          text-align: center;
-          cursor: pointer;
-        }
-
-        .text-ellipsis {
-          display: inline-block;
-          max-width: 70px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-      }
-    }
-  }
-
-  .source-info {
-    height: 90px;
-    line-height: 90px;
-    margin: 20px 0;
-    border: 1px solid $borderColor;
-    >ul{
+  .content 
+    position: relative
+    width: 1200px
+    margin: 10px auto 40px
+  .content-left 
+    float: left
+    width: 200px
+    background: #ffffff
+    > ul 
+      width: 200px
+      position: absolute
+      height: 100%
+      background-color: #fff
+      > li 
+        height: 30px
+        line-height: 30px
+        padding-left: 40px
+        margin: 10px 0
+        border-left: 3px solid transparent
+        &:hover 
+          border-left-color: $blue
+          color: $blue
+          cursor: pointer
+      .active 
+        border-left-color: $blue
+        color: $blue
+  .content-right 
+    float: right
+    background-color: #fff
+    .product 
+      background: #FFFFFF
+      .title-box 
+        box-shadow: 0 1px 0 0 #E0E0E0
+      .title-name 
+        display: inline-block
+        padding-left: 20px
+        height: 30px
+        line-height: 30px
+        margin: 10px 0
+        border-left: 3px solid $blue
+    .container 
+      padding: 40px
+      .list-content 
+        position: relative
+        overflow: hidden
+      .list-right 
+        height: 399px
+        overflow-y: auto
+        overflow-x: hidden
+        border: 1px solid $borderColor
+        .add 
+          color: $blue
+          text-align: center
+          cursor: pointer
+        .text-ellipsis 
+          display: inline-block
+          max-width: 70px
+          overflow: hidden
+          text-overflow: ellipsis
+          white-space: nowrap
+  .source-info 
+    height: 90px
+    line-height: 90px
+    margin: 20px 0
+    border: 1px solid $borderColor
+    >ul
       float: left
-      line-height: normal;
-      overflow: hidden;
-      li{
-        float: left;
+      line-height: normal
+      overflow: hidden
+      li
+        float: left
         width: 100px
-        .head-title{
+        .head-title
           height: 40px
           line-height: 40px
           text-align: center
           background-color: #F7FBFB
-        }
-        .blue-txt{
+        .blue-txt
           height: 50px
           line-height: 50px
           text-align: center
-        }
-        .input{
+        .input
           width: 100px
-        }
-      }
-      .large{
+      .large
         width: 120px
-      }
-      .normal{
+      .normal
         width: 114px
-      }
-    }
-    .left-title {
-      float: left;
-      width: 120px;
-      text-align: center;
-      color: #ffff;
-      background: #409eff;
-      font-size: 16px;
-    }
-
-    .info {
-      margin-top: 12px;
-      line-height: normal;
-
-      .info-item {
-        margin-right: 20px;
-      }
-    }
-  }
-
-  .fill {
-    padding: 0 20px;
-
-    .address {
-      float: left;
-      width: 300px;
-      margin-right: 10px;
-    }
-    .detailes{
-      float: left;
-      width: 400px;
-      margin-right: 10px;
-      .mapIcon{
+    .left-title 
+      float: left
+      width: 120px
+      text-align: center
+      color: #ffff
+      background: #409eff
+      font-size: 16px
+    .info 
+      margin-top: 12px
+      line-height: normal
+      .info-item 
+        margin-right: 20px
+  .fill 
+    padding: 0 20px
+    .address 
+      float: left
+      width: 300px
+      margin-right: 10px
+    .detailes
+      float: left
+      width: 400px
+      margin-right: 10px
+      .mapIcon
         display: inline-block
         width: 30px
         height: 30px
         line-height: 30px
-      }
-    }
-    .large{
+    .large
       width: 444px
-    }
-  }
-
-  .tip-box {
-    padding: 0 40px 50px;
-  }
-
-  .tip-icon {
-    margin-left: 10px;
-    color: $blue;
-    font-size: 24px;
-    cursor: pointer;
-  }
-
-  .normal {
-    width: 217px;
-  }
-
-  .add-now {
-    width: 200px;
-    font-size: 16px;
-  }
-
-  .product-name {
-    width: 180px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .source-freight-fee {
-    margin-top: 40px;
-    position: relative;
-  }
-  .source-freight-fee label {
-    text-align: right;
-    font-size: 14px;
-    color: #333;
-    line-height: 30px;
-    margin-right: 20px;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-  }
-  .source-freight-fee input {
-    -webkit-appearance: none;
-    background-color: #fff;
-    background-image: none;
-    border-radius: 2px;
-    border: 1px solid #e0e0e0;
-    box-sizing: border-box;
-    color: #606266;
-    display: inline-block;
-    font-size: inherit;
-    height: 30px;
-    line-height: 30px;
-    outline: none;
-    padding: 0 15px;
-    transition: border-color .2s cubic-bezier(.645,.045,.355,1);
-    width: 210px;
-  }
-  .source-freight-fee .freight-fee_help {
-    width: 20px;
-    height: 20px;
-    line-height: 20px;
-    font-size: 14px;
-    border-radius : 50%;
-    border: 1px solid #027cff;
-    color: #027CFF;
-    text-align: center;
-    display inline-block;
-    margin: 0 10px;
-  }
-  .popover {
-    background: #fff;
-    width: 480px;
-    border: 1px solid #ebeef5;
-    padding: 12px;
-    z-index: 2000;
-    color: #606266;
-    line-height: 1.4;
-    text-align: justify;
-    font-size: 14px;
-    -webkit-box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
-    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
-    display inline-block;
-    position: absolute;
-    top: -20px;
-  }
-  .popover-arrow {
-    position: absolute;
-    display: block;
-    width: 0;
-    height: 0;
-    border-color: transparent;
-    border-style: solid;
-    border-width: 6px;
-    -webkit-filter: drop-shadow(0 2px 12px rgba(0, 0, 0, .03));
-    filter: drop-shadow(0 2px 12px rgba(0, 0, 0, .03));
-    top: 26px;
-    left: -6px;
-    margin-bottom: 3px;
-    border-right-color: #ebeef5;
-    border-left-width: 0;
-  }
-  .popover-arrow:after {
-    position: absolute;
-    display: block;
-    width: 0;
-    height: 0;
-    border-color: transparent;
-    border-style: solid;
-    content: " ";
-    border-width: 6px;
-    bottom: -6px;
-    left: 1px;
-    border-right-color: #fff;
-    border-left-width: 0;
-  }
-  .source-save {
-    text-align center;
-    margin-top: 20px;
-  }
-  .source-save-btn {
-    display: inline-block;
-    background: #027CFF;
-    border-radius: 100px;
-    color: #fff;
-    font-size: 16px;
-    width: 200px;
-    height: 40px;
-    line-height: 40px;
-    cursor pointer;
-  }
-  .print-tag {
+  .tip-box 
+    padding: 0 40px 50px
+  .tip-icon 
+    margin-left: 10px
+    color: $blue
+    font-size: 24px
+    cursor: pointer
+  .normal 
+    width: 217px
+  .add-now 
+    width: 200px
+    font-size: 16px
+  .product-name 
+    width: 180px
+    overflow: hidden
+    text-overflow: ellipsis
+    white-space: nowrap
+  .source-freight-fee 
+    margin-top: 40px
+    position: relative
+  .source-freight-fee label 
+    text-align: right
+    font-size: 14px
+    color: #333
+    line-height: 30px
+    margin-right: 20px
+    -webkit-box-sizing: border-box
+    box-sizing: border-box
+  .source-freight-fee input 
+    -webkit-appearance: none
+    background-color: #fff
+    background-image: none
+    border-radius: 2px
+    border: 1px solid #e0e0e0
+    box-sizing: border-box
+    color: #606266
+    display: inline-block
+    font-size: inherit
+    height: 30px
+    line-height: 30px
+    outline: none
+    padding: 0 15px
+    transition: border-color .2s cubic-bezier(.645,.045,.355,1)
+    width: 210px
+  .source-freight-fee .freight-fee_help 
+    width: 20px
+    height: 20px
+    line-height: 20px
+    font-size: 14px
+    border-radius : 50%
+    border: 1px solid #027cff
+    color: #027CFF
+    text-align: center
+    display inline-block
+    margin: 0 10px
+  .popover 
+    background: #fff
+    width: 480px
+    border: 1px solid #ebeef5
+    padding: 12px
+    z-index: 2000
+    color: #606266
+    line-height: 1.4
+    text-align: justify
+    font-size: 14px
+    -webkit-box-shadow: 0 2px 12px 0 rgba(0,0,0,.1)
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1)
+    display inline-block
+    position: absolute
+    top: -20px
+  .popover-arrow 
+    position: absolute
+    display: block
+    width: 0
+    height: 0
+    border-color: transparent
+    border-style: solid
+    border-width: 6px
+    -webkit-filter: drop-shadow(0 2px 12px rgba(0, 0, 0, .03))
+    filter: drop-shadow(0 2px 12px rgba(0, 0, 0, .03))
+    top: 26px
+    left: -6px
+    margin-bottom: 3px
+    border-right-color: #ebeef5
+    border-left-width: 0
+  .popover-arrow:after 
+    position: absolute
+    display: block
+    width: 0
+    height: 0
+    border-color: transparent
+    border-style: solid
+    content: " "
+    border-width: 6px
+    bottom: -6px
+    left: 1px
+    border-right-color: #fff
+    border-left-width: 0
+  .source-save 
+    text-align center
+    margin-top: 20px
+  .source-save-btn 
+    display: inline-block
+    background: #027CFF
+    border-radius: 100px
+    color: #fff
+    font-size: 16px
+    width: 200px
+    height: 40px
+    line-height: 40px
+    cursor pointer
+  .print-tag 
     margin: 20px 0 0 100px
-  }
 </style>

@@ -448,96 +448,69 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-@import '../../assets/styles/variable.styl';
+@import '../../assets/styles/variable.styl'
 
-.content {
-  position: relative;
-  width: 1200px;
-  margin: 10px auto 40px;
-}
-
-.content-left {
-  float: left;
-  width: 200px;
-  min-height: $minHeight;
-  background: #ffffff;
-
-  > ul {
-    width: 200px;
-    position: absolute;
-    height: 100%;
-    background-color: #fff;
-
-    > li {
-      height: 30px;
-      line-height: 30px;
-      padding-left: 40px;
-      margin: 10px 0;
-      border-left: 3px solid transparent;
-
-      &:hover {
-        border-left-color: $blue;
-        color: $blue;
-        cursor: pointer;
-      }
-    }
-
-    .active {
-      border-left-color: $blue;
-      color: $blue;
-    }
-  }
-}
-
-.add-content {
-  width: 100%;
-  height: 90px;
-  line-height: 90px;
-  text-align: center;
-  color: $blue;
-}
-
-.content-right {
-  float: right;
-  width: 990px;
-  background-color: #fff;
-
-  .main {
-    background: #FFFFFF;
-    padding: 0 0 40px 0;
-    width: 100%;
+.content 
+  position: relative
+  width: 1200px
+  margin: 10px auto 40px
+.content-left 
+  float: left
+  width: 200px
+  min-height: $minHeight
+  background: #ffffff
+  > ul 
+    width: 200px
+    position: absolute
+    height: 100%
+    background-color: #fff
+    > li 
+      height: 30px
+      line-height: 30px
+      padding-left: 40px
+      margin: 10px 0
+      border-left: 3px solid transparent
+      &:hover 
+        border-left-color: $blue
+        color: $blue
+        cursor: pointer
+    .active 
+      border-left-color: $blue
+      color: $blue
+.add-content 
+  width: 100%
+  height: 90px
+  line-height: 90px
+  text-align: center
+  color: $blue
+.content-right 
+  float: right
+  width: 990px
+  background-color: #fff
+  .main 
+    background: #FFFFFF
+    padding: 0 0 40px 0
+    width: 100%
     min-height: 760px
-
-    .title-box {
-      box-shadow: 0 1px 0 0 #E0E0E0;
-    }
-
-    .title-name {
-      display: inline-block;
-      padding-left: 20px;
-      height: 30px;
-      line-height: 30px;
-      margin: 10px 0;
-      border-left: 3px solid $blue;
-    }
-
-    .container {
-      margin: 30px 40px;
-      border: 1px solid $borderColor;
-      padding: 0;
-    }
-  }
-}
-.code {
-  float: left;
-  width: 69%;
-  margin-right: 10px;
-}
-.dialog {
-  padding: 0 30px;
-}
-
-.addBtn {
-  width: 200px;
-}
+    .title-box 
+      box-shadow: 0 1px 0 0 #E0E0E0
+    .title-name 
+      display: inline-block
+      padding-left: 20px
+      height: 30px
+      line-height: 30px
+      margin: 10px 0
+      border-left: 3px solid $blue
+    .container 
+      margin: 30px 40px
+      border: 1px solid $borderColor
+      padding: 0
+.code 
+  float: left
+  width: 69%
+  margin-right: 10px
+.dialog 
+  padding: 0 30px
+.addBtn 
+  width: 200px
 </style>

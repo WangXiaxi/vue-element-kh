@@ -490,136 +490,91 @@ export default {
 <style lang="stylus" scoped>
 @import '../../assets/styles/variable.styl';
 
-.avatar-uploader .el-upload {
-  border: 1px dashed #d9d9d9;
-  border-radius: 6px;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
-
-.avatar-uploader .el-upload:hover {
-  border-color: #409EFF;
-}
-
-.el-upload--picture-card {
-  width: 0;
-  height: 0;
-}
-
-.avatar {
-  width: 146px;
-  height: 146px;
-  display: block;
-}
-
-.blue-btn-p {
-  display: inline-block;
-  height: 38px;
-  line-height: 38px;
-  padding: 0 15px;
-  border: 1px solid $blue;
-  border-radius: 4px;
-  text-align: center;
-
-  &:hover {
-    background-color: $blue;
-    color: #ffffff;
-  }
-}
-
-.tip {
-  width: 1200px;
-  height: 80px;
-  line-height: 80px;
-  margin: 0 auto;
-  background: #FEF2F0;
-  border: 1px solid #FFBEA6;
-  border-radius: 1px;
-
-  .msg {
-    padding-left: 150px;
-    position: relative;
-  }
-
-  .tip-icon {
-    position: absolute;
-    left: 80px;
-    top: 12px;
-    font-size: 50px;
-    margin-bottom: -50px;
-  }
-
-  .on {
-    color: $gray;
-  }
-
-  .pass {
-    color: $green;
-  }
-
-  .failed {
-    color: $red;
-  }
-
-  .info {
-    color: #666;
-    font-size: 16px;
-  }
-}
-
-.settled {
-  width: 1200px;
-  margin: 10px auto 40px;
-  background-color: #fff;
-
-  .step-content {
-    width: 1000px;
-    margin: 50px auto 20px;
-  }
-
-  .title {
-    width: 100%;
-    height: 49px;
-    line-height: 49px;
-    border-bottom: 1px solid $borderColor;
-
-    .name {
-      display: inline-block;
-      height: 30px;
-      line-height: 30px;
-      padding-left: 26px;
-      border-left: 4px solid $blue;
-    }
-  }
-
-  .content {
-    margin: 0 80px;
-    padding: 50px 0;
-
-    .normal {
-      width: 300px;
-    }
-
-    .small {
-      width: 200px;
-    }
-
-    .large {
-      width: 500px;
-    }
-
-    .msg {
-      text-align: center;
-      font-size: 14px;
-      color: $blue;
-    }
-
-    .btn {
-      width: 200px;
-      height: 40px;
-      margin-top: 40px;
-    }
-  }
-}
+.avatar-uploader .el-upload 
+  border: 1px dashed #d9d9d9
+  border-radius: 6px
+  cursor: pointer
+  position: relative
+  overflow: hidden
+.avatar-uploader .el-upload:hover 
+  border-color: #409EFF
+.el-upload--picture-card 
+  width: 0
+  height: 0
+.avatar 
+  width: 146px
+  height: 146px
+  display: block
+.blue-btn-p 
+  display: inline-block
+  height: 38px
+  line-height: 38px
+  padding: 0 15px
+  border: 1px solid $blue
+  border-radius: 4px
+  text-align: center
+  &:hover 
+    background-color: $blue
+    color: #ffffff
+.tip 
+  width: 1200px
+  height: 80px
+  line-height: 80px
+  margin: 0 auto
+  background: #FEF2F0
+  border: 1px solid #FFBEA6
+  border-radius: 1px
+  .msg 
+    padding-left: 150px
+    position: relative
+  .tip-icon 
+    position: absolute
+    left: 80px
+    top: 12px
+    font-size: 50px
+    margin-bottom: -50px
+  .on 
+    color: $gray
+  .pass 
+    color: $green
+  .failed 
+    color: $red
+  .info 
+    color: #666
+    font-size: 16px
+.settled 
+  width: 1200px
+  margin: 10px auto 40px
+  background-color: #fff
+  .step-content 
+    width: 1000px
+    margin: 50px auto 20px
+  .title 
+    width: 100%
+    height: 49px
+    line-height: 49px
+    border-bottom: 1px solid $borderColor
+    .name 
+      display: inline-block
+      height: 30px
+      line-height: 30px
+      padding-left: 26px
+      border-left: 4px solid $blue
+  .content 
+    margin: 0 80px
+    padding: 50px 0
+    .normal 
+      width: 300px
+    .small 
+      width: 200px
+    .large 
+      width: 500px
+    .msg 
+      text-align: center
+      font-size: 14px
+      color: $blue
+    .btn 
+      width: 200px
+      height: 40px
+      margin-top: 40px
 </style>

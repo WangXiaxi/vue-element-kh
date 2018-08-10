@@ -90,17 +90,18 @@
                       <li>发布时间：{{item.Create.slice(0,19)}}</li>
                       <li>装货时间：{{item.LoadTime.slice(0,16)}}</li>
                     </ul>
-                    <span class="fr orange-text">{{item.StatusName}}</span>
+                    <span class="fr" :style="{color : showOrderStatusColor(item.Status)}">{{item.StatusName}}</span>
                   </div>
                   <!--头标题 end-->
                   <div class="main-list">
                     <!--物流信息 start-->
                     <div class="main-top">
                       <div class="top-left">
-                        <p class="origin">{{item.FromCity}}
+                        <p class="origin"><span>{{item.FromCity}}
                           <img src="../../assets/images/gofrom.png" alt="">
-                          {{item.ToCity}}
+                          {{item.ToCity}}</span>
                           <span class="order-type">{{item.Parttern==1?'抢单模式':'最低价模式'}}</span>
+                          <span class="item-transfer"  v-if="item.OrderIsTransfer">转单货源</span>
                         </p>
                         <div class="info">
                           <ul>
@@ -534,7 +535,7 @@
     SendAgain // 重发接口
   } from 'api/getData'
   import { getUserRole } from 'config/myUtils';
-  import {orderStatus} from 'config/statusManager'
+  import { orderStatus, showOrderStatusColor } from 'config/statusManager'
   import leftMenuRouterHome from 'components/leftMenuRouter/leftMenuRouterHome'; // 左侧
   import headMenuRouter from 'components/headMenuRouter/headMenuRouter'; // 头部
   import m_login from '@/mixins/m_login';
@@ -613,6 +614,7 @@
       }
     },
     methods: {
+      showOrderStatusColor: showOrderStatusColor,
       getUserRole: getUserRole,
       async SendAgain (orderID, code, index) { // 重发操作
         let params = {OrderID: orderID}
@@ -723,12 +725,12 @@
         } else {
           this.req.ToCity = ' ';
         }
-        if (this.timeRange.length > 0) {
+        if (this.timeRange !== null && this.timeRange.length > 0) {
           this.req.CreateStart = this.timeRange[0];
           this.req.CreateEnd = this.timeRange[1];
         } else {
-          this.req.CreateStart = ' ';
-          this.req.CreateEnd = ' ';
+          this.req.CreateStart = '1970-01-01';
+          this.req.CreateEnd = this.getTodayDate();
         }
         this.req.MemberID = this.$cookie.get('MemberID');
         let res = await getSourceList(this.req);
@@ -752,9 +754,14 @@
         this.req.PageIndex = val;
         this.getDataList();
       },
+      getTodayDate(){
+        let date = new Date();
+        return [date.getFullYear(), date.getMonth() + 1, date.getDate()].join('-');
+      },
       //获取资质信息
       async showInfo(MerchantID) {
         this.isShowInfo = true;
+        if(Object.keys(this.companyInfo).length > 0 ) return; //获取资质信息之后就可以不再调用了
         let res = await getCompanyInfo({MerchantID: MerchantID});
         if (res.data.ResultCode === '000000' && res.data.ResultValue) {
           let Data = res.data.ResultValue;
@@ -1089,7 +1096,7 @@
       dropDown,
       foot,
       leftMenuRouterHome, // 左侧导航
-      headMenuRouter // 左侧      
+      headMenuRouter // 左侧
       // AMap
     }
   }
@@ -1232,7 +1239,10 @@
           margin-bottom: 10px
           font-size: 16px
           font-weight: bold
+          >span
+            vertical-align: middle
         .order-type
+          vertical-align: middle
           display: inline-block
           height: 20px
           line-height: 20px
@@ -1358,7 +1368,7 @@
     width: 200px
 
   .tip-list
-    margin-left: 138px;
+    margin-left: 138px
     .circle
       display: inline-block
       height: 6px
@@ -1435,4 +1445,13 @@
       border-radius: 2px
     .info
       padding-left: 70px
+  .item-transfer
+    vertical-align: middle
+    background: #ECF5FE
+    border: 1px solid #A4D0FF
+    border-radius: 2px
+    display: inline-block
+    font-size: 12px
+    color: #027CFF
+    padding: 2px 7px
 </style>

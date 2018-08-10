@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="source-details">
     <head-top>
       <span class="title" slot="index">{{userType == 1?'货主':'物流公司'}}-工作台</span>
       <div class="header-center" slot="menu">
@@ -91,12 +91,12 @@
                     货源状态：<span class="orange-text">{{baseInfo.StatusName}}</span>
                   </p>
                   <p v-if="baseInfo.Status < 0" class="reason">{{baseInfo.Reason}}</p>
-                  <div class="mt-40">
+                  <div class="mt-40 btn-list">
 
                     <el-button v-if="baseInfo.Status == orderStatus.ORDER_PUBLISHED && baseInfo.Parttern == 2 && !getUserRole(userCharacter,'财务')" type="primary" size="mini" class="mr-10"
                                @click="gourl('/carrier/' + baseInfo.OrdeID)">选择承运人
                     </el-button>
-                    
+
                     <el-button v-if="baseInfo.Status == orderStatus.ORDER_PUBLISHED && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
                                @click="SendAgain(baseInfo.OrdeID, baseInfo.Code)">重发
                     </el-button>
@@ -108,7 +108,7 @@
                     <el-button v-if="baseInfo.Status == orderStatus.ORDER_RELEASED && !getUserRole(userCharacter,'财务')" type="primary" height="30px" class="normal mr-10" size="mini"
                                @click="sourceCommit(baseInfo.OrdeID)">立即发布
                     </el-button>
-      
+
                     <el-button v-if="baseInfo.Status == orderStatus.ORDER_RELEASED && !getUserRole(userCharacter,'财务')" type="primary" height="30px"
                                class="normal mr-10" @click="gourl({path: '/source/'+ baseInfo.OrdeID})" plain size="mini">编辑
                     </el-button>
@@ -116,7 +116,7 @@
                     <el-button v-if="(baseInfo.Status == orderStatus.ORDER_CLOSED || baseInfo.status == orderStatus.ORDER_ARRIVED || baseInfo.status == orderStatus.ORDER_CLOSED) && !getUserRole(userCharacter,'财务')" @click="gourl({name: 'source',params:{id: baseInfo.OrdeID,type: 1}})" size="mini" class="normal">再发一单
                     </el-button>
 
-                    <el-button  v-if="baseInfo.Status == orderStatus.ORDER_CONFIRMED && baseInfo.PayResult != 1 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10" @click="gourl({path: '/payment',query:{orderid: baseInfo.OrdeID}})">支付运费
+                    <el-button  v-if="baseInfo.Status == orderStatus.ORDER_CONFIRMED && [1, 2].indexOf(baseInfo.OrdeSettlement) == -1 && baseInfo.PayResult != 1 && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10" @click="gourl({path: '/payment',query:{orderid: baseInfo.OrdeID}})">支付运费
                     </el-button>
 
                     <el-button v-if="baseInfo.Status == orderStatus.ORDER_PENDING && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
@@ -140,21 +140,20 @@
                     <el-button v-if="baseInfo.Status == orderStatus.ORDER_REJECT_CANCE" size="mini" class="normal" @click="serviceTip">联系客服
                     </el-button>
 
-                      <el-button v-if="[orderStatus.ORDER_PUBLISHED,orderStatus.ORDER_CONFIRMED,orderStatus.ORDER_LOADING].indexOf(baseInfo.Status) >= 0 && !getUserRole(userCharacter,'财务')"
+                      <el-button v-if="[orderStatus.ORDER_PUBLISHED,orderStatus.ORDER_CONFIRMED,orderStatus.ORDER_PENDING,orderStatus.ORDER_LOADING].indexOf(baseInfo.Status) >= 0 && !getUserRole(userCharacter,'财务')"
                                  type="primary" height="30px"
                                  @click="gourl({path: '/printer/'+ baseInfo.OrdeID})"
-                                 class="normal mr-10" plain size="mini">{{baseInfo.IsPrint ? '重打标签':'打印标签'}}</el-button>
-
+                                 class="normal mr-10" plain size="mini">{{baseInfo.IsPrint ? '补打标签':'打印标签'}}</el-button>
                     <span class="key"
-                          v-if="(baseInfo.Status == orderStatus.ORDER_CONFIRMED || baseInfo.Status == orderStatus.ORDER_SHIPPED || baseInfo.Status == orderStatus.ORDER_ARRIVED ) && baseInfo.PayResult == 1 &&  baseInfo.Grab.CrowdType == 3">
+                          v-if="(baseInfo.Status == orderStatus.ORDER_CONFIRMED || baseInfo.Status == orderStatus.ORDER_SHIPPED || baseInfo.Status == orderStatus.ORDER_ARRIVED ) && baseInfo.PayResult == 1">
                       <i class="left">支付秘钥</i>
                       <i class="right">{{baseInfo.SecretKey}}</i>
                     </span>
                   </div>
                   <p
-                    v-if="(baseInfo.Status == orderStatus.ORDER_CONFIRMED || baseInfo.Status == orderStatus.ORDER_SHIPPED || baseInfo.Status == orderStatus.ORDER_ARRIVED ) && baseInfo.PayResult == 1 && baseInfo.CrowdType == 3"
-                    class="size12 gray-txt mt-20">秘钥支付：货主支付运费生成秘钥 <i class="el-icon-arrow-right"></i>货主确认卸货告知司机秘钥<i
-                    class="el-icon-arrow-right"></i>司机输入秘钥收款</p>
+                    v-if="(baseInfo.Status == orderStatus.ORDER_CONFIRMED || baseInfo.Status == orderStatus.ORDER_SHIPPED || baseInfo.Status == orderStatus.ORDER_ARRIVED ) && baseInfo.PayResult == 1"
+                    class="size12 gray-txt mt-20">秘钥支付：货主支付运费生成秘钥 <i class="el-icon-arrow-right"></i>货主确认卸货告知承运人秘钥<i
+                    class="el-icon-arrow-right"></i>承运人输入秘钥收款</p>
                   <div class="info-list">
                     <p class="gray-txt size12 mb-4" v-if="baseInfo.Nullifier == 2 && baseInfo.Status == orderStatus.ORDER_APPLY_CANCEL">
                       司机发起取消申请，货主和司机沟通达成一致后，货主同意取消，运单关闭。 </p>
@@ -202,8 +201,8 @@
                   </div>
                 </div>
                 <div v-else class="text-center">
-                  <p><img src="../../assets/images/null.png" alt=""></p>
-                  <p class="gray-txt">暂无承运人信息</p>
+                  <p class="mt-40"><img src="../../assets/images/null.png" alt=""></p>
+                  <p class="gray-txt">暂无相关信息</p>
                 </div>
               </div>
             </div>
@@ -322,7 +321,7 @@
                       </div>
                     </div>
                     <div v-if="!carPosition" class="text-center">
-                      <p><img src="../../assets/images/null.png" alt=""></p>
+                      <p class="mt-40"><img src="../../assets/images/null.png" alt=""></p>
                       <p class="gray-txt">暂无物流信息</p>
                     </div>
                   </div>
@@ -518,11 +517,17 @@
             <div class="pic-content" @click="isShowPic = true">
               <ul>
                 <li @click="setPicIndex(0)">
-                  <p><img :onerror="errorImg" :src="imgUrl + companyInfo.Insurance" width="150" height="110"></p>
+                  <p>
+                    <!--<img :onerror="errorImg" :src="imgUrl + companyInfo.Insurance" id="Insurance_img" width="150" height="110">-->
+                    <canvas id="Insurance" width="150" height="110"></canvas>
+                  </p>
                   <p>车辆承运险</p>
                 </li>
                  <li @click="setPicIndex(1)" v-if="companyInfo.CrowdType == 2">
-                  <p><img :onerror="errorImg" :src="imgUrl + companyInfo.LicensePicture" width="150" height="110"></p>
+                  <p>
+                    <!--<img :onerror="errorImg" :src="imgUrl + companyInfo.LicensePicture" id="LicensePicture_img" width="150" height="110">-->
+                    <canvas id="LicensePicture" width="150" height="110"></canvas>
+                  </p>
                   <p>营业执照</p>
                 </li>
                 <!-- <li @click="setPicIndex(2)">
@@ -530,11 +535,17 @@
                   <p>驾驶证照</p>
                 </li> -->
                 <li @click="setPicIndex(2)">
-                  <p><img :onerror="errorImg" :src="imgUrl + companyInfo.RunPicture" width="150" height="110"></p>
+                  <p>
+                    <!--<img :onerror="errorImg" :src="imgUrl + companyInfo.RunPicture" id="RunPicture_img" width="150" height="110">-->
+                    <canvas id="RunPicture" width="150" height="110"></canvas>
+                  </p>
                   <p>行驶证照</p>
                 </li>
                 <li @click="setPicIndex(3)">
-                  <p><img :onerror="errorImg" :src="imgUrl + companyInfo.TruckPicture" width="150" height="110"></p>
+                  <p>
+                    <!--<img :onerror="errorImg" :src="imgUrl + companyInfo.TruckPicture" id="TruckPicture_img" width="150" height="110">-->
+                    <canvas id="TruckPicture" width="150" height="110"></canvas>
+                  </p>
                   <p>车头照</p>
                 </li>
               </ul>
@@ -686,7 +697,7 @@
     GetQrCodeRecordList, // 打印获取一页
     SendAgain // 重发
   } from 'api/getData'
-  import { getUserRole } from 'config/myUtils';
+  import { getUserRole, waterMark } from 'config/myUtils';
   import leftMenuRouterHome from 'components/leftMenuRouter/leftMenuRouterHome' // 左侧
   import headMenuRouter from 'components/headMenuRouter/headMenuRouter' // 头部
   import quotedExplainDialog from 'components/quotedExplainDialog/quotedExplainDialog' // 运费价格解说
@@ -888,14 +899,14 @@
 
       //初始化地图
       initMap() {
-        let map = new AMap.Map("mymap", {
-          resizeEnable: true,
-          zoom: 15
-        });
         getCarAddress({OrderCode: this.baseInfo.Code}).then(res => {
           if (res.data.ResultCode == "000000" && res.data.ResultValue) {
+            let map = new AMap.Map("mymap", {
+              center: [res.data.ResultValue.lat, res.data.ResultValue.lon],
+              resizeEnable: true,
+              zoom: 15
+            });
             let marker = new AMap.Marker({
-              position: [res.data.ResultValue.lat, res.data.ResultValue.lon],
               draggable: false,
               raiseOnDrag: false,
               zIndex: 101,
@@ -916,7 +927,7 @@
       async getSource() {
         this.loading = true;
         getSourceInfo({OrdeID: this.$route.params.id, MemberID: this.$cookie.get('MemberID')}).then(res => {
-          console.log(res)
+          this.loading = false; // 不能放到外面
           if (res.data && res.data.ResultCode == '000000' && res.data.ResultValue) {
             this.baseInfo = res.data.ResultValue;
             if (res.data.ResultValue.Status >= this.orderStatus.ORDER_SHIPPED) {
@@ -926,10 +937,10 @@
             this.sendUser = res.data.ResultValue.Merchant;
             this.getQuotation(this.baseInfo); // 做判断是否请求快照信息 小星
             this.GetQrCodeRecordList(this.baseInfo); // 请求打印列表信息 小星
-            this.loading = false;
           }
         }).catch(err => {
           this.$router.push('/sourceList');
+
         })
       },
       // 设置table最后的合并
@@ -951,6 +962,7 @@
       //获取资质信息
       async showInfo(MerchantID) {
         this.isShowInfo = true;
+        if(Object.keys(this.companyInfo).length > 0 ) return; //获取资质信息之后就可以不再调用了
         let res = await getCompanyInfo({MerchantID: MerchantID});
         if (res.data.ResultCode === '000000' && res.data.ResultValue) {
           let Data = res.data.ResultValue;
@@ -1264,6 +1276,7 @@
         }).then(() => {
         })
       },
+      waterMark:waterMark
     },
     computed: {
       //设置进度条的状态
@@ -1300,6 +1313,16 @@
             this.initMap();
           }, 20)
         }
+      },
+      companyInfo:{
+          handler: function(n, o) {
+              let _ = this;
+            ['DrivePicture','Insurance','LicensePicture', 'RunPicture','TruckPicture'].forEach(function(name){
+              _.waterMark(name, _.imgUrl + n[name], null , 150, 110, 70, 100);
+            })
+
+          },
+          deep: true
       }
     },
     created() {
@@ -1330,11 +1353,13 @@
 </script>
 
 <style lang="stylus">
-  .rated-upload .el-upload-list__item, .rated-upload .el-upload.el-upload--picture-card
+  .source-details .rated-upload .el-upload-list__item, .rated-upload .el-upload.el-upload--picture-card
     width: 102px !important
     height: 102px !important
-  .rated-upload .el-upload--picture-card
+  .source-details .rated-upload .el-upload--picture-card
     line-height: 104px !important
+  .source-details .btn-list .el-button
+    margin: 0 10px 10px 0
 </style>
 
 <style lang="stylus" scoped>
@@ -1758,7 +1783,7 @@
 
   .model-name
     float: left
-    max-width: 98px;
+    max-width: 98px
     overflow: hidden
     text-overflow: ellipsis
     white-space: nowrap

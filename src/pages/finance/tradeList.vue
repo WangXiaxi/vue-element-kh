@@ -425,15 +425,15 @@
     width: 200px
     background: #ffffff
     > ul
-      width: 200px;
-      position: absolute;
-      height: 100%;
-      background-color: #fff;
+      width: 200px
+      position: absolute
+      height: 100%
+      background-color: #fff
       > li
-        height: 30px;
-        line-height: 30px;
-        padding-left: 40px;
-        margin: 10px 0;
+        height: 30px
+        line-height: 30px
+        padding-left: 40px
+        margin: 10px 0
         border-left: 3px solid transparent
         &:hover
           border-left-color: $blue
@@ -447,7 +447,7 @@
     width: 990px
     background-color: #fff
     .main
-      background: #FFFFFF;
+      background: #FFFFFF
       width: 100%
       .title-box
         box-shadow: 0 1px 0 0 #E0E0E0
@@ -487,26 +487,19 @@
 .reason
   float: left
   width: 166px
-.withdraw-check {
-  height: 30px;
-  line-height: 30px;
-  padding: 6px 0;
-
-  dt {
-    float: left;
-    width: 70px;
-  }
-
-  dd {
-    float: left;
-    padding: 0 20px;
-    cursor: pointer;
-  }
-
-  dd.active {
-    color: $blue;
-  }
-}
+.withdraw-check 
+  height: 30px
+  line-height: 30px
+  padding: 6px 0
+  dt 
+    float: left
+    width: 70px
+  dd 
+    float: left
+    padding: 0 20px
+    cursor: pointer
+  dd.active 
+    color: $blue
 </style>
 <style lang="stylus">
   .trade-list

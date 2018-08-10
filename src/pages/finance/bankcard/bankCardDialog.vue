@@ -76,31 +76,27 @@
   }
 </script>
 
-<style>
-  .bankcard-dialog-container .el-dialog__body{
-    padding: 30px 50px;
-  }
-  .bankcard-dialog-container .bankcard-add {
-    width: 280px;
-    height: 198px;
-    line-height: 200px;
-    text-align: center;
-    float: left;
-    border:1px dashed #C3DBDC;
-    background: #F2F5FA;
-    font-size: 16px;
-    color: #027CFF;
-    margin: 0 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  .bankcard-dialog-container .dialog-footer {
-    margin-left:120px;
-    text-align: left;
-  }
-  .bankcard-dialog-container .bankcard-save{
-    width: 200px;
-    height: 40px;
-    background: #027CFF;
-  }
+<style lang="stylus">
+  .bankcard-dialog-container .el-dialog__body
+    padding: 30px 50px
+  .bankcard-dialog-container .bankcard-add
+    width: 280px
+    height: 198px
+    line-height: 200px
+    text-align: center
+    float: left
+    border:1px dashed #C3DBDC
+    background: #F2F5FA
+    font-size: 16px
+    color: #027CFF
+    margin: 0 10px 20px
+    border-radius: 4px
+    cursor: pointer
+  .bankcard-dialog-container .dialog-footer
+    margin-left: 120px
+    text-align: left
+  .bankcard-dialog-container .bankcard-save
+    width: 200px
+    height: 40px
+    background: #027CFF
 </style>

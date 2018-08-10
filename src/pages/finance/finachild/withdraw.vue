@@ -242,24 +242,12 @@ export default {
 </script>
 
 <style  lang="stylus" scoped>
-.halfinput {
-  width: 300px;
-}
-.addBank{
-  background: #F7FBFB;
-}
-.withdraw-text {
-  padding: 0 16px;
-
-  em.blue-txt {
-    padding-right: 16px;
-  }
-}
+.halfinput
+  width: 300px
+.addBank
+  background: #F7FBFB
+.withdraw-text 
+  padding: 0 16px
+  em.blue-txt
+    padding-right: 16px
 </style>
-<!--<style  lang="stylus">-->
-<!--.withdraw-spec-error .el-form-item__error {-->
-  <!--left: 310px;-->
-  <!--top: 0;-->
-  <!--line-height: 32px;-->
-<!--}-->
-<!--</style>-->

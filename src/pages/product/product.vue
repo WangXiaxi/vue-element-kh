@@ -36,7 +36,7 @@
                   @check-change="checkchange"
                   :expand-on-click-node="false">
                   <span class="custom-tree-node" slot-scope="{ node, data }" style="width:100%">
-                    <el-tooltip class="item" effect="dark" :content="node.label" placement="right">
+                    <el-tooltip class="item" effect="dark" :content="node.label" placement="top">
                       <span class="tree-name">{{ node.label }}</span>
                     </el-tooltip>
                     <span class="fr treeicon" style="padding-right: 10px">
@@ -165,21 +165,21 @@
             <div class="normal-width fl mr-10">
               <el-form-item prop="Length">
                 <el-input auto-complete="off" placeholder="长" v-model.trim="addData.Length">
-                  <template slot="append">cm</template>
+                  <template slot="append"><span style="color: red;">cm</span></template>
                 </el-input>
               </el-form-item>
             </div>
             <div class="normal-width fl mr-10">
               <el-form-item prop="Width">
                 <el-input auto-complete="off" placeholder="宽" v-model.trim="addData.Width">
-                  <template slot="append">cm</template>
+                  <template slot="append"><span style="color: red;">cm</span></template>
                 </el-input>
               </el-form-item>
             </div>
             <div class="normal-width fl">
               <el-form-item prop="Height">
                 <el-input auto-complete="off" placeholder="高" v-model.trim="addData.Height">
-                  <template slot="append">cm</template>
+                  <template slot="append"><span style="color: red;">cm</span></template>
                 </el-input>
               </el-form-item>
             </div>
@@ -188,14 +188,14 @@
           <el-form-item label="产品重量" prop="Weight">
             <div class="normal-width">
               <el-input auto-complete="off" placeholder="产品重量" v-model.trim="addData.Weight">
-                <template slot="append">kg</template>
+                <template slot="append"><span style="color: red;">kg</span></template>
               </el-input>
             </div>
           </el-form-item>
           <el-form-item label="产品货值" prop="Money">
             <div class="normal-width fl mr-10">
               <el-input auto-complete="off" class="normal-width" placeholder="产品货值" v-model.trim="addData.Money">
-                <template slot="append">元</template>
+                <template slot="append"><span style="color: red;">元</span></template>
               </el-input>
             </div>
             <div class="normal-width fl mr-10">
@@ -241,7 +241,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible=false">取 消</el-button>
-        <el-button type="primary" @click="PropertyUpdate('reviseform')">通 过</el-button>
+        <el-button type="primary" @click="PropertyUpdate('reviseform')">更 新</el-button>
       </div>
     </el-dialog>
   </div>
@@ -370,16 +370,16 @@ export default {
         Weight: [
           { required: true, message: "请输入产品重量", trigger: "blur" },
           {
-            pattern: regs.NF2,
-            message: "请输入数字！最多保留两位小数",
+            pattern: regs.N0F2,
+            message: "请输入大于0的数字！最多保留两位小数",
             trigger: "blur"
           }
         ],
         Money: [
           { required: true, message: "请输入产品价格", trigger: "blur" },
           {
-            pattern: regs.NF2,
-            message: "请输入数字！最多保留两位小数",
+            pattern: regs.N0F2,
+            message: "请输入大于0数字！最多保留两位小数",
             trigger: "blur"
           }
         ],
@@ -728,7 +728,7 @@ export default {
     //是否显示提示文字
     validate(prop) {
       if (prop === 'Length') {
-        if(!regs.NF2.test(this.addData[prop])){
+        if(!regs.Number1.test(this.addData[prop])){
           this.isShowTip = false;
         } else {
           this.isShowTip = true;
@@ -820,223 +820,158 @@ export default {
     dropDown,
     foot,
     leftMenuRouterHome, // 左侧导航
-    headMenuRouter // 左侧    
+    headMenuRouter // 左侧
   }
 };
 </script>
 
 <style lang="stylus" scoped>
 @import '../../assets/styles/variable.styl';
-
-.Bubbletext {
-  span {
-    padding: 0 10px 0 12px;
-    line-height: 18px;
-    display: inline-block;
-    color: #6c6c6c;
-  }
-
-  .el-icon-question {
-    vertical-align: middle;
-    font-size: 18px;
-    color: #027CFF;
-  }
-}
-
-.content {
-  position: relative;
-  width: 1200px;
-  margin: 10px auto 40px;
-}
-.content-left {
-  float: left;
-  width: 200px;
-  background: #ffffff;
-
-  > ul {
-    width: 200px;
-    position: absolute;
-    height: 100%;
-    background-color: #fff;
-
-    > li {
-      height: 30px;
-      line-height: 30px;
-      padding-left: 40px;
-      margin: 10px 0;
-      border-left: 3px solid transparent;
-
-      &:hover {
-        border-left-color: $blue;
-        color: $blue;
-        cursor: pointer;
-      }
-    }
-
-    .active {
-      border-left-color: $blue;
-      color: $blue;
-    }
-  }
-}
-.product {
-  float: right;
-  background: #FFFFFF;
-
-  .title-box {
-    box-shadow: 0 1px 0 0 #E0E0E0;
-  }
-
-  .title-name {
-    display: inline-block;
-    padding-left: 20px;
-    height: 30px;
-    line-height: 30px;
-    margin: 10px 0;
-    border-left: 3px solid $blue;
-  }
-
-  .container {
-    padding: 40px 40px;
-  }
-}
-
-.container-list {
-  .list-content {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .list-left {
-    float: left;
-    width: 207px;
-    height: 660px;
-    border-left: 1px solid $borderColor;
-    border-bottom: 1px solid $borderColor;
-
-    .left-name {
-      height: 38px;
-      line-height: 38px;
-      text-align: center;
-      color: #909399;
-      background-color: #FAFAFA;
-      border: 1px solid $borderColor;
-      border-left: 0;
-    }
-
-    .tree-list {
-      height: 620px;
-      border-right: 1px solid $borderColor;
-      overflow: auto;
-      overflow-y: auto;
-      overflow-x: hidden;
-      .tree-name{
-        float: left;
+.Bubbletext
+  span
+    padding: 0 10px 0 12px
+    line-height: 18px
+    display: inline-block
+    color: #6c6c6c
+  .el-icon-question
+    vertical-align: middle
+    font-size: 18px
+    color: #027CFF
+.content
+  position: relative
+  width: 1200px
+  margin: 10px auto 40px
+.content-left
+  float: left
+  width: 200px
+  background: #ffffff
+  > ul
+    width: 200px
+    position: absolute
+    height: 100%
+    background-color: #fff
+    > li
+      height: 30px
+      line-height: 30px
+      padding-left: 40px
+      margin: 10px 0
+      border-left: 3px solid transparent
+      &:hover
+        border-left-color: $blue
+        color: $blue
+        cursor: pointer
+    .active
+      border-left-color: $blue
+      color: $blue
+.product
+  float: right
+  background: #FFFFFF
+  .title-box
+    box-shadow: 0 1px 0 0 #E0E0E0
+  .title-name
+    display: inline-block
+    padding-left: 20px
+    height: 30px
+    line-height: 30px
+    margin: 10px 0
+    border-left: 3px solid $blue
+  .container
+    padding: 40px 40px
+.container-list
+  .list-content
+    position: relative
+    overflow: hidden
+  .list-left
+    float: left
+    width: 207px
+    height: 660px
+    border-left: 1px solid $borderColor
+    border-bottom: 1px solid $borderColor
+    .left-name
+      height: 38px
+      line-height: 38px
+      text-align: center
+      color: #909399
+      background-color: #FAFAFA
+      border: 1px solid $borderColor
+      border-left: 0
+    .tree-list
+      height: 620px
+      border-right: 1px solid $borderColor
+      overflow: auto
+      overflow-y: auto
+      overflow-x: hidden
+      .tree-name
+        float: left
         width: 80px
         overflow: hidden
         text-overflow: ellipsis
         white-space: nowrap
-      }
-    }
-
-    .left-icon {
-      font-size: 16px;
-
-      &:hover {
-        color: $orange;
-      }
-    }
-  }
-
-  .list-right {
-    float: left;
-    width: 701px;
-    height: 620px;
-    border-top: 1px solid $borderColor;
-    border-right: 1px solid $borderColor;
-
-    .item {
-      font-size: 20px;
-      margin-right: 10px;
-      cursor: pointer;
-    }
-
-    .bottom {
-      position: absolute;
-      bottom: 0;
-      z-index: 100;
-      width: 700px;
-      height: 40px;
-      line-height: 40px;
-      text-align: center;
-      color: $blue;
-      background-color: #fff;
-      border: 1px solid $blue;
-
-      .add {
-        cursor: pointer;
-      }
-    }
-  }
-}
-
-.treeicon {
-  display: none;
-  padding-right: 10px;
-}
-
-.el-tree-node__content:hover .treeicon {
-  display: block;
-}
-
-.pagination-box {
-  text-align: center;
-  margin: 20px auto 10px;
-}
-
-.tip-box {
-  padding: 0 40px 50px;
-
-  .normal-width {
-    width: 202px;
-  }
-
-  .dialog-footer {
-    margin: 80px 0 0 150px;
-  }
-
-  .save {
-    width: 200px;
-    height: 40px;
-    text-align: center;
-  }
-}
-
-.large-width {
-  width: 402px;
-}
-.product-name{
-  width: 200px;
+    .left-icon
+      font-size: 16px
+      &:hover
+        color: $orange
+  .list-right
+    float: left
+    width: 701px
+    height: 620px
+    border-top: 1px solid $borderColor
+    border-right: 1px solid $borderColor
+    .item
+      font-size: 20px
+      margin-right: 10px
+      cursor: pointer
+    .bottom
+      position: absolute
+      bottom: 0
+      z-index: 100
+      width: 700px
+      height: 40px
+      line-height: 40px
+      text-align: center
+      color: $blue
+      background-color: #fff
+      border: 1px solid $blue
+      .add
+        cursor: pointer
+.treeicon
+  display: none
+  padding-right: 10px
+.el-tree-node__content:hover .treeicon
+  display: block
+.pagination-box
+  text-align: center
+  margin: 20px auto 10px
+.tip-box
+  padding: 0 40px 50px
+  .normal-width
+    width: 202px
+  .dialog-footer
+    margin: 80px 0 0 150px
+  .save
+    width: 200px
+    height: 40px
+    text-align: center
+.large-width
+  width: 402px
+.product-name
+  width: 200px
   overflow: hidden
   text-overflow: ellipsis
   white-space: nowrap
-}
-.model-name{
+.model-name
   float: left
-  max-width: 80px;
+  max-width: 80px
   overflow: hidden
   text-overflow: ellipsis
   white-space: nowrap
-}
-.tip-msg{
+.tip-msg
   height: 20px
   line-height: 20px
   font-size: 12px
   color: $red
-}
-.footer {
-  position: absolute;
-  bottom: 0;
-  z-index: 1000;
-}
+.footer
+  position: absolute
+  bottom: 0
+  z-index: 1000
 </style>

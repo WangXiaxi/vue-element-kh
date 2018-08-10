@@ -376,173 +376,122 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-@import '../../assets/styles/variable.styl';
+@import '../../assets/styles/variable.styl'
 
-.content {
-  height: 100%;
-  width: 1200px;
-  margin: 10px auto 40px;
-  position: relative;
-}
-
-.content-left {
-  float: left;
-  width: 200px;
-  min-height: $minHeight;
-  background: #ffffff;
-
-  > ul {
-    > li {
-      height: 30px;
-      line-height: 30px;
-      padding-left: 40px;
-      margin: 10px 0;
-      border-left: 3px solid transparent;
-
-      &:hover {
-        border-left-color: $blue;
-        color: $blue;
-        cursor: pointer;
-      }
-    }
-
-    .active {
-      border-left-color: $blue;
-      color: $blue;
-    }
-  }
-}
-
-.content-right {
-  float: right;
-  width: 990px;
-  background-color: #fff;
-
-  .main {
-    background: #FFFFFF;
-    width: 100%;
-    min-height: $minHeight
-
-    .title-box {
-      box-shadow: 0 1px 0 0 #E0E0E0;
-    }
-
-    .title-name {
-      display: inline-block;
-      padding-left: 20px;
-      height: 30px;
-      line-height: 30px;
-      margin: 10px 0;
-      border-left: 3px solid $blue;
-    }
-
-    .container {
-      margin: 30px 40px;
-    }
-  }
-}
-
-.change-content {
-  margin: 30px 0 0 0;
-  padding: 0 20px;
-
-  ul {
-    li {
-      padding: 15px 0;
-      margin-top: 10px;
-      overflow: hidden;
-    }
-  }
-
-  .left {
-    float: left;
-    width: 50px;
-    height: 50px;
-    line-height: 50px;
-    margin-right: 40px;
-    text-align: center;
-    font-size: 26px;
-    color: #ffffff;
-    border-radius: 50%;
-    overflow: hidden;
-  }
-
-  .green-bg {
-    background-color: #92F1A2;
-  }
-
-  .orange-bg {
-    background-color: #FBB372;
-  }
-
-  .center {
-    float: left;
-  }
-
-  .right {
-    float: right;
-    height: 50px;
-    line-height: 50px;
-  }
-
-  .avatar {
-    width: 50px;
-    height: 50px;
-    vertical-align: top;
-  }
-}
-
-.user {
-  height: 90px;
-  line-height: 90px;
-  padding-left: 20px;
-  border: 1px solid $borderColor;
+.content 
+  height: 100%
+  width: 1200px
+  margin: 10px auto 40px
   position: relative
-}
+.content-left 
+  float: left
+  width: 200px
+  min-height: $minHeight
+  background: #ffffff
+  > ul 
+    > li 
+      height: 30px
+      line-height: 30px
+      padding-left: 40px
+      margin: 10px 0
+      border-left: 3px solid transparent
+      &:hover 
+        border-left-color: $blue
+        color: $blue
+        cursor: pointer
+    .active 
+      border-left-color: $blue
+      color: $blue
+.content-right 
+  float: right
+  width: 990px
+  background-color: #fff
+  .main 
+    background: #FFFFFF
+    width: 100%
+    min-height: $minHeight
+    .title-box 
+      box-shadow: 0 1px 0 0 #E0E0E0
+    .title-name 
+      display: inline-block
+      padding-left: 20px
+      height: 30px
+      line-height: 30px
+      margin: 10px 0
+      border-left: 3px solid $blue
+    .container 
+      margin: 30px 40px
+.change-content 
+  margin: 30px 0 0 0
+  padding: 0 20px
+  ul 
+    li 
+      padding: 15px 0
+      margin-top: 10px
+      overflow: hidden
+  .left 
+    float: left
+    width: 50px
+    height: 50px
+    line-height: 50px
+    margin-right: 40px
+    text-align: center
+    font-size: 26px
+    color: #ffffff
+    border-radius: 50%
+    overflow: hidden
+  .green-bg 
+    background-color: #92F1A2
+  .orange-bg 
+    background-color: #FBB372
+  .center 
+    float: left
+  .right 
+    float: right
+    height: 50px
+    line-height: 50px
+  .avatar 
+    width: 50px
+    height: 50px
+    vertical-align: top
+.user 
+  height: 90px
+  line-height: 90px
+  padding-left: 20px
+  border: 1px solid $borderColor
+  position: relative
+.code 
+  float: left
+  width: 50%
+  margin-right: 10px
+.code-btn 
+  float: right
+  width: 100px
+.dialog 
+  padding: 0 30px
+.changeBtn 
+  width: 120px
+.addBtn 
+  width: 200px
+.invite-wrapper 
+  position: absolute
+  top: 25px
+  right: 20px
+.invite 
+  background: #D8F2FE
+  border: 1px solid #9FD9F3
+  border-radius: 4px
+  font-size: 12px
+  color: #027CFF
+  text-align: center
+  width: 68px
+  height: 28px
+  line-height: 28px
+  float: left
+.inviteid 
+  background: #fff
+  border-top-left-radius: 0
+  border-bottom-left-radius: 0
+  margin-left: -2px
 
-.code {
-  float: left;
-  width: 50%;
-  margin-right: 10px;
-}
-
-.code-btn {
-  float: right;
-  width: 100px;
-}
-
-.dialog {
-  padding: 0 30px;
-}
-
-.changeBtn {
-  width: 120px;
-}
-
-.addBtn {
-  width: 200px;
-}
-.invite-wrapper {
-  position: absolute;
-  top: 25px;
-  right: 20px;
-}
-.invite {
-  background: #D8F2FE;
-  border: 1px solid #9FD9F3;
-  border-radius: 4px;
-  font-size: 12px;
-  color: #027CFF;
-  text-align: center;
-  width: 68px;
-  height: 28px;
-  line-height: 28px;
-  float: left;
-}
-.inviteid {
-  background: #fff;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  margin-left: -2px;
-}
 </style>

@@ -281,24 +281,17 @@ export default {
 </script>
 
 <style  lang="stylus" scoped>
-.withdraw-check {
-  height: 30px;
-  line-height: 30px;
-  padding: 6px 0;
-
-  dt {
-    float: left;
-    width: 70px;
-  }
-
-  dd {
-    float: left;
-    padding: 0 20px;
-    cursor: pointer;
-  }
-
-  dd.active {
-    color: $blue;
-  }
-}
+.withdraw-check 
+  height: 30px
+  line-height: 30px
+  padding: 6px 0
+  dt 
+    float: left
+    width: 70px
+  dd 
+    float: left
+    padding: 0 20px
+    cursor: pointer
+  dd.active 
+    color: $blue
 </style>

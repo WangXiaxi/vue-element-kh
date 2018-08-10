@@ -31,11 +31,30 @@
               <el-form-item>
                 <el-button class="btn-blue" plain @click="setCollect" v-if="getUserRole(userCharacter,'管理')">保存</el-button>
               </el-form-item>
-              <el-form-item class="fr" style="margin-right:0;">
+              
+              <el-form-item class="fr" style="margin-right: 0">
                 <el-button type="primary" @click="addLine" v-if="getUserRole(userCharacter,'管理')">添加专线</el-button>
               </el-form-item>
+
             </el-form>
 
+            <el-form :inline="true" size="small" class="search-form">
+
+              <el-form-item label="专线目的地">
+                <el-cascader
+                  class="address"
+                  :options="address"
+                  v-model="searchToAddress"
+                  placeholder="请选择目的地查询"
+                  clearable
+                  change-on-select
+                ></el-cascader>
+              </el-form-item>
+
+              <el-form-item>
+                <el-button class="btn-blue" plain @click="handleCurrentChange(1)">搜索</el-button>
+              </el-form-item>
+            </el-form>
             <el-table
               center
               size="small"
@@ -152,6 +171,7 @@
         address: address.area,
         fromAddress: [],
         toAddress: [],
+        searchToAddress: [], // 查询省市区
         CollectWeight: '', // 上门提货需满足的重量(单位：吨)
         CollectVolume: '', // 上门提货需满足的体积(单位：立方米)
         specialLineDialog: {
@@ -272,7 +292,11 @@
         }
       },
       async getPage () { // 获取一页
-        let req = Object.assign(this.listSrarch)
+        let req = Object.assign(this.listSrarch, {
+          ToProvince: this.searchToAddress[0],
+          ToCity: this.searchToAddress[1],
+          ToCounty: this.searchToAddress[2]
+        })
         this.loading = true
         const resData = await DedicatedLineGetPage(req)
         this.loading = false

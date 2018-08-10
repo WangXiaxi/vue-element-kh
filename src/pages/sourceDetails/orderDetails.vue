@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="order-details">
     <head-top>
       <span class="title" slot="index">{{userType == 1?'货主':'物流公司'}}-工作台</span>
       <div class="header-center" slot="menu">
@@ -47,6 +47,7 @@
                 <ul>
                   <li class="size16 bold">{{baseInfo.FromCity}}<img src="../../assets/images/gofrom.png" alt="">{{baseInfo.ToCity}}
                   </li>
+                  <li class="item-transfer" v-if="baseInfo.OrdeIsTransfer">转单货源</li>
                   <li><span class="item-name">货物名称：</span>{{baseInfo.CargoName}}</li>
                   <li><span class="item-name">车长车型：</span>{{baseInfo.Long != 99?baseInfo.Long:'不限'}}<span
                     v-if="baseInfo.Long!=99">m</span>/{{baseInfo.Model?baseInfo.Model:'不限'}}
@@ -76,7 +77,7 @@
                     货源状态：<span class="orange-text">{{baseInfo.StatusName}}</span>
                   </p>
                   <p v-if="baseInfo.Status < 0" class="reason">{{baseInfo.Reason}}</p>
-                  <div class="mt-40">
+                  <div class="mt-40 btn-list">
 
                     <el-button v-if="baseInfo.Status == orderStatus.ORDER_PUBLISHED && baseInfo.Parttern == 2 && !getUserRole(userCharacter,'财务')" type="primary" size="mini" class="mr-10"
                                @click="gourl('/carrier/' + baseInfo.OrdeID)">选择承运人
@@ -89,7 +90,7 @@
                     <el-button v-if="baseInfo.Status == orderStatus.ORDER_PUBLISHED && !getUserRole(userCharacter,'财务')" size="mini" class="normal mr-10"
                                @click="canSource(baseInfo.OrdeID,baseInfo.Code)">撤销货源
                     </el-button>
-  
+
                     <el-button v-if="(baseInfo.Status == orderStatus.ORDER_CLOSED || baseInfo.status == orderStatus.ORDER_ARRIVED || baseInfo.Status == orderStatus.ORDER_CANCELED) && !getUserRole(userCharacter,'财务')" @click="gourl({name: 'add',params:{id: baseInfo.OrdeID,type: 1}})" size="mini" class="normal mr-10">再发一单
                     </el-button>
 
@@ -181,8 +182,8 @@
                   </div>
                 </div>
                 <div v-else class="text-center">
-                  <p><img src="../../assets/images/null.png" alt=""></p>
-                  <p class="gray-txt">暂无承运人信息</p>
+                  <p class="mt-40"><img src="../../assets/images/null.png" alt=""></p>
+                  <p class="gray-txt">暂无相关信息</p>
                 </div>
               </div>
             </div>
@@ -195,30 +196,13 @@
                   <div>
                     <p class="mt-10">发货人： <span class="mr-20">{{sendUser.Name}}</span> <span class="mr-20">{{sendUser.Phone}}</span>
                       {{baseInfo.FromCity}}{{baseInfo.FromAddress}}</p>
-                    <p class="mt-20">收货地： {{baseInfo.ToCity}}{{baseInfo.ToAddress}}</p>
-                    <div>
+                    <p class="mt-20" v-if="!baseInfo.OrdeIsTransfer">收货地： {{baseInfo.ToCity}}{{baseInfo.ToAddress}}</p>
+                    <div v-if="!baseInfo.OrdeIsTransfer">
                       <el-table
                         class="mt-20"
                         :data="baseInfo.LogisticsProduct"
                         :span-method="objectSpanMethod"
                         border>
-                        <!-- <el-table-column
-                          label="货物名称"
-                          width="230">
-                          <template slot-scope="scope">
-                            <p class="product-name" :title="scope.row.CargoName">{{ scope.row.CargoName }}</p>
-                          </template>
-                        </el-table-column>
-                        <el-table-column
-                          prop="ClassifyName"
-                          label="货源类型">
-                        </el-table-column>
-                        <el-table-column
-                          label="体积(m³)">
-                          <template slot-scope="scope">
-                            <p>{{scope.row.Volume}}</p>
-                          </template>
-                        </el-table-column> -->
                         <el-table-column
                           prop="CargoName"
                           label="货物名称">
@@ -243,6 +227,76 @@
                         </el-table-column>
                       </el-table>
                     </div>
+                    <!-- 分单列表S -->
+                    <div v-else>
+                      <el-table
+                        class="mt-20"
+                        :data="[baseInfo.OrderListSum]"
+                        border>
+                        <el-table-column
+                          prop="OrderCount"
+                          align="center"
+                          label="货源分单">
+                        </el-table-column>
+                        <el-table-column
+                          prop="OrderProductCount"
+                          align="center"
+                          label="货源件数">
+                        </el-table-column>
+                        <el-table-column
+                          prop="OrderVolume"
+                          align="center"
+                          label="体积(m³)">
+                        </el-table-column>
+                        <el-table-column
+                          prop="OrderWeight"
+                          align="center"
+                          label="重量(吨)">
+                        </el-table-column>
+                        <el-table-column
+                          prop="OrderFreight"
+                          align="center"
+                          label="总计运费(元)">
+                        </el-table-column>
+                        <el-table-column
+                          align="center"
+                          label="状态">
+                          <template slot-scope="scope">
+                            <span class="orange-text">{{scope.row.OrderStatusName}}</span>
+                          </template>
+                        </el-table-column>
+                      </el-table>
+                      <ul class="order-list">
+                        <li class="order-item" v-for="(item, index) in baseInfo.OrderList" :key="index">
+                          <div class="info-title">
+                            <div class="fl order-code">转单{{index + 1}}</div>
+                            <div class="fl order-num">货源编号：<span class="blue">{{item.OrderCode}}</span></div>
+                          </div>
+                          <div class="info-con">
+                            <div class="con-item">
+                              <span class="lab">货物类型：</span><span class="val">{{item.OrderClassifyName}}</span>
+                            </div>
+                            <div class="con-item">
+                              <span class="lab">车长车型：</span><span class="val">{{item.OrderLong}}/{{item.OrderModelName}}</span>
+                            </div>
+                            <div class="con-item">
+                              <span class="lab">体积重量：</span><span class="val orange">{{item.OrderVolume}}m³/{{item.OrderWeight}}吨</span>
+                            </div>
+                            <div class="con-item mt-20">
+                              <span class="lab">结算方式：</span><span class="val">{{item.OrderSettlementName}}</span>
+                            </div>
+                            <div class="con-item mt-20">
+                              <span class="lab">运&nbsp;&nbsp;费：</span><span class="val orange">¥{{item.OrderFreight}}</span>
+                            </div>
+                            <div class="con-item mt-20 w-100">
+                              <span class="lab">收货人名称：</span><span class="val"><span class="mr-20">{{item.OrderReceiver}}</span><span class="mr-20">{{item.OrderReceiverPhone}}</span><span class="mr-20">{{item.OrderToAddress}}</span></span>
+                            </div>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                    <!-- 分单列表E -->
+
                   </div>
                 </el-tab-pane>
                 <el-tab-pane label="物流信息">
@@ -289,7 +343,7 @@
                       </div>
                     </div>
                     <div v-if="!carPosition" class="text-center mt-60">
-                      <p><img src="../../assets/images/null.png" alt=""></p>
+                      <p class="mt-40"><img src="../../assets/images/null.png" alt=""></p>
                       <p class="gray-txt mt-20">暂无物流信息</p>
                     </div>
                   </div>
@@ -778,14 +832,14 @@
 
       //初始化地图
       initMap() {
-        let map = new AMap.Map("mymap", {
-          resizeEnable: true,
-          zoom: 15
-        });
         getCarAddress({OrderCode: this.baseInfo.Code}).then(res => {
           if (res.data.ResultCode == "000000" && res.data.ResultValue) {
+            let map = new AMap.Map("mymap", {
+              center: [res.data.ResultValue.lat, res.data.ResultValue.lon],
+              resizeEnable: true,
+              zoom: 15
+            });
             let marker = new AMap.Marker({
-              position: [res.data.ResultValue.lat, res.data.ResultValue.lon],
               draggable: false,
               raiseOnDrag: false,
               zIndex: 101,
@@ -806,6 +860,7 @@
       async getSource() {
         this.loading = true;
         getSourceInfo({OrdeID: this.$route.params.id, MemberID: this.$cookie.get('MemberID')}).then(res => {
+          this.loading = false; // 不能放到外面
           if (res.data && res.data.ResultCode == '000000' && res.data.ResultValue) {
             this.baseInfo = res.data.ResultValue;
             if (res.data.ResultValue.Status >= this.orderStatus.ORDER_SHIPPED) {
@@ -814,7 +869,6 @@
             this.OrdeID = res.data.ResultValue.OrdeID;
             this.sendUser = res.data.ResultValue.Merchant;
             this.getQuotation(this.baseInfo); // 做判断是否请求快照信息 小星
-            this.loading = false;
           }
         }).catch(err => {
           this.$router.push('/orderList');
@@ -1221,11 +1275,13 @@
 </script>
 
 <style lang="stylus">
-  .rated-upload .el-upload-list__item, .rated-upload .el-upload.el-upload--picture-card
+  .order-details .rated-upload .el-upload-list__item, .rated-upload .el-upload.el-upload--picture-card
     width: 102px !important
     height: 102px !important
-  .rated-upload .el-upload--picture-card
+  .order-details .rated-upload .el-upload--picture-card
     line-height: 104px !important
+  .order-details .btn-list .el-button
+    margin: 0 10px 10px 0
 </style>
 
 <style lang="stylus" scoped>
@@ -1531,9 +1587,9 @@
     padding: 30px 40px
   .product-name
     width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow: hidden
+    text-overflow: ellipsis
+    white-space: nowrap
 
   .model-name
     float: left
@@ -1547,4 +1603,46 @@
   .carImg
     width: 800px
     height: 600px
+  .order-list
+    .order-item
+      position: relative
+      border: 1px solid $borderColor
+      margin-top: 10px
+      overflow: hidden
+      .info-title
+        line-height: 40px
+        overflow: hidden
+        border-bottom: 1px solid $borderColor
+        .order-num
+          height: 40px
+          padding-left: 10px
+        .order-code
+          text-align: center
+          height: 40px
+          width: 150px
+          background: $theadbg
+          border-right: 1px solid $borderColor
+        .blue
+          color: $blue
+      .info-con
+        padding: 18px
+        position: relative
+        overflow: hidden
+        .con-item
+          float: left
+          width: 30%
+          &.w-100
+            width: 100%
+          .lab
+            color: #999
+          .orange
+            color: $orange
+  .item-transfer
+    background: #ECF5FE
+    border: 1px solid #A4D0FF
+    border-radius: 2px
+    display: inline-block
+    font-size: 12px
+    color: #027CFF
+    padding: 2px 7px
 </style>

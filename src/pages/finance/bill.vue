@@ -149,81 +149,59 @@
 <style lang="stylus" scoped>
 @import '../../assets/styles/template.styl';
 
-#goldbox {
-  margin-bottom: 20px;
-  .el-button.reset-btn-small { // 重置下按钮
-    background: #fff;
-    border-color: #409EFF;
-    color: #409EFF;
-    &:hover {
-      color: #409eff;
-      background: #ecf5ff;
-      border-color: #b3d8ff;
-    }
-  }
-  dl {
-    border-top: 1px solid #E0E0E0;
-    border-left: 1px solid #E0E0E0;
-    overflow: hidden;
-
-    dt {
-      float: left;
-      border-bottom: 1px solid #E0E0E0;
-      border-right: 1px solid #E0E0E0;
-      line-height: 40px;
-      padding: 0 10px;
-      width: 282px;
-    }
-
-    dd {
-      float: left;
-      border-bottom: 1px solid #E0E0E0;
-      border-right: 1px solid #E0E0E0;
-      line-height: 40px;
-      padding: 43px 10px 43px 10px;
-      width: 282px;
-      text-align: center;
-
-      strong {
-        font-size: 24px;
-        line-height: 34px;
-        height: 34px;
-        margin-bottom: 10px;
-      }
-
-      p {
-        font-size: 14px;
-        line-height: 20px;
-        height: 20px;
-        color: $gray;
-      }
-    }
-  }
-}
-
-.halfinput {
-  width: 300px;
-}
-
-.withdraw-text {
-  padding: 0 16px;
-
-  em.blue-txt {
-    padding-right: 16px;
-  }
-}
-
-.withdraw-span {
-  float: left;
-  width: 98px;
-  text-align: right;
-  padding-right: 12px;
-  line-height: 40px;
-}
-
-.centetbtn {
-  width: 40%;
-  display: block;
-  margin: 10px auto;
-}
+#goldbox 
+  margin-bottom: 20px
+  .el-button.reset-btn-small  // 重置下按钮
+    background: #fff
+    border-color: #409EFF
+    color: #409EFF
+    &:hover 
+      color: #409eff
+      background: #ecf5ff
+      border-color: #b3d8ff
+  dl 
+    border-top: 1px solid #E0E0E0
+    border-left: 1px solid #E0E0E0
+    overflow: hidden
+    dt 
+      float: left
+      border-bottom: 1px solid #E0E0E0
+      border-right: 1px solid #E0E0E0
+      line-height: 40px
+      padding: 0 10px
+      width: 282px
+    dd 
+      float: left
+      border-bottom: 1px solid #E0E0E0
+      border-right: 1px solid #E0E0E0
+      line-height: 40px
+      padding: 43px 10px 43px 10px
+      width: 282px
+      text-align: center
+      strong 
+        font-size: 24px
+        line-height: 34px
+        height: 34px
+        margin-bottom: 10px
+      p 
+        font-size: 14px
+        line-height: 20px
+        height: 20px
+        color: $gray
+.halfinput 
+  width: 300px
+.withdraw-text 
+  padding: 0 16px
+  em.blue-txt 
+    padding-right: 16px
+.withdraw-span 
+  float: left
+  width: 98px
+  text-align: right
+  padding-right: 12px
+  line-height: 40px
+.centetbtn 
+  width: 40%
+  display: block
+  margin: 10px auto
 </style>

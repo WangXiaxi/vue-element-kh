@@ -1,7 +1,7 @@
 <template>
 <div>
   <el-form :model="Recharge" ref="Recharge" label-width="110px" class="form food_form">
-    <el-form-item label="充值金额" prop="money"
+    <el-form-item label="充值金额" prop="money" style="position: static;"
                   :rules="[
                         { required: true, message: '充值金额不能为空'},
                         { pattern: regs.NF2, message: '充值金额必须为数字并且最多保留2位小数'}
@@ -141,7 +141,7 @@ export default {
             break
             case 'zhongjin':
             this.zhongjinPay()
-            break 
+            break
           }
         }
       });
@@ -234,56 +234,48 @@ export default {
   }
 };
 </script>
-<style  lang="stylus" scoped>
-.halfinput {
-  width: 300px;
-}
-
-.qrcodebox {
-  position: fixed;
-  left: 50%;
-  top: 50%;
-  width: 300px;
-  height: 300px;
-  margin: -150px auto auto -150px;
-  background: #ffffff;
-  box-shadow: 0 0 6px 0 #999;
-
-  strong {
-    line-height: 40px;
-    height: 40px;
-    display: block;
-    border-left: 3px solid #20a0ff;
-    font-size: 16px;
-    padding-left: 10px;
-    color: #6c6c6c;
-
-    em {
-      float: right;
-      width: 40px;
-      height: 40px;
-      line-height: 37px;
-      text-align: center;
-      cursor: pointer;
-      font-size: 28px;
-      transition: all 0.4s;
-    }
-
-    em:hover {
-      color: #20a0ff;
-      transform: rotate(180deg);
-    }
-  }
-}
-
-.wechartpicbox {
-  width: 250px;
-  height: 250px;
-  margin: 0 auto;
-
-  #canvas {
-    width: 100% !important;
-    height: 100% !important;
-  }
-}
+<style lang="stylus" scoped>
+.halfinput 
+  width: 300px
+.qrcodebox 
+  position: fixed
+  left: 50%
+  top: 50%
+  width: 300px
+  height: 300px
+  margin: -150px auto auto -150px
+  background: #ffffff
+  box-shadow: 0 0 6px 0 #999
+  strong 
+    line-height: 40px
+    height: 40px
+    display: block
+    border-left: 3px solid #20a0ff
+    font-size: 16px
+    padding-left: 10px
+    color: #6c6c6c
+    em 
+      float: right
+      width: 40px
+      height: 40px
+      line-height: 37px
+      text-align: center
+      cursor: pointer
+      font-size: 28px
+      transition: all 0.4s
+    em:hover 
+      color: #20a0ff
+      transform: rotate(180deg)
+.wechartpicbox 
+  width: 250px
+  height: 250px
+  margin: 0 auto
+  #canvas 
+    width: 100% !important
+    height: 100% !important
+</style>
+<style lang="stylus">
+  .food_form .el-form-item.is-required .el-form-item__label:before
+    position: inherit
+    left: 0
 </style>

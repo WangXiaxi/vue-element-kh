@@ -120,8 +120,8 @@
           TruckGetPage(params).then((res) => {
             const { data: { ResultCode, ResultValue, ResultMessage, TotalRecords }} = res;
             if (ResultCode === '000000') {
-              resolve(res);
               this.carList = ResultValue;
+              resolve(res);
             } else {
               reject(res); // 报错停止
             }
@@ -137,8 +137,8 @@
           GetOrderDetailsInfo(params).then((res) => {
             const { data: { ResultCode, ResultValue, ResultMessage, TotalRecords }} = res;
             if (ResultCode === '000000') {
-              resolve(res);
               this.getInfoObj = ResultValue;
+              resolve(res);
             } else {
               reject(res); // 报错停止
             }

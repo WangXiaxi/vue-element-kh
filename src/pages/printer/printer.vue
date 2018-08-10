@@ -19,7 +19,7 @@
         </div>
         <div class="waybill-info-operate fr">
             <el-button size="small" type="primary" @click="print()" :disabled="checkedItemLength === 0" v-if="!printDatas.CodeIsPrint">打印{{checkedItemLength}}张标签</el-button>
-            <el-button size="small" type="primary" @click="dialogFormVisible = true" :disabled="checkedItemLength === 0" v-else>补打{{checkedItemLength}}张标签</el-button>
+            <el-button size="small" type="primary" @click="supplement()" :disabled="checkedItemLength === 0" v-else>补打{{checkedItemLength}}张标签</el-button>
             <el-button size="small" type="primary" plain @click="cancel()">取消打印</el-button>
         </div>
       </div>
@@ -27,7 +27,7 @@
         <div class="page-print-container">
           <div class="print-item"  v-for="(item,index) in printDatas.QRCodeList" :key="item.codeID" @mouseover="printItemHover(index)" @mouseout="printItemLeave(index)">
             <input type="checkbox" :id="item.codeID" :ref="'check-'+index" :checked="item.checked"/>
-            <label :for="item.codeID" class="check_label" :class="{'none': !item.show}" @click="printItemCheck(index)"></label>
+            <label :for="item.codeID" class="check_label" :class="{'none': !item.show}" @click="printItemCheck(index, $event)"></label>
             <div class='print-item-body PageNext'>
               <div class="print-item-header">
                 <img src='http://devweb.sdhwlw.com/image/logo-mem.png' width='30' height='30'/>
@@ -88,7 +88,8 @@
               loading: true,
               order_id: this.$route.params.id,
               printResult: '',
-              MemberID: this.$cookie.get("MemberID")
+              MemberID: this.$cookie.get("MemberID"),
+              CodeIsPrint: false
           }
       },
       watch:{
@@ -117,8 +118,8 @@
             if(this.printDatas.CodeIsPrint)
                 param.reason = this.reason;
 
-            this.getPrintData();
             const result = await QrCodePrint(param);
+            this.getPrintData();
         },
         //重打  需要传递重打的集合
         reprint() {
@@ -133,10 +134,16 @@
             this.print();
             this.dialogFormVisible = false
         },
+        supplement(){
+            if(!window.getLodop()) return;
+          this.dialogFormVisible = true
+        },
         //打印
         print() {
           let _ = this,
-              items = _.printDatas.QRCodeList;
+              items = _.printDatas.QRCodeList,
+              OrdeReceiver = _.printDatas.OrdeReceiver,
+              OrdeReceivePhone = _.printDatas.OrdeReceivePhone;
           LODOP = window.getLodop();
           LODOP.PRINT_INITA("0mm","0mm","80mm","60mm","标签打印");
           LODOP.SET_PRINT_PAGESIZE(2,800,600,"标签打印");//1纵向  2横向
@@ -177,7 +184,7 @@
               LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
               LODOP.SET_PRINT_STYLEA(0,"FontSize",11);
               LODOP.SET_PRINT_STYLEA(0,"Bold",1);
-              LODOP.ADD_PRINT_TEXT(215,34,180,25,"收货人 :" + (item.OrdeReceiver || '--') );
+              LODOP.ADD_PRINT_TEXT(215,34,180,25,"收货人 : " + (OrdeReceiver || '--') );
               LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
               LODOP.SET_PRINT_STYLEA(0,"FontSize",11);
               LODOP.SET_PRINT_STYLEA(0,"Bold",1);
@@ -187,7 +194,7 @@
               LODOP.SET_PRINT_STYLEA(0,"Bold",1);
               LODOP.ADD_PRINT_IMAGE(61,44,140,140,_.createQR(item.codeID));
               LODOP.SET_PRINT_STYLEA(0,"Stretch",1);
-              LODOP.ADD_PRINT_TEXT(239,34,180,25,"电    话：" + (item.OrdeReceivePhone || '--'));
+              LODOP.ADD_PRINT_TEXT(239,34,180,25,"电    话:" + (OrdeReceivePhone || '--'));
               LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
               LODOP.SET_PRINT_STYLEA(0,"FontSize",11);
               LODOP.SET_PRINT_STYLEA(0,"Bold",1);
@@ -222,7 +229,11 @@
           };
         },
         //选中打印部分
-        printItemCheck(index) {
+        printItemCheck(index, event) {
+          if(!this.CodeIsPrint) {
+              event.preventDefault();//防止label for的事件  也可以修改for的值  :for="CodeIsPrint ? item.codeID : ''"
+              return;
+          }
           let item = this.printDatas.QRCodeList[index];
           item.checked = !this.$refs['check-' + index][0].checked; // 拿到的checked值为点击时的  所以要取反
         },
@@ -283,6 +294,7 @@
           let result = await GetQRCodeList({OrderID:this.order_id,MemberID: this.$cookie.get("MemberID")});
           if(result.data.ResultCode === '000000') {
             let data = result.data.ResultValue[0];
+            _.CodeIsPrint = data.CodeIsPrint;
             data.QRCodeList.forEach(function (item) {
               item.checked = !data.CodeIsPrint;
               item.show = !data.CodeIsPrint;
@@ -326,210 +338,171 @@
   }
 </script>
 
-<style scoped>
-  .none {
-    display: none;
-  }
-  .top-border{
-    display: block;
-    border-width: 0;
-    border-top: 2px solid #999;
-    box-shadow: 0 2px 4px 0 #999999;
-    margin-bottom: 0;
-    width: 100%;
-    z-index: 2;
-    position: relative;
-  }
-  .inline {
-    display: inline-block;
-  }
-  .waybill-info, .page-print-container {
-    width: 1200px;
-    margin: 0 auto;
-    overflow: hidden;
-  }
-  .waybill-info-title {
-    background: #ECF5FE;
-    border: 1px solid #A4D0FF;
-    font-size: 16px;
-    color: #027CFF;
-    display: inline-block;
-    height: 90px;
-    width: 20px;
-    padding: 20px 34px;
-    text-align: center;
-  }
-  .waybill-info-body {
-    padding: 20px 20px 0;
-  }
-  .waybill-info-address {
-    font-size: 18px;
-    color: #333;
-    margin-bottom: 20px;
-  }
-  .waybill-info-detail {
-    margin-bottom: 10px;
-  }
-  .waybill-info-detail .t {
-    color: #999;
-    width: 100px;
-  }
-  .waybill-info-operate {
-    margin-top: 50px;
-  }
-  .page-print-background {
-    width: 100%;
-    background: #515257;
-  }
-  .page-print-container {
-    padding-top: 30px;
-    padding-bottom: 100px;
-    clear: both;
-    overflow: hidden;
-    color: #000;
-  }
-  .PageNext {
-    page-break-after: always;
-  }
-
-  .print-item {
-    position: relative;
-    width: 230px;
-    height: 300px;
-    margin-right: 10px;
-    margin-bottom: 10px;
-    float: left;
-    border: 1px solid #999;
-    background: #fff;
-  }
-  .print-item:nth-child(5n) {
-    margin-right: 0;
-  }
-  .print-item-body {
-    width: 100%;
-  }
-
-  .print-item-body > img {
-    width: 65.71428571428571%;
-    height: 60%;
-    margin: 0 auto;
-    display: block;
-  }
-  .print-item-header {
-    padding: 10px 0 10px 20px;
-  }
-  .print-item-content {
-    margin-top: 10px;
-    padding-left: 45px;
-    text-align: initial;
-    font-size: 18px;
-  }
-  .print-info em {
-    display: inline-block;
-    width: 18px;
-  }
-  .print-item .check_label {
-    /* display: none; */
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(51,51,51, .35);
-  }
-  input[type=checkbox]+label:after {
-    content: ' ';
-    width: 30px;
-    height: 30px;
-    border-radius: 5px;
-    position: absolute;
-    top: 50%;
-    background: url(../../assets/images/print_hover@2x.png) center no-repeat;
-    background:image-set(url(../../assets/images/print_hover@3x.png) 3x) center no-repeat;
-    background-size: 100%;
-    text-shadow: 0;
-    left: 50%;
-    transform: translate(-50%,-50%);
-  }
-  input[type=checkbox]:checked+label:after {
-    content: ' ';
-    width: 30px;
-    height: 30px;
-    border-radius: 5px;
-    position: absolute;
-    top: 50%;
-    background: url(../../assets/images/print_checked@2x.png) center no-repeat;
-    background:image-set(url(../../assets/images/print_checked@3x.png) 3x) center no-repeat;
-    background-size: 100%;
-    text-shadow: 0;
-    left: 50%;
-    transform: translate(-50%,-50%);
-  }
-
-  .print-item input[type=checkbox] {
-    /* display: none; */
-    width: 0;
-    height: 0;
-    opacity: 0;
-    position: absolute;
-    z-index: -1;
-  }
-  .el-form {
-    position: relative;
-  }
-  .reason-length {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    color: #999;
-    font-size: 12px;
-  }
-
+<style lang="stylus" scoped>
+  .none 
+    display: none
+  .top-border
+    display: block
+    border-width: 0
+    border-top: 2px solid #999
+    box-shadow: 0 2px 4px 0 #999999
+    margin-bottom: 0
+    width: 100%
+    z-index: 2
+    position: relative
+  .inline 
+    display: inline-block
+  .waybill-info, .page-print-container 
+    width: 1200px
+    margin: 0 auto
+    overflow: hidden
+  .waybill-info-title 
+    background: #ECF5FE
+    border: 1px solid #A4D0FF
+    font-size: 16px
+    color: #027CFF
+    display: inline-block
+    height: 90px
+    width: 20px
+    padding: 20px 34px
+    text-align: center
+  .waybill-info-body 
+    padding: 20px 20px 0
+  .waybill-info-address 
+    font-size: 18px
+    color: #333
+    margin-bottom: 20px
+  .waybill-info-detail 
+    margin-bottom: 10px
+  .waybill-info-detail .t 
+    color: #999
+    width: 100px
+  .waybill-info-operate 
+    margin-top: 50px
+  .page-print-background 
+    width: 100%
+    background: #515257
+  .page-print-container 
+    padding-top: 30px
+    padding-bottom: 100px
+    clear: both
+    overflow: hidden
+    color: #000
+  .PageNext 
+    page-break-after: always
+  .print-item 
+    position: relative
+    width: 230px
+    height: 300px
+    margin-right: 10px
+    margin-bottom: 10px
+    float: left
+    border: 1px solid #999
+    background: #fff
+  .print-item:nth-child(5n) 
+    margin-right: 0
+  .print-item-body 
+    width: 100%
+  .print-item-body > img 
+    width: 65.71428571428571%
+    height: 60%
+    margin: 0 auto
+    display: block
+  .print-item-header 
+    padding: 10px 0 10px 20px
+  .print-item-content 
+    margin-top: 10px
+    padding-left: 45px
+    text-align: initial
+    font-size: 18px
+  .print-info em 
+    display: inline-block
+    width: 18px
+  .print-item .check_label 
+    /* display: none */
+    position: absolute
+    top: 0
+    left: 0
+    right: 0
+    bottom: 0
+    background: rgba(51,51,51, .35)
+  input[type=checkbox]+label:after 
+    content: ' '
+    width: 30px
+    height: 30px
+    border-radius: 5px
+    position: absolute
+    top: 50%
+    background: url(../../assets/images/print_hover@2x.png) center no-repeat
+    background:image-set(url(../../assets/images/print_hover@3x.png) 3x) center no-repeat
+    background-size: 100%
+    text-shadow: 0
+    left: 50%
+    transform: translate(-50%,-50%)
+  input[type=checkbox]:checked+label:after 
+    content: ' '
+    width: 30px
+    height: 30px
+    border-radius: 5px
+    position: absolute
+    top: 50%
+    background: url(../../assets/images/print_checked@2x.png) center no-repeat
+    background:image-set(url(../../assets/images/print_checked@3x.png) 3x) center no-repeat
+    background-size: 100%
+    text-shadow: 0
+    left: 50%
+    transform: translate(-50%,-50%)
+  .print-item input[type=checkbox] 
+    /* display: none */
+    width: 0
+    height: 0
+    opacity: 0
+    position: absolute
+    z-index: -1
+  .el-form 
+    position: relative
+  .reason-length 
+    position: absolute
+    bottom: 10px
+    right: 10px
+    color: #999
+    font-size: 12px
   /* 打印css */
-  @media print {
-    .print-item {
-      width: 945px;
-      height: 1180px;
-      float: none;
-      border:none;
-    }
-    .print-item-body-footer {
-      height: auto;
-      line-height: inherit;
-    }
-    .print-item-body-title, .print-item-body-footer {
-      font-size: 60px;
-      padding: 10px 0;
-    }
-  }
-  .footer-container {
-    position: absolute;
-    bottom: 0;
-  }
+  @media print 
+    .print-item 
+      width: 945px
+      height: 1180px
+      float: none
+      border:none
+    .print-item-body-footer 
+      height: auto
+      line-height: inherit
+    .print-item-body-title, .print-item-body-footer 
+      font-size: 60px
+      padding: 10px 0
+  .footer-container 
+    position: absolute
+    bottom: 0
 </style>
-<style>
-  .printer .el-dialog__header {
-    padding: 10px 0;
-    border-bottom: 1px solid #e0e0e0;
-  }
-  .printer .el-dialog__title {
-    line-height: 24px;
-    font-size: 18px;
-    color: #303133;
-    display: block;
-    border-left: 3px solid #027CFF;
-    padding: 10px;
-  }
-  .printer .el-textarea__inner{
-    background: #F7FBFB;
-    border: none;
-    resize: none;
-  }
-  .printer .el-dialog__footer .reprint-btn {
-    display: block;
-    margin: 0 auto;
-    width: 200px;
-    background: #027CFF;
-    border-radius: 100px;
-  }
+<style lang="stylus">
+  .printer .el-dialog__header 
+    padding: 10px 0
+    border-bottom: 1px solid #e0e0e0
+  .printer .el-dialog__title 
+    line-height: 24px
+    font-size: 18px
+    color: #303133
+    display: block
+    border-left: 3px solid #027CFF
+    padding: 10px
+  .printer .el-textarea__inner
+    background: #F7FBFB
+    border: none
+    resize: none
+  .printer .el-dialog__footer .reprint-btn 
+    display: block
+    margin: 0 auto
+    width: 200px
+    background: #027CFF
+    border-radius: 100px
 </style>

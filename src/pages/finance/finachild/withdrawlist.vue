@@ -179,43 +179,28 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-.withdraw-span {
-  padding: 0 10px;
-}
-
-.statuscontent {
-  padding: 2px 0;
-
-  div {
-    line-height: 30px;
-  }
-
-  .specails {
-    padding: 4px 0;
-    line-height: 22px;
-
-    img {
-      padding-top: 3px;
-      vertical-align: top;
-    }
-  }
-}
-
-.recordicon1 {
-  width: 20px;
-  height: 20px;
-  background-position: 0 -30px;
-}
-
-.recordicon2 {
-  width: 20px;
-  height: 20px;
-  background-position: -30px -30px;
-}
-
-.recordicon-2 {
-  width: 20px;
-  height: 20px;
-  background-position: -60px -30px;
-}
+.withdraw-span 
+  padding: 0 10px
+.statuscontent 
+  padding: 2px 0
+  div 
+    line-height: 30px
+  .specails 
+    padding: 4px 0
+    line-height: 22px
+    img 
+      padding-top: 3px
+      vertical-align: top
+.recordicon1 
+  width: 20px
+  height: 20px
+  background-position: 0 -30px
+.recordicon2 
+  width: 20px
+  height: 20px
+  background-position: -30px -30px
+.recordicon-2 
+  width: 20px
+  height: 20px
+  background-position: -60px -30px
 </style>

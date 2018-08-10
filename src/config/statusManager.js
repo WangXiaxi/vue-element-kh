@@ -19,14 +19,37 @@ export const orderStatus = {
   'ORDER_CANCELED':        -25, //已取消
 };
 
+
 // Parttern（pattern?）  1 抢单模式  2 最低价模式  之后可能还有其他模式 如果添加，请吧之前所有Parttern相关判断再看一遍！
 export  const pattern = {
   '1' : "抢单",
   '2' : "最低价"
 };
 
+
 //结算方式 settlement 1月结；2到付;
 
 //货运类型 way 1 物流公司 2回头车
 
 //货主类型 CrowdType 1：工厂；2：物流公司；3：个体司机
+
+// 订单颜色 关闭：333 已发布：027cff 待确认：26cb7c 已确认：f12c20 已到达：f55b23
+const orderStatusColor = {
+  'ORDER_CLOSED':           '#333',
+  'ORDER_PUBLISHED':        '#027cff',
+  'ORDER_PENDING':          '#26cb7c',
+  'ORDER_CONFIRMED':        '#f12c20',
+  'ORDER_LOADING':          '#f12c20',
+  'ORDER_ARRIVED':          '#f55b23',
+  'ORDER_SHIPPED':          '#26cb7c',
+  'defult':                 '#333'
+}
+
+// 显示对应的颜色
+export const showOrderStatusColor = (val) => {
+  for (let i in orderStatus) {
+    if (Number(val) === orderStatus[i]) {
+      return orderStatusColor[i] ? orderStatusColor[i] : orderStatusColor['defult']
+    }
+  }
+}

@@ -200,127 +200,90 @@
 <style lang="stylus" scoped>
 @import '../../assets/styles/template.styl';
 
-.fina-tipbox {
-  border: solid 1px #E0E0E0;
-  height: 58px;
-  margin-left: 4px;
-  margin-bottom: 2px;
+.fina-tipbox 
+  border: solid 1px #E0E0E0
+  height: 58px
+  margin-left: 4px
+  margin-bottom: 2px
+  .picbox 
+    margin: -1px 20px 0 -4px
+    height: 60px
+  .fl 
+    line-height: 58px
+    .blue-txt 
+      font-size: 16px
+      padding: 0 2px
+  .el-button 
+    margin: 11px 10px auto auto
+    padding: 10px 30px
+.payicon 
+  background: url('../../assets/images/payicon.png') no-repeat
+  display: inline-block
+  width: 30px
+  height: 30px
+  vertical-align: middle
+  margin-right: 10px
+.green-text 
+  color: #26CB7C
+#goldbox 
+  margin-bottom: 20px
+  .el-button.reset-btn-small  // 重置下按钮
+    background: #fff
+    border-color: #409EFF
+    color: #409EFF
+    &:hover 
+      color: #409eff
+      background: #ecf5ff
+      border-color: #b3d8ff
+  dl 
+    border-top: 1px solid #E0E0E0
+    border-left: 1px solid #E0E0E0
+    overflow: hidden
+    dt 
+      float: left
+      border-bottom: 1px solid #E0E0E0
+      border-right: 1px solid #E0E0E0
+      line-height: 40px
+      padding: 0 10px
+      width: 282px
+    dd 
+      float: left
+      border-bottom: 1px solid #E0E0E0
+      border-right: 1px solid #E0E0E0
+      line-height: 40px
+      padding: 43px 10px 43px 10px
+      width: 282px
+      text-align: center
 
-  .picbox {
-    margin: -1px 20px 0 -4px;
-    height: 60px;
-  }
-
-  .fl {
-    line-height: 58px;
-
-    .blue-txt {
-      font-size: 16px;
-      padding: 0 2px;
-    }
-  }
-
-  .el-button {
-    margin: 11px 10px auto auto;
-    padding: 10px 30px;
-  }
-}
-
-.payicon {
-  background: url('../../assets/images/payicon.png') no-repeat;
-  display: inline-block;
-  width: 30px;
-  height: 30px;
-  vertical-align: middle;
-  margin-right: 10px;
-}
-
-.green-text {
-  color: #26CB7C;
-}
-
-#goldbox {
-  margin-bottom: 20px;
-  .el-button.reset-btn-small { // 重置下按钮
-    background: #fff;
-    border-color: #409EFF;
-    color: #409EFF;
-    &:hover {
-      color: #409eff;
-      background: #ecf5ff;
-      border-color: #b3d8ff;
-    }
-  }
-  dl {
-    border-top: 1px solid #E0E0E0;
-    border-left: 1px solid #E0E0E0;
-    overflow: hidden;
-
-    dt {
-      float: left;
-      border-bottom: 1px solid #E0E0E0;
-      border-right: 1px solid #E0E0E0;
-      line-height: 40px;
-      padding: 0 10px;
-      width: 282px;
-    }
-
-    dd {
-      float: left;
-      border-bottom: 1px solid #E0E0E0;
-      border-right: 1px solid #E0E0E0;
-      line-height: 40px;
-      padding: 43px 10px 43px 10px;
-      width: 282px;
-      text-align: center;
-
-      strong {
-        font-size: 24px;
-        line-height: 34px;
-        height: 34px;
-        margin-bottom: 10px;
-      }
-
-      p {
-        font-size: 14px;
-        line-height: 20px;
-        height: 20px;
-        color: $gray;
-      }
-    }
-  }
-}
-
-.withdraw-check {
-  height: 30px;
-  line-height: 30px;
-  padding: 6px 0;
-
-  dt {
-    float: left;
-    width: 70px;
-  }
-
-  dd {
-    float: left;
-    padding: 0 20px;
-    cursor: pointer;
-  }
-
-  dd.active {
-    color: $blue;
-  }
-}
-
-.centetbtn {
-  width: 40%;
-  display: block;
-  margin: 10px auto;
-}
-
-.rerecord {
-  line-height: 40px;
-  font-size: 16px;
-  color: #333333;
-}
+      strong 
+        font-size: 24px
+        line-height: 34px
+        height: 34px
+        margin-bottom: 10px
+      p 
+        font-size: 14px
+        line-height: 20px
+        height: 20px
+        color: $gray
+.withdraw-check 
+  height: 30px
+  line-height: 30px
+  padding: 6px 0
+  dt 
+    float: left
+    width: 70px
+  dd 
+    float: left
+    padding: 0 20px
+    cursor: pointer
+  dd.active 
+    color: $blue
+.centetbtn 
+  width: 40%
+  display: block
+  margin: 10px auto
+.rerecord 
+  line-height: 40px
+  font-size: 16px
+  color: #333333
 </style>

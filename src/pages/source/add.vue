@@ -490,8 +490,8 @@
             path: '/publishTipsPage',
             query: {
               i: 'success',
-              tip: '恭喜您，货源发布成功！',
-              des: res.data.ResultMessage,
+              tip: encodeURIComponent('恭喜您，货源发布成功！'),
+              des: encodeURIComponent(res.data.ResultMessage),
               color: !res.data.ResultValue.PiPei ? '#999' : 'red',
               orderID: res.data.ResultValue.OrderId
             }
@@ -850,10 +850,10 @@
       height: 100%
       background-color: #fff
       > li
-        height: 30px;
-        line-height: 30px;
-        padding-left: 40px;
-        margin: 10px 0;
+        height: 30px
+        line-height: 30px
+        padding-left: 40px
+        margin: 10px 0
         border-left: 3px solid transparent
         &:hover
           border-left-color: $blue
@@ -867,7 +867,7 @@
     float: right
     background-color: #fff
     .product
-      background: #FFFFFF;
+      background: #FFFFFF
       .title-box
         box-shadow: 0 1px 0 0 #E0E0E0
       .title-name

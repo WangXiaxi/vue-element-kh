@@ -153,43 +153,30 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-.bell {
-  font-size: 25px;
-  cursor: pointer;
-}
-
-.userName {
-  max-width: 600px;
-}
-
-.msg {
-  float: left;
-  margin: 27px 30px 0 0;
-  line-height: normal;
-  cursor: pointer;
-}
-
-.avatar {
-  float: right;
-  height: 48px;
-  line-height: 48px;
-  margin-top: 14px;
-  border-radius: 50%;
-  cursor: pointer;
-  overflow: hidden;
-
-  img {
-    width: 48px;
-    height: 48px;
-    display: block;
-  }
-}
-
-.dropdown {
-  width: 220px;
-}
-
-.user-name {
-  border-bottom: 1px solid $borderColor;
-}
+.bell
+  font-size: 25px
+  cursor: pointer
+.userName
+  max-width: 600px
+.msg
+  float: left
+  margin: 27px 30px 0 0
+  line-height: normal
+  cursor: pointer
+.avatar
+  float: right
+  height: 48px
+  line-height: 48px
+  margin-top: 14px
+  border-radius: 50%
+  cursor: pointer
+  overflow: hidden
+  img
+    width: 48px
+    height: 48px
+    display: block
+.dropdown
+  width: 220px
+.user-name
+  border-bottom: 1px solid $borderColor
 </style>

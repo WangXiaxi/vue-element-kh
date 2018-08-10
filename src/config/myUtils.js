@@ -38,6 +38,46 @@ export const getUserRole = (id, role) => {
   //return roleList[role].includes(id)
   return roleList[role].indexOf(id) >= 0;
 };
+/**
+ * Function waterMark 水印
+ * @param name canvas id
+ * @param src canvas img url
+ * @param text waterMark text
+ * @param width canvas width
+ * @param height canvas width
+ * @param x watermark x
+ * @param y watermark y
+ * */
+export const waterMark = function(name, src, text, width, height, x, y) {
+  if(!src) {
+    console.warn('image src needed');
+    return;
+  }
+  let innerText = text || '速达汇物流';
+
+  var canvas = document.getElementById(name);
+
+  if (!canvas) return;
+
+  var ctx = canvas.getContext("2d");
+
+  var img = new Image() ;
+
+
+  img.onload = function() {
+
+    ctx.drawImage(img, 0, 0, width, height);
+
+    ctx.font = "14px 微软雅黑";
+
+    ctx.fillStyle = "rgba(252,255,255,0.8)";
+
+    ctx.fillText(innerText, x, y); //选择位置
+  };
+
+  img.src = src;
+
+};
 //
 // //设置cookie
 // export const setCookie = (name, value, days) => {
