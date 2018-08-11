@@ -30,7 +30,7 @@
   </div>
 </template>
 
-<script type="es6">
+<script>
   import { mapGetters, mapMutations } from 'vuex'
   import { GetHeavyCargoStandard } from "api/getData"
 

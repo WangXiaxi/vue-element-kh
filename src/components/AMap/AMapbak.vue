@@ -6,7 +6,7 @@
 </template>
 
 
-<script type="es6">
+<script>
   import AMap from 'AMap'
   export default {
     props: {

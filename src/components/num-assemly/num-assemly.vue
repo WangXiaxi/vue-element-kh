@@ -29,7 +29,7 @@
   </div>
 </template>
 
-<script type="es6">
+<script>
   export default {
     props: {
       dataCur: {

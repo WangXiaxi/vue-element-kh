@@ -16,7 +16,7 @@
 </template>
 
 
-<script type="es6">
+<script>
   import AMap from 'AMap'
   import { localMarry, deleMarry } from '@/config/localMarry'
 

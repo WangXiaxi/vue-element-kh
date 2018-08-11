@@ -343,7 +343,7 @@
   </div>
 </template>
 
-<script type="es6">
+<script>
 import headTop from "components/header/head";
 import dropDown from "components/header/children/dropdown";
 import numAssemly from "components/num-assemly/num-assemly";

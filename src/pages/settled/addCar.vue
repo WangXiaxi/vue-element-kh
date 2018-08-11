@@ -157,7 +157,7 @@
 </template>
 
 
-<script type="es6">
+<script>
 import headTop from "components/header/head";
 import foot from "components/footer/foot";
 import dropDown from "components/header/children/dropdown";

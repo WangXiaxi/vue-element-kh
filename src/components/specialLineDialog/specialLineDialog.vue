@@ -120,7 +120,7 @@
   </div>
 </template>
 
-<script type="es6">
+<script>
   import address from 'config/address'
   import { CarLongList } from "config/publicParam" // 提取了下CarLongList
   import { getCarModelList, DedicatedLineDelete, DedicatedLineUpdate, DedicatedLineNew, CanCompanyAddRoute } from "api/getData"

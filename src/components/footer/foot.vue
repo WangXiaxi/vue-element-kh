@@ -35,7 +35,7 @@
 </template>
 
 
-<script type="es6">
+<script>
   import { webUrl } from "api/env";
   export default {
     data() {

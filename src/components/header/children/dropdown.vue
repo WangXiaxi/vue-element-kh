@@ -49,7 +49,7 @@
 </template>
 
 
-<script type="es6">
+<script>
 import { getUserInfo } from "api/getData";
 import { imgUrl } from "api/env";
 import cookie from "cookiejs";
