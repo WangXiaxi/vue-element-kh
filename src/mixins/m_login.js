@@ -1,5 +1,5 @@
 /**
- * Created by ydiego on 19/7/2018.
+ * 身份效验方法
  */
 
 export default{
